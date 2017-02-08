@@ -24,32 +24,30 @@ void sendResult(int fd, int ret, int err) {
 }
 void handleOpen(int fd, struct OpenCall oc, char *buf, int size) {
     memcpy(&oc,buf,sizeof(oc));
-    printf("\n size of pathLen %d",oc.pathnameLen);
-    printf("\n size of flags %d",oc.flags);
     char pathname[size-sizeof(oc)+1];
-    printf("\n size of pathLen %d",size-sizeof(oc));
     memcpy(pathname,&(buf[sizeof(oc)]),size-sizeof(oc));
-    printf("\n size of pathname %s",pathname);
     pathname[size-sizeof(oc)+1]='\0';
     int ret = open(pathname,oc.flags,oc.mode);
+    fprintf(stderr,"Open received: %s,%d,%d,result %d\n"
+            ,pathname,oc.flags,oc.mode,ret);
     sendResult(fd,ret,errno);
 }
 
 void handleClose(int fd, struct CloseCall cc, char *buf, int size) {
-    printf("\n close");
     memcpy(&cc,buf,sizeof(cc));
-    printf("\nserver close fildes %d",cc.fildes);
     int ret = close(cc.fildes);
+    fprintf(stderr,"Close received:%d,result %d\n",
+            cc.fildes,ret);
     sendResult(fd,ret,errno);
 }
 
 void handleWrite(int fd, struct WriteCall wc, char *buf,int size) {
     char content[size];
-    printf("in handle write ");
     memcpy(&wc,buf,sizeof(wc));
-    printf("\n wc.fd %d size %d",wc.fildes,wc.size);
     memcpy(content,&(buf[sizeof(wc)]),size-sizeof(wc));
-    int ret = write(wc.fildes,content,size-sizeof(wc));
+    int ret = write(wc.fildes,content,wc.size);
+    fprintf(stderr,"Write received:%d,%zu\n",
+            wc.fildes,wc.size);
     sendResult(fd,ret,errno);
 }
 
@@ -99,46 +97,44 @@ int main(int argc, char**argv) {
 		char inputBuf[MAXMSGLEN];
         // get messages and send replies to this client, until it goes away
         while ( (rv=recv(sessfd, buf, 8, 0)) > 0) {
-            printf("\n server recv %d",rv);
+            fprintf(stderr,"\nServer recv %d\n",rv);
             rvInputLen = 0;
-            //if (rv = 8) {
             memcpy(&sc,buf,sizeof(sc));
-            printf("\n inputsize %d",sc.inputSize);
+            fprintf(stderr,"Inputsize %d\n",sc.inputSize);
             switch (sc.sysCallName) {
                 case OPEN:
                     while (rvInputLen < sc.inputSize) {
                         rv=recv(sessfd, buf, sc.inputSize-rvInputLen, 0);
-                        printf("\n open rvInputLen1 %d",rvInputLen);
+                        fprintf(stderr,"Open rvInputLen1 %d\n",rvInputLen);
                         memcpy(&(inputBuf[rvInputLen]),buf,rv);
                         rvInputLen += rv;
-                        printf("\n open rvInputLen %d",rvInputLen);
+                        fprintf(stderr,"Open rvInputLen %d\n",rvInputLen);
                     }
                     handleOpen(sessfd,oc,inputBuf,sc.inputSize);
-                    printf("\nend of handle open");
                     continue;
                 case WRITE:
                     while (rvInputLen < sc.inputSize) {
                         rv=recv(sessfd, buf, sc.inputSize-rvInputLen, 0);
-                        printf("\n write rvInputLen1 %d",rvInputLen);
+                        fprintf(stderr,"Write rvInputLen1 %d\n",rvInputLen);
                         memcpy(&(inputBuf[rvInputLen]),buf,rv);
                         rvInputLen += rv;
-                        printf("\n open rvInputLen %d",rvInputLen);
+                        fprintf(stderr,"Write rvInputLen %d\n",rvInputLen);
                     }
                     handleWrite(sessfd,wc,inputBuf,sc.inputSize);
                     continue;
                 case CLOSE:
                     while (rvInputLen < sc.inputSize) {
                         rv=recv(sessfd, buf, sc.inputSize-rvInputLen, 0);
-                        printf("\n close rvInputLen1 %d",rvInputLen);
+                        fprintf(stderr,"Close rvInputLen1 %d\n",rvInputLen);
                         memcpy(&(inputBuf[rvInputLen]),buf,rv);
                         rvInputLen += rv;
-                        printf("\n close rvInputLen %d",rvInputLen);
+                        fprintf(stderr,"Close rvInputLen %d\n",rvInputLen);
                     }
                     handleClose(sessfd,cc,inputBuf,sc.inputSize);
                     continue;  //??
             }
         }
-        printf("\n out of recv");
+        fprintf(stderr,"Either client closed connection, or error\n");
 		// either client closed connection, or error
 		if (rv<0) err(1,0);
 		close(sessfd);

@@ -44,7 +44,6 @@ int clientSocket() {
     srv.sin_port = htons(port);// server port
     // actually connect to the server
     rv = connect(sockfd, (struct sockaddr*)&srv, sizeof(struct sockaddr));
-    printf("\n connect in client");
     if (rv<0) {
         return -1;
     }
@@ -80,40 +79,42 @@ int open(const char *pathname, int flags, ...) {
 		m = va_arg(a, mode_t);
 		va_end(a);
 	}
+    //Construct opencall struct
     struct OpenCall oc;
-    printf("\fd in client %d",sockfd);
     oc.pathnameLen = strlen(pathname);
-    printf("oc size pathname %d \n",oc.pathnameLen);
     oc.flags = flags;
-    printf("oc flags %d \n",oc.flags);
     oc.mode = m;
-     printf("oc mode %d \n",oc.mode);
+    fprintf(stderr,"Sent: pathnameLen %d flags %d mode %d \n",oc.pathnameLen,oc.flags,oc.mode);
     char ocBuf[sizeof(oc)];
     memcpy(ocBuf,&oc,sizeof(oc));
 
+    //Construct syscall struct
     struct SysCall sc;
     sc.sysCallName = OPEN;
     sc.inputSize = (int)sizeof(oc)+strlen(pathname);
     char scBuf[sizeof(sc)+sizeof(oc)+strlen(pathname)];
     memcpy(scBuf,&sc,sizeof(sc));
+    //Append opencall struct
     memcpy(&(scBuf[sizeof(sc)]),&oc,sizeof(oc));
+    //Append pathname
     memcpy(&(scBuf[sizeof(sc)+sizeof(oc)]),pathname,strlen(pathname));
     send(sockfd,scBuf,sizeof(scBuf),0);
+
     //receive return value and errno
-    //
     struct Result res;
     char resBuf[sizeof(res)];
     recv(sockfd,resBuf,sizeof(res),0);
     memcpy(&res,resBuf,sizeof(res));
-    printf("result %d",res.result);
-    printf("err %d",res.err);
+    fprintf(stderr,"Received open result %d\n",res.result);
     errno = res.err;
+    if (res.result == -1) { //Fail to open
+        perror("Open Error:");
+    }
+    //Success: return file descriptor
     return res.result;
-    //return 5;//orig_open(pathname,flags,m);
 }
 
 int close(int fildes) {
-    printf("\n client close fildes %d",fildes);
     struct CloseCall cc;
     cc.fildes = fildes;
     char ccBuf[sizeof(cc)];
@@ -132,7 +133,11 @@ int close(int fildes) {
     recv(sockfd,resBuf,sizeof(res),0);
     memcpy(&res,resBuf,sizeof(res));
     errno = res.err;
-    printf("\n client close result get %d",res.result);
+    fprintf(stderr,"Received close result:%d\n",res.result);
+    if (res.result == -1) {//fail to close
+        perror("Close error:");
+    }
+    //Success return 0
     return res.result;
 }
 
@@ -142,6 +147,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
     return orig_read(fildes,buf,size);
 }
 
+//buf up to size -> fildes
 ssize_t write(int fildes, const void *buf, size_t size) {
     char content[size];
     memcpy(content,buf,size);
@@ -151,7 +157,6 @@ ssize_t write(int fildes, const void *buf, size_t size) {
     wc.size = size;
     char wcBuf[sizeof(wc)];
     memcpy(wcBuf,&wc,sizeof(wc));
-    printf("\norig fd %d",fildes);
 
     struct SysCall sc;
     sc.sysCallName = WRITE;;
@@ -168,6 +173,11 @@ ssize_t write(int fildes, const void *buf, size_t size) {
     recv(sockfd,resBuf,sizeof(res),0);
     memcpy(&res,resBuf,sizeof(res));
     errno = res.err;
+    fprintf(stderr,"Received write result: %d\n",res.result);
+    if (res.result == -1) {
+        perror("Write error:");
+    }
+    //Success # of bytes written
     return res.result;
 }
 off_t lseek(int fildes, off_t offset, int whence) {
@@ -221,6 +231,7 @@ void _init(void) {
     orig_getdirtree = dlsym(RTLD_NEXT, "getdirtree");
     orig_freedirtree = dlsym(RTLD_NEXT, "freedirtree");
     if (sockfd == -1) {
+        fprintf(stderr,"exit sockfd = -1\n");
         exit(1);
     }
 }

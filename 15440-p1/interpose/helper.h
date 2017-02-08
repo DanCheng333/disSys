@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 enum SysCallName{OPEN,WRITE,CLOSE};
-bool sendInt(int sockfd,int32_t n);
-
 struct __attribute__((__packed__)) SysCall {
     enum SysCallName sysCallName;
     int inputSize;
