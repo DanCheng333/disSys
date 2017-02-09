@@ -151,7 +151,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
     char rcBuf[sizeof(rc)];
     memcpy(rcBuf,&rc,sizeof(rc));
     fprintf(stderr,"Read sent fildes %d, size %d\n",fildes,size);
-    if (res.result == -1) {
+
     sc.sysCallName = READ;
     sc.inputSize=sizeof(rc);
     char scBuf[sizeof(sc)+sizeof(rc)];
@@ -161,7 +161,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
 
     //Get result and copy readBuf to buf
     getResult(sockfd);
-    fprintf(stderr,"Read bufSize1 %d\n",bufSize);
+    fprintf(stderr,"After get result\n");
     int bufSize = 0;
     char readBuf[res.result];
     while (bufSize < res.result) {
