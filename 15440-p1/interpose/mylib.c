@@ -72,6 +72,14 @@ struct dirtreenode* (*orig_getdirtree)( const char *path );
 void (*orig_freedirtree) ( struct dirtreenode* dt );
 
 struct SysCall sc;
+struct Result res;
+
+void getResult(int sockfd) {
+  char resBuf[sizeof(res)];
+  recv(sockfd,resBuf,sizeof(res),0);
+  memcpy(&res,resBuf,sizeof(res));
+}
+
 // This is our replacement for the open function from libc.
 int open(const char *pathname, int flags, ...) {
 	mode_t m=0;
@@ -102,10 +110,7 @@ int open(const char *pathname, int flags, ...) {
     send(sockfd,scBuf,sizeof(scBuf),0);
 
     //receive return value and errno
-    struct Result res;
-    char resBuf[sizeof(res)];
-    recv(sockfd,resBuf,sizeof(res),0);
-    memcpy(&res,resBuf,sizeof(res));
+    getResult(sockfd);
     fprintf(stderr,"Received open result %d\n",res.result);
     errno = res.err;
     if (res.result == -1) { //Fail to open
@@ -245,5 +250,3 @@ void _init(void) {
         exit(1);
     }
 }
-
-
