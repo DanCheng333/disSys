@@ -23,11 +23,10 @@ void sendResult(int fd, int ret, int err) {
     send(fd,resBuf,sizeof(res),0);
 }
 void handleOpen(int fd, struct OpenCall oc, char *buf, int size) {
-    fprintf(stderr,"handleOpen received size %d \n",size);
     memcpy(&oc,buf,sizeof(oc));
-    char pathname[oc.pathnameLen];
-    memcpy(pathname,&(buf[sizeof(oc)]),oc.pathnameLen);
-    //pathname[size-sizeof(oc)+1]='\0';
+    char pathname[size-sizeof(oc)+1];
+    memcpy(pathname,&(buf[sizeof(oc)]),size-sizeof(oc));
+    pathname[size-sizeof(oc)+1]='\0';
     int ret = open(pathname,oc.flags,oc.mode);
     fprintf(stderr,"Open received: %s,%d,%d,result %d\n"
             ,pathname,oc.flags,oc.mode,ret);
@@ -97,7 +96,7 @@ int main(int argc, char**argv) {
 	// Get environment variable indicating the port of the server
 	serverport = getenv("serverport4444");
 	if (serverport) port = (unsigned short)atoi(serverport);
-	else port=4444;//port=15440;
+	else port=4244;//port=15440;
 
 	// Create socket
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
