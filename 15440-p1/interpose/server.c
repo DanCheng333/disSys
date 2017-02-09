@@ -28,6 +28,7 @@ void handleOpen(int fd, struct OpenCall oc, char *buf, int size) {
     char pathname[oc.pathnameLen];
     memcpy(pathname,&(buf[sizeof(oc)]),oc.pathnameLen);
     pathname[oc.pathnameLen]='\0';
+
     int ret = open(pathname,oc.flags,oc.mode);
     fprintf(stderr,"Open received: %s,%d,%d,result %d\n"
             ,pathname,oc.flags,oc.mode,ret);
@@ -43,8 +44,8 @@ void handleClose(int fd, struct CloseCall cc, char *buf, int size) {
 }
 
 void handleWrite(int fd, struct WriteCall wc, char *buf,int size) {
-    char content[size];
     memcpy(&wc,buf,sizeof(wc));
+    char content[size-sizeof(wc)];
     memcpy(content,&(buf[sizeof(wc)]),size-sizeof(wc));
     int ret = write(wc.fildes,content,wc.size);
     fprintf(stderr,"Write received:%d,%zu\n",
@@ -53,8 +54,9 @@ void handleWrite(int fd, struct WriteCall wc, char *buf,int size) {
 }
 
 void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
-    char readBuf[rc.size];
+    fprintf(stderr,"inside handle read\n");
     memcpy(&rc,buf,sizeof(rc));
+    char readBuf[rc.size];
     int ret = read(rc.fildes,readBuf,rc.size);
     struct Result res;
     res.result = ret;
