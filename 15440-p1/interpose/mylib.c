@@ -22,14 +22,14 @@ int clientSocket() {
     struct sockaddr_in srv;
 
     // Get environment variable indicating the ip address of the server
-    serverip = getenv("server4244");
+    serverip = getenv("server4444");
     if (!serverip) {
         serverip = "127.0.0.1";
     }
     // Get environment variable indicating the port of the server
-    serverport = getenv("serverport4244");
+    serverport = getenv("serverport4444");
     if (!serverport) {
-        serverport = "4244";
+        serverport = "4444";
     }
     port = (unsigned short)atoi(serverport);
     // Create socket
