@@ -94,7 +94,8 @@ int open(const char *pathname, int flags, ...) {
     oc.pathnameLen = strlen(pathname);
     oc.flags = flags;
     oc.mode = m;
-    fprintf(stderr,"Sent: pathnameLen %d flags %d mode %d \n",oc.pathnameLen,oc.flags,oc.mode);
+    fprintf(stderr,"Sent: pathnameLen %d flags %d mode %d \n",
+    oc.pathnameLen,oc.flags,oc.mode);
     char ocBuf[sizeof(oc)];
     memcpy(ocBuf,&oc,sizeof(oc));
 
@@ -160,7 +161,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
 
     //Get result and copy readBuf to buf
     getResult(sockfd);
-    fprintf(stderr,"Read get result %d\n",res.result);
+    fprintf(stderr,"Read bufSize1 %d\n",bufSize);
     int bufSize = 0;
     char readBuf[res.result];
     while (bufSize < res.result) {
