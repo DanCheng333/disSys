@@ -27,7 +27,7 @@ void handleOpen(int fd, struct OpenCall oc, char *buf, int size) {
     fprintf(stderr,"pathname lenght %d\n",oc.pathnameLen);
     char pathname[oc.pathnameLen];
     memcpy(pathname,&(buf[sizeof(oc)]),oc.pathnameLen);
-    //pathname[oc.pathnameLen+1]='\0';
+    pathname[oc.pathnameLen]='\0';
     int ret = open(pathname,oc.flags,oc.mode);
     fprintf(stderr,"Open received: %s,%d,%d,result %d\n"
             ,pathname,oc.flags,oc.mode,ret);
