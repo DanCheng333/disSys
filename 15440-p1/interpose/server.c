@@ -166,7 +166,6 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
         rvInputLen = 0;
         memcpy(&sc,buf,sizeof(sc));
         fprintf(stderr,"Inputsize %d\n",sc.inputSize);
-        fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
         switch (sc.sysCallName) {
           case OPEN:
           handleOpen(sessfd,oc,inputBuf,sc.inputSize);
@@ -187,6 +186,7 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
           handleXstat(sessfd,xc,inputBuf,sc.inputSize);
           continue;
           case UNLINK:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleUnlink(sessfd,inputBuf,sc.inputSize);
           continue;
           case GETDIRTREE:

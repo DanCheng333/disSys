@@ -264,7 +264,7 @@ int unlink(const char *path){
 
   sc.sysCallName = UNLINK;
   sc.inputSize=strlen(path);
-  char scBuf[sizeof(sc)];
+  char scBuf[sizeof(sc)+strlen(path)];
   memcpy(scBuf,&sc,sizeof(sc));
   memcpy(&(scBuf[sizeof(sc)]),path,strlen(path));
   send(sockfd,scBuf,sizeof(scBuf),0);
