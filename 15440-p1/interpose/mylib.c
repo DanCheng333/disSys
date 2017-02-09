@@ -163,7 +163,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
     char readBuf[res.result];
     while (bufSize < res.result) {
       int rvSize = MIN(MAXMSGLEN,res.result-bufSize);
-      int rv=recv(sessfd, buf, rvSize, 0);
+      int rv=recv(sockfd, buf, rvSize, 0);
       fprintf(stderr,"Read bufSize1 %d\n",bufSize);
       memcpy(&(readBuf[bufSize]),buf,rv);
       bufSize += rv;
