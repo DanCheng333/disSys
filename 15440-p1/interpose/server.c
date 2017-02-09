@@ -53,8 +53,11 @@ void handleWrite(int fd, struct WriteCall wc, char *buf,int size) {
 
 void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
     char readBuf[rc.size];
+    fprintf(stderr,"get read struct\n");
     memcpy(&rc,buf,sizeof(rc));
+    fprintf(stderr,"before Read received fildes %d,size %d\n",rc.fildes,rc.size);
     int ret = read(rc.fildes,readBuf,rc.size);
+    fprintf(stderr,"after Read return %d\n",ret);
     struct Result res;
     res.result = ret;
     res.err = errno;
@@ -164,4 +167,3 @@ int main(int argc, char**argv) {
 
 	return 0;
 }
-
