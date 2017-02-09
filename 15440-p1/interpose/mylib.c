@@ -133,10 +133,7 @@ int close(int fildes) {
     memcpy(&(scBuf[sizeof(sc)]),&cc,sizeof(cc));
     send(sockfd,scBuf,sizeof(scBuf),0);
 
-    struct Result res;
-    char resBuf[sizeof(res)];
-    recv(sockfd,resBuf,sizeof(res),0);
-    memcpy(&res,resBuf,sizeof(res));
+    getResult(sockfd);
     errno = res.err;
     fprintf(stderr,"Received close result:%d\n",res.result);
     if (res.result == -1) {//fail to close
@@ -159,6 +156,21 @@ ssize_t read(int fildes, void *buf, size_t size) {
     memcpy(scBuf,&sc,sizeof(sc));
     memcpy(&(scBuf[sizeof(sc)]),rcBuf,sizeof(rc));
     send(sockfd,scBuf,sizeof(scBuf),0);
+
+    //Get result and copy readBuf to buf
+    getResult(sockfd);
+    int bufSize = 0;
+    char readBuf[res.result];
+    while (bufSize < res.result) {
+      int rvSize = MIN(MAXMSGLEN,res.result-bufSize);
+      int rv=recv(sessfd, buf, rvSize, 0);
+      fprintf(stderr,"Read bufSize1 %d\n",bufSize);
+      memcpy(&(readBuf[bufSize]),buf,rv);
+      bufSize += rv;
+      fprintf(stderr,"Read bufSize %d\n",bufSize);
+    }
+    memcpy(buf,readBuf,res.result);
+    return res.result;
 
 }
 
