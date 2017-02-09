@@ -173,7 +173,9 @@ ssize_t read(int fildes, void *buf, size_t size) {
       bufSize += rv;
       fprintf(stderr,"Read bufSize %d\n",bufSize);
     }
-    memcpy(buf,readBuf,res.result);
+    if (res.result > 0) {
+      memcpy(buf,readBuf,res.result);
+    }
     fprintf(stderr,"\n\n******* END OF READ *********");
     return res.result;
 
