@@ -168,21 +168,27 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
         fprintf(stderr,"Inputsize %d\n",sc.inputSize);
         switch (sc.sysCallName) {
           case OPEN:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleOpen(sessfd,oc,inputBuf,sc.inputSize);
           continue;
           case WRITE:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleWrite(sessfd,wc,inputBuf,sc.inputSize);
           continue;
           case CLOSE:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleClose(sessfd,cc,inputBuf,sc.inputSize);
           continue;  //??
           case READ:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleRead(sessfd,rc,inputBuf,sc.inputSize);
           continue;
           case LSEEK:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleLseek(sessfd,lc,inputBuf,sc.inputSize);
           continue;
           case __XSTAT:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleXstat(sessfd,xc,inputBuf,sc.inputSize);
           continue;
           case UNLINK:
@@ -190,9 +196,11 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
           handleUnlink(sessfd,inputBuf,sc.inputSize);
           continue;
           case GETDIRTREE:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleGetdirtree(sessfd,gdc,inputBuf,sc.inputSize);
           continue;
           case GETDIRENTRIES:
+          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
           handleGetdirentries(sessfd,gdsc,inputBuf,sc.inputSize);
           continue;
         }
