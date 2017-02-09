@@ -65,7 +65,7 @@ void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
   memcpy(resWithBuf,&res,sizeof(res));
   memcpy(&(resWithBuf[sizeof(res)]),readBuf,ret);
 
-  fprintf(stderr,"Read received fildes %d,size %d, return ret %d, readBuf %s\n",rc.fildes,rc.size,ret,readBuf);
+  fprintf(stderr,"Read received fildes %d,size %zu, return ret %d, readBuf %s\n",rc.fildes,rc.size,ret,readBuf);
   send(fd,resWithBuf,sizeof(res)+ret,0);
 }
 

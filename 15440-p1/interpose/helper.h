@@ -13,8 +13,7 @@ enum SysCallName{
   __XSTAT,
   UNLINK,
   GETDIRENTRIES,
-  GETDIRTREE,
-  FREEDIRTREE
+  GETDIRTREE
 };
 struct __attribute__((__packed__)) SysCall {
   enum SysCallName sysCallName;
