@@ -23,6 +23,7 @@ void sendResult(int fd, int ret, int err) {
     send(fd,resBuf,sizeof(res),0);
 }
 void handleOpen(int fd, struct OpenCall oc, char *buf, int size) {
+    fprintf(stderr,"handleOpen received size %d \n",size);
     memcpy(&oc,buf,sizeof(oc));
     char pathname[oc.pathnameLen];
     memcpy(pathname,&(buf[sizeof(oc)]),oc.pathnameLen);
