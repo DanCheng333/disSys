@@ -54,10 +54,6 @@ struct __attribute__((__packed__)) XstatCall {
 
 };
 
-struct __attribute__((__packed__)) UnlinkCall {
-
-};
-
 struct __attribute__((__packed__)) GetdirentriesCall {
 
 };

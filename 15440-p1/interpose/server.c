@@ -82,8 +82,14 @@ void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
   fprintf(stderr,"Xstat handle\n");
 }
 
-void handleUnlink(int fd, struct UnlinkCall uc, char *buf, int size) {
-  fprintf(stderr,"Unlink handle\n");
+void handleUnlink(int fd, char *buf, int size) {
+  char path[size];
+  fprintf(stderr,"Unlink handle size %d\n",size);
+  memcpy(path,buf,size);
+  path[size]='\0';
+  fprintf(stderr,"Unlink received path%s\n",path);
+  int ret = unlink(path);
+  sendResult(fd,ret,errno);
 }
 
 void handleGetdirtree(int fd, struct GetdirtreeCall gdc, char *buf, int size) {
@@ -149,7 +155,6 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
       struct ReadCall rc;
       struct LseekCall lc;
       struct XstatCall xc;
-      struct UnlinkCall uc;
       struct GetdirentriesCall gdsc;
       struct GetdirtreeCall gdc;
 
@@ -182,7 +187,7 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
           handleXstat(sessfd,xc,inputBuf,sc.inputSize);
           continue;
           case UNLINK:
-          handleUnlink(sessfd,uc,inputBuf,sc.inputSize);
+          handleUnlink(sessfd,inputBuf,sc.inputSize);
           continue;
           case GETDIRTREE:
           handleGetdirtree(sessfd,gdc,inputBuf,sc.inputSize);

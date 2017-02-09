@@ -259,11 +259,25 @@ int __xstat(int ver, const char *path, struct stat *buf){
 }
 
 int unlink(const char *path){
+  fprintf(stderr,"\n\n******* UNLINK *********");
+  fprintf(stderr,"Unlink path %s\n",path);
+
   sc.sysCallName = UNLINK;
-  sc.inputSize= 1;
+  sc.inputSize=strlen(path);
   char scBuf[sizeof(sc)];
   memcpy(scBuf,&sc,sizeof(sc));
+  memcpy(&(scBuf[sizeof(sc)]),path,strlen(path));
   send(sockfd,scBuf,sizeof(scBuf),0);
+
+  getResult(sockfd);
+  errno = res.err;
+  fprintf(stderr,"Received UNLINK result:%d\n",res.result);
+  if (res.result == -1) {//fail to lseek
+    perror("Unlink error");
+  }
+  fprintf(stderr,"\n\n******* END OF UNLINK *********");
+  //Success return 0
+  return res.result;
 }
 
 
