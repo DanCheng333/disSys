@@ -251,28 +251,36 @@ off_t lseek(int fildes, off_t offset, int whence) {
 }
 
 int __xstat(int ver, const char *path, struct stat *buf){
-  msg = "stat\n";
-  send(sockfd, msg, strlen(msg), 0);
-  return orig___xstat(ver,path,buf);
+  sc.sysCallName = __XSTAT;
+  sc.inputSize= 1;
+  char scBuf[sizeof(sc)];
+  memcpy(scBuf,&sc,sizeof(sc));
+  send(sockfd,scBuf,sizeof(scBuf),0);
 }
 
 int unlink(const char *path){
-  msg = "unlink\n";
-  send(sockfd, msg, strlen(msg), 0);
-  return orig_unlink(path);
+  sc.sysCallName = UNLINK;
+  sc.inputSize= 1;
+  char scBuf[sizeof(sc)];
+  memcpy(scBuf,&sc,sizeof(sc));
+  send(sockfd,scBuf,sizeof(scBuf),0);
 }
 
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
-  msg = "getdirentries\n";
-  send(sockfd, msg, strlen(msg), 0);
-  return orig_getdirentries(fd,buf,nbytes,basep);
+  sc.sysCallName = GETDIRENTRIES;
+  sc.inputSize= 1;
+  char scBuf[sizeof(sc)];
+  memcpy(scBuf,&sc,sizeof(sc));
+  send(sockfd,scBuf,sizeof(scBuf),0);
 }
 
 struct dirtreenode* getdirtree( const char *path ) {
-  msg = "getdirtree\n";
-  send(sockfd, msg, strlen(msg), 0);
-  return orig_getdirtree(path);
+  sc.sysCallName = GETDIRTREE;
+  sc.inputSize= 1;
+  char scBuf[sizeof(sc)];
+  memcpy(scBuf,&sc,sizeof(sc));
+  send(sockfd,scBuf,sizeof(scBuf),0);
 }
 
 void freedirtree( struct dirtreenode* dt ){

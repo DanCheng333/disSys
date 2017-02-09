@@ -65,142 +65,140 @@ void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
   memcpy(resWithBuf,&res,sizeof(res));
   memcpy(&(resWithBuf[sizeof(res)]),readBuf,ret);
 
-  fprintf(stderr,
-    "Read received fildes %d,size %d, return ret %d, readBuf %s\n",
-    rc.fildes,rc.size,ret,readBuf);
-    send(fd,resWithBuf,sizeof(res)+ret,0);
+  fprintf(stderr,"Read received fildes %d,size %d, return ret %d, readBuf %s\n",rc.fildes,rc.size,ret,readBuf);
+  send(fd,resWithBuf,sizeof(res)+ret,0);
 }
 
 void handleLseek(int fd, struct LseekCall lc, char *buf, int size) {
-    memcpy(&lc,buf,sizeof(lc));
-    fprintf(stderr,"Lseek handle\n");
-    int ret = lseek(lc.fildes,lc.offset,lc.whence);
-    fprintf(stderr,"Lseek received:fildes %d, offset %d, whence %d,result %d\n",
-    lc.fildes,lc.offset,lc.whence,ret);
-    sendResult(fd,ret,errno);
+  memcpy(&lc,buf,sizeof(lc));
+  fprintf(stderr,"Lseek handle\n");
+  int ret = lseek(lc.fildes,lc.offset,lc.whence);
+  fprintf(stderr,"Lseek received:fildes %d, offset %d, whence %d,result %d\n",
+  lc.fildes,lc.offset,lc.whence,ret);
+  sendResult(fd,ret,errno);
 }
 
-handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
+void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
   fprintf(stderr,"Xstat handle\n");
 }
 
-handleUnlink(int fd, struct UnlinkCall uc, char *buf, int size) {
+void handleUnlink(int fd, struct UnlinkCall uc, char *buf, int size) {
   fprintf(stderr,"Unlink handle\n");
 }
 
-handleGetdirtree(int fd, struct GetdirtreeCall gdc, char *buf, int size) {
+void handleGetdirtree(int fd, struct GetdirtreeCall gdc, char *buf, int size) {
   fprintf(stderr,"get dirtree handle\n");
 }
 
-handleGetdirentries(int fd, struct GetdirentriesCall gdsc, char *buf, int size) {
+void handleGetdirentries(int fd, struct GetdirentriesCall gdsc, char *buf, int size) {
   fprintf(stderr,"get dirtrentries handle\n");
 }
-  //Recv and Fill the inputBuf till it reaches inputSize
-  void fillInputBuf(int sessfd,char *buf,char *inputBuf,
-    int rvInputLen,int inputSize) {
-      while (rvInputLen < inputSize) {
-        int rv=recv(sessfd, buf, inputSize-rvInputLen, 0);
-        fprintf(stderr,"rvInputLen1 %d\n",rvInputLen);
-        memcpy(&(inputBuf[rvInputLen]),buf,rv);
-        rvInputLen += rv;
-        fprintf(stderr,"rvInputLen %d\n",rvInputLen);
-      }
+//Recv and Fill the inputBuf till it reaches inputSize
+void fillInputBuf(int sessfd,char *buf,char *inputBuf,
+  int rvInputLen,int inputSize) {
+    while (rvInputLen < inputSize) {
+      int rv=recv(sessfd, buf, inputSize-rvInputLen, 0);
+      fprintf(stderr,"rvInputLen1 %d\n",rvInputLen);
+      memcpy(&(inputBuf[rvInputLen]),buf,rv);
+      rvInputLen += rv;
+      fprintf(stderr,"rvInputLen %d\n",rvInputLen);
     }
-    int main(int argc, char**argv) {
-      char buf[MAXMSGLEN+1];
-      char *serverport;
-      unsigned short port;
-      int sockfd, sessfd, rv, i;
-      struct sockaddr_in srv, cli;
-      socklen_t sa_size;
+  }
+  int main(int argc, char**argv) {
+    char buf[MAXMSGLEN+1];
+    char *serverport;
+    unsigned short port;
+    int sockfd, sessfd, rv, i;
+    struct sockaddr_in srv, cli;
+    socklen_t sa_size;
 
-      // Get environment variable indicating the port of the server
-      serverport = getenv("serverport14444");
-      if (serverport) port = (unsigned short)atoi(serverport);
-      else port=14444;//port=15440;
+    // Get environment variable indicating the port of the server
+    serverport = getenv("serverport14444");
+    if (serverport) port = (unsigned short)atoi(serverport);
+    else port=14444;//port=15440;
 
-      // Create socket
-      sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
-      if (sockfd<0) err(1, 0);			// in case of error
+    // Create socket
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
+    if (sockfd<0) err(1, 0);			// in case of error
 
-      // setup address structure to indicate server port
-      memset(&srv, 0, sizeof(srv));			// clear it first
-      srv.sin_family = AF_INET;			// IP family
-      srv.sin_addr.s_addr = htonl(INADDR_ANY);	// don't care IP address
-      srv.sin_port = htons(port);			// server port
+    // setup address structure to indicate server port
+    memset(&srv, 0, sizeof(srv));			// clear it first
+    srv.sin_family = AF_INET;			// IP family
+    srv.sin_addr.s_addr = htonl(INADDR_ANY);	// don't care IP address
+    srv.sin_port = htons(port);			// server port
 
-      // bind to our port
-      rv = bind(sockfd, (struct sockaddr*)&srv, sizeof(struct sockaddr));
-      if (rv<0) err(1,0);
+    // bind to our port
+    rv = bind(sockfd, (struct sockaddr*)&srv, sizeof(struct sockaddr));
+    if (rv<0) err(1,0);
 
-      // start listening for connections
-      rv = listen(sockfd, 5);
-      if (rv<0) err(1,0);
+    // start listening for connections
+    rv = listen(sockfd, 5);
+    if (rv<0) err(1,0);
 
-      // main server loop, handle clients one at a time, quit after 10 clients
-      for( i=0; i<10; i++ ) {
+    // main server loop, handle clients one at a time, quit after 10 clients
+    for( i=0; i<10; i++ ) {
 
-        // wait for next client, get session socket
-        sa_size = sizeof(struct sockaddr_in);
-        sessfd = accept(sockfd, (struct sockaddr *)&cli, &sa_size);
-        if (sessfd<0) err(1,0);
-        struct SysCall sc;
-        struct OpenCall oc;
-        struct CloseCall cc;
-        struct WriteCall wc;
-        struct ReadCall rc;
-        struct LseekCall lc;
-        struct XstatCall xc;
-        struct UnlinkCall uc;
-        struct GetdirentriesCall gdsc;
-        struct GetdirtreeCall gdc;
+      // wait for next client, get session socket
+      sa_size = sizeof(struct sockaddr_in);
+      sessfd = accept(sockfd, (struct sockaddr *)&cli, &sa_size);
+      if (sessfd<0) err(1,0);
+      struct SysCall sc;
+      struct OpenCall oc;
+      struct CloseCall cc;
+      struct WriteCall wc;
+      struct ReadCall rc;
+      struct LseekCall lc;
+      struct XstatCall xc;
+      struct UnlinkCall uc;
+      struct GetdirentriesCall gdsc;
+      struct GetdirtreeCall gdc;
 
-        int rvInputLen;
-        char inputBuf[MAXMSGLEN];
-        // get messages and send replies to this client, until it goes away
-        while ( (rv=recv(sessfd, buf, 8, 0)) > 0) {
-          fprintf(stderr,"\nServer recv %d\n",rv);
-          rvInputLen = 0;
-          memcpy(&sc,buf,sizeof(sc));
-          fprintf(stderr,"Inputsize %d\n",sc.inputSize);
-          fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
-          switch (sc.sysCallName) {
-            case OPEN:
-              handleOpen(sessfd,oc,inputBuf,sc.inputSize);
-              continue;
-            case WRITE:
-              handleWrite(sessfd,wc,inputBuf,sc.inputSize);
-              continue;
-            case CLOSE:
-              handleClose(sessfd,cc,inputBuf,sc.inputSize);
-              continue;  //??
-            case READ:
-              handleRead(sessfd,rc,inputBuf,sc.inputSize);
-              continue;
-            case LSEEK:
-              handleLseek(sessfd,lc,inputBuf,sc.inputSize);
-              continue;
-            case __XSTAT:
-              handleXstat(sessfd,xc,inputBuf,sc.inputSize);
-              continue;
-            case UNLINK:
-              handleUnlink(sessfd,uc,inputBuf,sc.inputSize);
-              continue;
-            case GETDIRTREE:
-              handleGetdirtree(sessfd,gdc,inputBuf,sc.inputSize);
-              continue;
-            case GETDIRENTRIES:
-              handleGetdirentries(sessfd,gdsc,inputBuf,sc.inputSize);
-              continue;
-          }
+      int rvInputLen;
+      char inputBuf[MAXMSGLEN];
+      // get messages and send replies to this client, until it goes away
+      while ( (rv=recv(sessfd, buf, 8, 0)) > 0) {
+        fprintf(stderr,"\nServer recv %d\n",rv);
+        rvInputLen = 0;
+        memcpy(&sc,buf,sizeof(sc));
+        fprintf(stderr,"Inputsize %d\n",sc.inputSize);
+        fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
+        switch (sc.sysCallName) {
+          case OPEN:
+          handleOpen(sessfd,oc,inputBuf,sc.inputSize);
+          continue;
+          case WRITE:
+          handleWrite(sessfd,wc,inputBuf,sc.inputSize);
+          continue;
+          case CLOSE:
+          handleClose(sessfd,cc,inputBuf,sc.inputSize);
+          continue;  //??
+          case READ:
+          handleRead(sessfd,rc,inputBuf,sc.inputSize);
+          continue;
+          case LSEEK:
+          handleLseek(sessfd,lc,inputBuf,sc.inputSize);
+          continue;
+          case __XSTAT:
+          handleXstat(sessfd,xc,inputBuf,sc.inputSize);
+          continue;
+          case UNLINK:
+          handleUnlink(sessfd,uc,inputBuf,sc.inputSize);
+          continue;
+          case GETDIRTREE:
+          handleGetdirtree(sessfd,gdc,inputBuf,sc.inputSize);
+          continue;
+          case GETDIRENTRIES:
+          handleGetdirentries(sessfd,gdsc,inputBuf,sc.inputSize);
+          continue;
         }
-        fprintf(stderr,"Either client closed connection, or error rv%d\n",rv);
-        // either client closed connection, or error
-        if (rv<0) err(1,0);
-        close(sessfd);
       }
-      // close socket
-      close(sockfd);
-
-      return 0;
+      fprintf(stderr,"Either client closed connection, or error rv%d\n",rv);
+      // either client closed connection, or error
+      if (rv<0) err(1,0);
+      close(sessfd);
     }
+    // close socket
+    close(sockfd);
+
+    return 0;
+  }
