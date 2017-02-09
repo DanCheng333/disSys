@@ -99,12 +99,6 @@ int main(int argc, char**argv) {
 	struct sockaddr_in srv, cli;
 	socklen_t sa_size;
 
-        struct SysCall sc;
-        struct OpenCall oc;
-        struct CloseCall cc;
-        struct WriteCall wc;
-        int rvInputLen;
-		char inputBuf[MAXMSGLEN];
 	// Get environment variable indicating the port of the server
 	serverport = getenv("serverport14444");
 	if (serverport) port = (unsigned short)atoi(serverport);
@@ -142,7 +136,7 @@ int main(int argc, char**argv) {
         struct ReadCall rc;
         struct LseekCall lc;
         int rvInputLen;
-		char inputBuf[MAXMSGLEN];
+		    char inputBuf[MAXMSGLEN];
         // get messages and send replies to this client, until it goes away
         while ( (rv=recv(sessfd, buf, 8, 0)) > 0) {
             fprintf(stderr,"\nServer recv %d\n",rv);
