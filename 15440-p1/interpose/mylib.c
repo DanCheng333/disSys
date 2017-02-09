@@ -145,6 +145,7 @@ int close(int fildes) {
 }
 
 ssize_t read(int fildes, void *buf, size_t size) {
+    fprintf(stderr,"\n\n******* READ *********");
     struct ReadCall rc;
     rc.fildes = fildes;
     rc.size = size;
@@ -173,6 +174,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
       fprintf(stderr,"Read bufSize %d\n",bufSize);
     }
     memcpy(buf,readBuf,res.result);
+    fprintf(stderr,"\n\n******* END OF READ *********");
     return res.result;
 
 }
