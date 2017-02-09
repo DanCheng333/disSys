@@ -116,7 +116,7 @@ int open(const char *pathname, int flags, ...) {
   fprintf(stderr,"Received open result %d\n",res.result);
   errno = res.err;
   if (res.result == -1) { //Fail to open
-    perror("Open Error:");
+    perror("Open Error");
   }
   fprintf(stderr,"\n\n******* END OF OPEN *********");
   //Success: return file descriptor
@@ -141,7 +141,7 @@ int close(int fildes) {
   errno = res.err;
   fprintf(stderr,"Received close result:%d\n",res.result);
   if (res.result == -1) {//fail to close
-    perror("Close error:");
+    perror("Close error");
   }
   fprintf(stderr,"\n\n******* END OF CLOSE *********");
   //Success return 0
@@ -181,7 +181,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
     memcpy(buf,readBuf,res.result);
   }
   if (res.result == 1) {
-    perror("Read Error:");
+    perror("Read Error");
   }
   fprintf(stderr,"\n\n******* END OF READ *********");
   return res.result;
@@ -216,15 +216,38 @@ ssize_t write(int fildes, const void *buf, size_t size) {
   errno = res.err;
   fprintf(stderr,"Received write result: %d\n",res.result);
   if (res.result == -1) {
-    perror("Write error:");
+    perror("Write error");
   }
   //Success # of bytes written
   return res.result;
 }
 off_t lseek(int fildes, off_t offset, int whence) {
-  msg = "lseek\n";
-  send(sockfd, msg, strlen(msg), 0);
-  return orig_lseek(fildes,offset,whence);
+  fprintf(stderr,"\n\n******* LSEEK *********");
+  fprintf(stderr,"Lseek fildes %d, offset %d, whence %d\n",
+          lc.fildes,lc.offset,lc.whence);
+  struct LseekCall lc;
+  lc.fildes = fildes;
+  lc.offset = offset;
+  lc.whence = whence;
+  char lcBuf[sizeof(lc)];
+  memcpy(lcBuf,&lc,sizeof(lc));
+
+  sc.sysCallName = LSEEK;
+  sc.inputSize=(int)sizeof(lc);
+  char scBuf[sizeof(sc)+sizeof(lc)];
+  memcpy(scBuf,&sc,sizeof(sc));
+  memcpy(&(scBuf[sizeof(sc)]),&lc,sizeof(lc));
+  send(sockfd,scBuf,sizeof(scBuf),0);
+
+  getResult(sockfd);
+  errno = res.err;
+  fprintf(stderr,"Received LSEEK result:%d\n",res.result);
+  if (res.result == -1) {//fail to lseek
+    perror("Lseek error");
+  }
+  fprintf(stderr,"\n\n******* END OF LSEEK *********");
+  //Success return 0
+  return res.result;
 }
 
 int __xstat(int ver, const char *path, struct stat *buf){

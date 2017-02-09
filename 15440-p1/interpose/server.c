@@ -71,6 +71,15 @@ void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
     send(fd,resWithBuf,sizeof(res)+ret,0);
 }
 
+void handleLseek(int fd, struct LseekCall lc, char *buf, int size) {
+  memcpy(&lc,buf,sizeof(lc));
+  fprintf(stderr,"Lseek handle\n");
+  int ret = lseek(lc.fildes,lc.offset,lc.whence);
+  fprintf(stderr,"Lseek received:fildes %d, offset %d, whence %d,result %d\n",
+          lc.fildes,lc.offset,lc.whence,ret);
+  sendResult(fd,ret,errno);
+}
+
 //Recv and Fill the inputBuf till it reaches inputSize
 void fillInputBuf(int sessfd,char *buf,char *inputBuf,
         int rvInputLen,int inputSize) {
@@ -131,6 +140,7 @@ int main(int argc, char**argv) {
         struct CloseCall cc;
         struct WriteCall wc;
         struct ReadCall rc;
+        struct LseekCall lc;
         int rvInputLen;
 		char inputBuf[MAXMSGLEN];
         // get messages and send replies to this client, until it goes away
@@ -156,6 +166,9 @@ int main(int argc, char**argv) {
                     fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
                     handleRead(sessfd,rc,inputBuf,sc.inputSize);
                     continue;
+                case LSEEK:
+                    fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
+                    handleLseek(sessfd,lc,inputBuf,sc.inputSize);
             }
         }
         fprintf(stderr,"Either client closed connection, or error rv%d\n",rv);
