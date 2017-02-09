@@ -224,7 +224,7 @@ ssize_t write(int fildes, const void *buf, size_t size) {
 off_t lseek(int fildes, off_t offset, int whence) {
   fprintf(stderr,"\n\n******* LSEEK *********");
   fprintf(stderr,"Lseek fildes %d, offset %d, whence %d\n",
-          fildes,offset,whence);
+  fildes,offset,whence);
   struct LseekCall lc;
   lc.fildes = fildes;
   lc.offset = offset;
