@@ -99,9 +99,9 @@ int main(int argc, char**argv) {
         int rvInputLen;
 		char inputBuf[MAXMSGLEN];
 	// Get environment variable indicating the port of the server
-	serverport = getenv("serverport4214");
+	serverport = getenv("serverport4244");
 	if (serverport) port = (unsigned short)atoi(serverport);
-	else port=4214;//port=15440;
+	else port=4244;//port=15440;
 
 	// Create socket
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
