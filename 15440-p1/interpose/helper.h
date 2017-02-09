@@ -3,7 +3,18 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-enum SysCallName{OPEN,WRITE,CLOSE};
+enum SysCallName{
+    OPEN,
+    WRITE,
+    CLOSE,
+    READ,
+    LSEEK,
+    __XSTAT,
+    UNLINK,
+    GETDIRENTRIES,
+    GETDIRTREE,
+    FREEDIRTREE
+};
 struct __attribute__((__packed__)) SysCall {
     enum SysCallName sysCallName;
     int inputSize;
@@ -25,5 +36,16 @@ struct __attribute__((__packed__)) CloseCall {
 struct __attribute__((__packed__)) WriteCall {
     int fildes;
     size_t size;
+};
+
+struct __attribute__((__packed__)) ReadCall {
+    int fildes;
+    size_t size;
+};
+
+struct __attribute__((__packed__)) LseekCall {
+    int fildes;
+    off_t offset;
+    int whence;
 };
 #endif

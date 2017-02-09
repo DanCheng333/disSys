@@ -13,7 +13,7 @@
 #include <errno.h>
 #include "helper.h"
 
-#define MAXMSGLEN 100
+#define MAXMSGLEN 100000
 void sendResult(int fd, int ret, int err) {
     struct Result res;
     char resBuf[sizeof(res)];
@@ -51,6 +51,28 @@ void handleWrite(int fd, struct WriteCall wc, char *buf,int size) {
     sendResult(fd,ret,errno);
 }
 
+void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
+    char readBuf[size];
+    memcpy(&rc,buf,sizeof(rc));
+    int ret = read(rc.fildes,readBuf,rc.size);
+
+    fprintf(stderr,
+            "Read received fildes %d,size %d, return ret %d, readBuf %s\n",
+            rc.fildes,rc.size,ret,readBuf);
+
+}
+
+//Recv and Fill the inputBuf till it reaches inputSize
+void fillInputBuf(int sessfd,char *buf,char *inputBuf,
+        int rvInputLen,int inputSize) {
+    while (rvInputLen < inputSize) {
+        int rv=recv(sessfd, buf, inputSize-rvInputLen, 0);
+        fprintf(stderr,"rvInputLen1 %d\n",rvInputLen);
+        memcpy(&(inputBuf[rvInputLen]),buf,rv);
+        rvInputLen += rv;
+        fprintf(stderr,"rvInputLen %d\n",rvInputLen);
+    }
+}
 int main(int argc, char**argv) {
 	char buf[MAXMSGLEN+1];
 	char *serverport;
@@ -59,10 +81,16 @@ int main(int argc, char**argv) {
 	struct sockaddr_in srv, cli;
 	socklen_t sa_size;
 
+        struct SysCall sc;
+        struct OpenCall oc;
+        struct CloseCall cc;
+        struct WriteCall wc;
+        int rvInputLen;
+		char inputBuf[MAXMSGLEN];
 	// Get environment variable indicating the port of the server
-	serverport = getenv("serverport4212");
+	serverport = getenv("serverport4214");
 	if (serverport) port = (unsigned short)atoi(serverport);
-	else port=4212;//port=15440;
+	else port=4214;//port=15440;
 
 	// Create socket
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
@@ -93,6 +121,7 @@ int main(int argc, char**argv) {
         struct OpenCall oc;
         struct CloseCall cc;
         struct WriteCall wc;
+        struct ReadCall rc;
         int rvInputLen;
 		char inputBuf[MAXMSGLEN];
         // get messages and send replies to this client, until it goes away
@@ -103,38 +132,24 @@ int main(int argc, char**argv) {
             fprintf(stderr,"Inputsize %d\n",sc.inputSize);
             switch (sc.sysCallName) {
                 case OPEN:
-                    while (rvInputLen < sc.inputSize) {
-                        rv=recv(sessfd, buf, sc.inputSize-rvInputLen, 0);
-                        fprintf(stderr,"Open rvInputLen1 %d\n",rvInputLen);
-                        memcpy(&(inputBuf[rvInputLen]),buf,rv);
-                        rvInputLen += rv;
-                        fprintf(stderr,"Open rvInputLen %d\n",rvInputLen);
-                    }
+                    fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
                     handleOpen(sessfd,oc,inputBuf,sc.inputSize);
                     continue;
                 case WRITE:
-                    while (rvInputLen < sc.inputSize) {
-                        rv=recv(sessfd, buf, sc.inputSize-rvInputLen, 0);
-                        fprintf(stderr,"Write rvInputLen1 %d\n",rvInputLen);
-                        memcpy(&(inputBuf[rvInputLen]),buf,rv);
-                        rvInputLen += rv;
-                        fprintf(stderr,"Write rvInputLen %d\n",rvInputLen);
-                    }
+                    fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
                     handleWrite(sessfd,wc,inputBuf,sc.inputSize);
                     continue;
                 case CLOSE:
-                    while (rvInputLen < sc.inputSize) {
-                        rv=recv(sessfd, buf, sc.inputSize-rvInputLen, 0);
-                        fprintf(stderr,"Close rvInputLen1 %d\n",rvInputLen);
-                        memcpy(&(inputBuf[rvInputLen]),buf,rv);
-                        rvInputLen += rv;
-                        fprintf(stderr,"Close rvInputLen %d\n",rvInputLen);
-                    }
+                    fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
                     handleClose(sessfd,cc,inputBuf,sc.inputSize);
                     continue;  //??
+                case READ:
+                    fillInputBuf(sessfd,buf,inputBuf,rvInputLen,sc.inputSize);
+                    handleRead(sessfd,rc,inputBuf,sc.inputSize);
+                    continue;
             }
         }
-        fprintf(stderr,"Either client closed connection, or error\n");
+        fprintf(stderr,"Either client closed connection, or error rv%d\n",rv);
 		// either client closed connection, or error
 		if (rv<0) err(1,0);
 		close(sessfd);

@@ -22,14 +22,14 @@ int clientSocket() {
     struct sockaddr_in srv;
 
     // Get environment variable indicating the ip address of the server
-    serverip = getenv("server4212");
+    serverip = getenv("server4214");
     if (!serverip) {
         serverip = "127.0.0.1";
     }
     // Get environment variable indicating the port of the server
-    serverport = getenv("serverport4212");
+    serverport = getenv("serverport4214");
     if (!serverport) {
-        serverport = "4212";
+        serverport = "4214";
     }
     port = (unsigned short)atoi(serverport);
     // Create socket
@@ -70,6 +70,8 @@ int (*orig_unlink)(const char *path);
 ssize_t (*orig_getdirentries)(int fd, char *buf, size_t nbytes , off_t *basep);
 struct dirtreenode* (*orig_getdirtree)( const char *path );
 void (*orig_freedirtree) ( struct dirtreenode* dt );
+
+struct SysCall sc;
 // This is our replacement for the open function from libc.
 int open(const char *pathname, int flags, ...) {
 	mode_t m=0;
@@ -89,7 +91,6 @@ int open(const char *pathname, int flags, ...) {
     memcpy(ocBuf,&oc,sizeof(oc));
 
     //Construct syscall struct
-    struct SysCall sc;
     sc.sysCallName = OPEN;
     sc.inputSize = (int)sizeof(oc)+strlen(pathname);
     char scBuf[sizeof(sc)+sizeof(oc)+strlen(pathname)];
@@ -120,7 +121,6 @@ int close(int fildes) {
     char ccBuf[sizeof(cc)];
     memcpy(ccBuf,&cc,sizeof(cc));
 
-    struct SysCall sc;
     sc.sysCallName = CLOSE;
     sc.inputSize=(int)sizeof(cc);
     char scBuf[sizeof(sc)+sizeof(cc)];
@@ -142,9 +142,18 @@ int close(int fildes) {
 }
 
 ssize_t read(int fildes, void *buf, size_t size) {
-    char *msg = "read\n";
-    send(sockfd,msg,strlen(msg),0);
-    return orig_read(fildes,buf,size);
+    struct ReadCall rc;
+    rc.fildes = fildes;
+    rc.size = size;
+    char rcBuf[sizeof(rc)];
+    memcpy(rcBuf,&rc,sizeof(rc));
+
+    sc.sysCallName = READ;
+    sc.inputSize=sizeof(rc);
+    char scBuf[sizeof(sc)+sizeof(rc)];
+    memcpy(scBuf,&sc,sizeof(sc));
+    memcpy(&(scBuf[sizeof(sc)]),rcBuf,sizeof(rc));
+    send(sockfd,scBuf,sizeof(scBuf),0);
 }
 
 //buf up to size -> fildes
