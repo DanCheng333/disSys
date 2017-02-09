@@ -24,10 +24,10 @@ void sendResult(int fd, int ret, int err) {
 }
 void handleOpen(int fd, struct OpenCall oc, char *buf, int size) {
     memcpy(&oc,buf,sizeof(oc));
-    fprintf(stderr,"pathname lenght %d\n",oc.pathnameLen);
-    char *pathname;
+    fprintf(stderr,"pathname lenght %d\n",oc.pathnameLen)
+    char pathname[oc.pathnameLen];
     memcpy(pathname,&(buf[sizeof(oc)]),oc.pathnameLen);
-    //pathname[size-sizeof(oc)+1]='\0';
+    pathname[oc.pathnameLen+1]='\0';
     int ret = open(pathname,oc.flags,oc.mode);
     fprintf(stderr,"Open received: %s,%d,%d,result %d\n"
             ,pathname,oc.flags,oc.mode,ret);
