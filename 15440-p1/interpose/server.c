@@ -96,7 +96,7 @@ int main(int argc, char**argv) {
 	// Get environment variable indicating the port of the server
 	serverport = getenv("serverport4444");
 	if (serverport) port = (unsigned short)atoi(serverport);
-	else port=4244;//port=15440;
+	else port=4444;//port=15440;
 
 	// Create socket
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
