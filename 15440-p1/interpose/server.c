@@ -52,14 +52,19 @@ void handleWrite(int fd, struct WriteCall wc, char *buf,int size) {
 }
 
 void handleRead(int fd, struct ReadCall rc, char *buf, int size) {
-    char readBuf[size];
+    char readBuf[rc.size];
     memcpy(&rc,buf,sizeof(rc));
     int ret = read(rc.fildes,readBuf,rc.size);
-
+    struct Result res;
+    res.result = ret;
+    res.err = errno;
+    char resWithBuf[sizeof(res)+ret];
+    memcpy(resWithBuf,&res,sizeof(res));
+    memcpy(resWithBuf[sizeof(res)],readBuf,ret);
     fprintf(stderr,
             "Read received fildes %d,size %d, return ret %d, readBuf %s\n",
             rc.fildes,rc.size,ret,readBuf);
-
+    send(fd,resWithBuf,sizeof(res)+ret,0);
 }
 
 //Recv and Fill the inputBuf till it reaches inputSize

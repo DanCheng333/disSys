@@ -154,6 +154,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
     memcpy(scBuf,&sc,sizeof(sc));
     memcpy(&(scBuf[sizeof(sc)]),rcBuf,sizeof(rc));
     send(sockfd,scBuf,sizeof(scBuf),0);
+
 }
 
 //buf up to size -> fildes
