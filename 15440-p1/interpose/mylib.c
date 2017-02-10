@@ -286,17 +286,18 @@ int unlink(const char *path){
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
   ssize_t result;
-  fprintf(stderr,"2fd %d, nbytes %zu basep %llun",fd,nbytes,*basep,sizeof(ssize_t));
+  fprintf(stderr,"fd %d, nbytes %zu basep %llu\n,sizeof ss%zu\n",fd,nbytes,*basep,sizeof(ssize_t));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
-  gdsc.basep = *basep;
-  char *gdscBuf[sizeof(gdsc)];
+  //gdsc.basep = *basep;
+  char *gdscBuf[sizeof(gdsc)+sizeof(basep)];
   memcpy(gdscBuf,&gdsc,sizeof(gdsc));
+  memcpy(&(gdscBuf[sizeof(gdsc)]),basep,sizeof(basep));
 
   sc.sysCallName = GETDIRENTRIES;
-  sc.inputSize= 1;
-  char scBuf[sizeof(sc)+sizeof(gdsc)];
+  sc.inputSize= sizeof(gdsc)+sizeof(basep);
+  char scBuf[sizeof(sc)+sizeof(gdsc)+sizeof(basep)];
   memcpy(scBuf,&sc,sizeof(sc));
   memcpy(&(scBuf[sizeof(sc)]),gdscBuf,sizeof(gdsc));
   send(sockfd,scBuf,sizeof(scBuf),0);
@@ -305,6 +306,17 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   recv(sockfd,resultbuf,sizeof(resultbuf),0);
   memcpy(&result,resultbuf,sizeof(ssize_t));
   memcpy(&errno,&(resultbuf[sizeof(ssize_t)]),sizeof(errno));
+
+  int bufSize = 0;
+  int recvBuf[MAXMSGLEN];
+  while (bufSize < result) {
+    int rvSize = MIN(MAXMSGLEN,result-bufSize);
+    int rv=recv(sockfd, recvBuf, rvSize, 0);
+    fprintf(stderr,"gds bufSize1 %d\n",bufSize);
+    memcpy(&(buf[bufSize]),recvBuf,rv);
+    bufSize += rv;
+    fprintf(stderr,"gds bufSize %d\n",bufSize);
+  }
 
   fprintf(stderr,"received result %zu\n",result);
   fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
