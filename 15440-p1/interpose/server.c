@@ -117,17 +117,18 @@ void handleGetdirtree(int fd, struct GetdirtreeCall gdc, char *buf, int size) {
 
 void handleGetdirentries(int fd, struct GetdirentriesCall gdsc,
                             char *buf, int size) {
-  //off_t *basep;
+  off_t *basep;
   fprintf(stderr,"1Getdirentries handle\n");
   memcpy(&gdsc,buf,sizeof(gdsc));
+  memcpy(basep,&(buf[sizeof(gdsc)]),+sizeof(*basep));
   fprintf(stderr,"2Getdirentries handle\n");
   //memcpy(basep,&(buf[sizeof(gdsc)]),sizeof(basep));
   //fprintf(stderr,"3Getdirentries handle\n");
   char *gdscBuf[gdsc.nbytes];
   fprintf(stderr,"3Getdirentries handle\n");
-  ssize_t ret = getdirentries(gdsc.fd,gdscBuf,gdsc.nbytes,&gdsc.basep);
+  ssize_t ret = getdirentries(gdsc.fd,gdscBuf,gdsc.nbytes,basep);
   fprintf(stderr,"Getdirentries received:fildes %d, nbytes%zu, basep %llu,result %zu\n",
-  gdsc.fd,gdsc.nbytes,&gdsc.basep,ret);
+  gdsc.fd,gdsc.nbytes,basep,ret);
 
   char *resultBuf[sizeof(ret)+sizeof(errno)+gdsc.nbytes];
   memcpy(resultBuf,&ret,sizeof(ret));

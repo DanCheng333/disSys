@@ -51,13 +51,14 @@ struct __attribute__((__packed__)) LseekCall {
 
 struct __attribute__((__packed__)) XstatCall {
   int ver;
+  int pathLen;
   //struct stat buf;
 };
 
 struct __attribute__((__packed__)) GetdirentriesCall {
   int fd;
   size_t nbytes;
-  off_t basep;
+  //off_t basep;
 
 };
 

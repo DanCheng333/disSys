@@ -301,19 +301,19 @@ int unlink(const char *path){
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
   ssize_t result;
-  fprintf(stderr,"fd %d, nbytes %zu basep %llu\n,sizeof ss%zu\n",fd,nbytes,*basep,sizeof(ssize_t));
+  fprintf(stderr,"fd %d, nbytes %zu basep %llu\n,sizeof off_t%zu\n",fd,nbytes,*basep,sizeof(*basep));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
-  gdsc.basep = *basep;
   char *gdscBuf[sizeof(gdsc)];
   memcpy(gdscBuf,&gdsc,sizeof(gdsc));
 
   sc.sysCallName = GETDIRENTRIES;
-  sc.inputSize= (int)sizeof(gdsc);
-  char scBuf[sizeof(sc)+sizeof(gdsc)];
+  sc.inputSize= (int)sizeof(gdsc)+sizeof(*basep);
+  char scBuf[sizeof(sc)+sizeof(gdsc)+sizeof(*basep)];
   memcpy(scBuf,&sc,sizeof(sc));
   memcpy(&(scBuf[sizeof(sc)]),gdscBuf,sizeof(gdsc));
+  memcpy(&(scBuf[sizeof(sc)+sizeof(gdsc)]),basep,sizeof(*basep));
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char resultbuf[sizeof(ssize_t)+sizeof(errno)];
