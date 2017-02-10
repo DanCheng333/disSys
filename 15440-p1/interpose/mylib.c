@@ -281,12 +281,14 @@ fprintf(stderr,"6");
 
   char retBuf[sizeof(*buf)];
   getResult(sockfd);
+  fprintf(stderr, "result recieived !!%d\n", res.result);
   errno = res.err;
   recv(sockfd,retBuf,sizeof(retBuf),0);
   memcpy(buf,retBuf,sizeof(*buf));
   if(res.result == -1) {
     perror("Xstat error");
   }
+  fprintf(stderr,"\n\n******* END OF XSTAT*********");
   return res.result;
 }
 
