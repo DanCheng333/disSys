@@ -155,7 +155,7 @@ ssize_t read(int fildes, void *buf, size_t size) {
   rc.size = size;
   char rcBuf[sizeof(rc)];
   memcpy(rcBuf,&rc,sizeof(rc));
-  fprintf(stderr,"Read sent fildes %d, size %d\n",fildes,size);
+  fprintf(stderr,"Read sent fildes %d, size %zu\n",fildes,size);
 
   sc.sysCallName = READ;
   sc.inputSize=sizeof(rc);
@@ -223,7 +223,7 @@ ssize_t write(int fildes, const void *buf, size_t size) {
 }
 off_t lseek(int fildes, off_t offset, int whence) {
   fprintf(stderr,"\n\n******* LSEEK *********");
-  fprintf(stderr,"Lseek fildes %d, offset %d, whence %d\n",
+  fprintf(stderr,"Lseek fildes %d, offset %llu, whence %d\n",
   fildes,offset,whence);
   struct LseekCall lc;
   lc.fildes = fildes;
@@ -284,7 +284,7 @@ int unlink(const char *path){
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
   ssize_t result;
-  fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(lala));
+  fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(result));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
@@ -302,9 +302,9 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   char resultbuf[sizeof(ssize_t)+sizeof(errno)];
   recv(sockfd,resultbuf,sizeof(resultbuf),0);
   memcpy(&result,resultbuf,sizeof(ssize_t));
-  memcpy(&errno,resultbuf[sizeof(ssize_t)],sizeof(errno));
+  memcpy(&errno,&(resultbuf[sizeof(ssize_t))],sizeof(errno));
 
-  fprintf("received result %zu\n",result);
+  fprintf(stderr,"received result %zu\n",result);
   fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
   return result;
 }
@@ -320,12 +320,12 @@ struct dirtreenode* getdirtree( const char *path ) {
   memcpy(&(scBuf[sizeof(sc)]),path,strlen(path));
   send(sockfd,scBuf,sizeof(scBuf),0);
 
-  //struct dirtreenode* result;
+  struct dirtreenode* result;
 
   perror("Getdirtree rror");
   fprintf(stderr,"\n\n******* END OF GETDIRTREE *********");
   //Success return 0
-  return ;
+  return result;
 }
 
 void freedirtree( struct dirtreenode* dt ){
