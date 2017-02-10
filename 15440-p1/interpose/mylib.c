@@ -264,7 +264,7 @@ int __xstat(int ver, const char *path, struct stat *buf){
   sc.inputSize= sizeof(xs)+strlen(path);
   char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)];
   memcpy(scBuf,&sc,sizeof(sc));
-  memcpy(&(scBuf[sizeof(sc)],xsBuf,sizeof(xs)+strlen(path))
+  memcpy(&(scBuf[sizeof(sc)]),xsBuf,sizeof(xs)+strlen(path))
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char retBuf[sizeof(*buf)];
