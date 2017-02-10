@@ -93,7 +93,7 @@ void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
 
 
   fprintf(stderr,"4");
-  int ret = __xstat(xc.ver,path,&xcBuf);
+  int ret = stat(path,&xcBuf);
   fprintf(stderr,"return %d\n",ret);
   struct Result res;
   res.result = ret;
