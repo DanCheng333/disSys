@@ -302,7 +302,7 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   char resultbuf[sizeof(ssize_t)+sizeof(errno)];
   recv(sockfd,resultbuf,sizeof(resultbuf),0);
   memcpy(&result,resultbuf,sizeof(ssize_t));
-  memcpy(&errno,&(resultbuf[sizeof(ssize_t))],sizeof(errno));
+  memcpy(&errno,&(resultbuf[sizeof(ssize_t)]),sizeof(errno));
 
   fprintf(stderr,"received result %zu\n",result);
   fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
