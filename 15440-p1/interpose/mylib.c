@@ -323,14 +323,14 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
 
   int bufSize = 0;
   int recvBuf[MAXMSGLEN];
-  while (bufSize < result) {
+  /*while (bufSize < result) {
     int rvSize = MIN(MAXMSGLEN,result-bufSize);
     int rv=recv(sockfd, recvBuf, rvSize, 0);
     fprintf(stderr,"gds bufSize1 %d\n",bufSize);
     memcpy(&(buf[bufSize]),recvBuf,rv);
     bufSize += rv;
     fprintf(stderr,"gds bufSize %d,result %d\n",bufSize,result);
-  }
+  }*/
 
   fprintf(stderr,"received result %zu\n",result);
   fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
