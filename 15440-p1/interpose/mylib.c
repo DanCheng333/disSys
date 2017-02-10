@@ -257,6 +257,7 @@ int __xstat(int ver, const char *path, struct stat *buf){
   char scBuf[sizeof(sc)];
   memcpy(scBuf,&sc,sizeof(sc));
   send(sockfd,scBuf,sizeof(scBuf),0);
+  return 1;
 }
 
 int unlink(const char *path){
@@ -284,6 +285,7 @@ int unlink(const char *path){
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
+  fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(result));
   ssize_t result;
   fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(result));
   struct GetdirentriesCall gdsc;
