@@ -290,14 +290,13 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
-  //gdsc.basep = *basep;
-  char *gdscBuf[sizeof(gdsc)+sizeof(basep)];
+  gdsc.basep = *basep;
+  char *gdscBuf[sizeof(gdsc)];
   memcpy(gdscBuf,&gdsc,sizeof(gdsc));
-  memcpy(&(gdscBuf[sizeof(gdsc)]),basep,sizeof(basep));
 
   sc.sysCallName = GETDIRENTRIES;
-  sc.inputSize= sizeof(gdsc)+sizeof(basep);
-  char scBuf[sizeof(sc)+sizeof(gdsc)+sizeof(basep)];
+  sc.inputSize= (int)sizeof(gdsc);
+  char scBuf[sizeof(sc)+sizeof(gdsc)];
   memcpy(scBuf,&sc,sizeof(sc));
   memcpy(&(scBuf[sizeof(sc)]),gdscBuf,sizeof(gdsc));
   send(sockfd,scBuf,sizeof(scBuf),0);
