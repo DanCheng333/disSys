@@ -79,22 +79,28 @@ void handleLseek(int fd, struct LseekCall lc, char *buf, int size) {
 }
 
 void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
-  fprintf(stderr,"Xstat handle\n");
-  char path[size-sizeof(xc)];
+  fprintf(stderr,"Xstat handle. size%d,sizeof(xs)%d\n",size,sizeof(xc));
+  char path[size - sizeof(xc)];
+  fprintf(stderr,"1");
   memcpy(&xc,buf,sizeof(xc));
-  memcpy(path,&(buf[sizeof(xc)]),size-sizeof(xc));
-  path[size-sizeof(xc)] = '\0';
+  fprintf(stderr,"2");
+  memcpy(path,&(buf[sizeof(xc)]),size - sizeof(xc));
+  fprintf(stderr,"3");
+  path[size - sizeof(xc)] = '\0';
   fprintf(stderr,"Received ver %d, path %s\n",xc.ver,path);
 
-  struct stat *xcBuf;
-  int ret = __xstat(xc.ver,path,xcBuf);
-
+  struct stat xcBuf;
+  fprintf(stderr,"4");
+  int ret = __xstat(xc.ver,path,&xcBuf);
+  fprintf(stderr,"return %d\n",ret);
   struct Result res;
   res.result = ret;
   res.err = errno;
-  char resWithBuf[sizeof(res)+sizeof(*xcBuf)];
+  char resWithBuf[sizeof(res)+sizeof(xcBuf)];
+  fprintf(stderr,"5");
   memcpy(resWithBuf,&res,sizeof(res));
-  memcpy(&(resWithBuf[sizeof(res)]),xcBuf,sizeof(*xcBuf));
+  fprintf(stderr,"6");
+  memcpy(&(resWithBuf[sizeof(res)]),&xcBuf,sizeof(xcBuf));
 
   fprintf(stderr," return ret %d\n",ret);
   send(fd,resWithBuf,sizeof(res)+ret,0);
