@@ -129,9 +129,9 @@ void fillInputBuf(int sessfd,char *buf,char *inputBuf,
     socklen_t sa_size;
 
     // Get environment variable indicating the port of the server
-    serverport = getenv("serverport14444");
+    serverport = getenv("serverport12444");
     if (serverport) port = (unsigned short)atoi(serverport);
-    else port=14444;//port=15440;
+    else port=12444;//port=15440;
 
     // Create socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);	// TCP/IP socket
