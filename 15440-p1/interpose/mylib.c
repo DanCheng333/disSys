@@ -290,7 +290,7 @@ fprintf(stderr,"6");
     perror("Xstat error");
   }
   fprintf(stderr,"\n\n******* END OF XSTAT*********");
-  return res.result;
+  return 0;//res.result;
 }
 
 int unlink(const char *path){
