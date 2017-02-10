@@ -95,7 +95,7 @@ void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
   fprintf(stderr,"4");
   int ret = stat(path,&xcBuf);
   fprintf(stderr,"return %d\n",ret);
-  struct  res;
+  struct Result res;
   res.result = ret;
   res.err = errno;
   char resWithBuf[sizeof(res)+sizeof(xcBuf)];
