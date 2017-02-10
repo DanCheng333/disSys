@@ -251,6 +251,7 @@ off_t lseek(int fildes, off_t offset, int whence) {
 }
 
 int __xstat(int ver, const char *path, struct stat *buf){
+  fprintf(stderr,"\n\n******* XSTAT*********");
   sc.sysCallName = __XSTAT;
   sc.inputSize= 1;
   char scBuf[sizeof(sc)];
