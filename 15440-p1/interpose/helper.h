@@ -51,7 +51,7 @@ struct __attribute__((__packed__)) LseekCall {
 
 struct __attribute__((__packed__)) XstatCall {
   int ver;
-  //int pathLen;
+  int pathLen;
   //struct stat buf;
 };
 

@@ -256,6 +256,7 @@ int __xstat(int ver, const char *path, struct stat *buf){
   struct XstatCall xs;
   fprintf(stderr,"1");
   xs.ver = ver;
+  xs.pathLen = strlen(path);
   char xsBuf[sizeof(xs)];
   fprintf(stderr,"2");
 
@@ -263,9 +264,9 @@ int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"3");
 
   sc.sysCallName = __XSTAT;
-  sc.inputSize= (int)sizeof(xs)+strlen(path);
+  sc.inputSize= (int)sizeof(xs)+strlen(path)+sizeof(*buf);
 
-  char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)];
+  char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)+sizeof(*buf)];
   fprintf(stderr,"4");
 
   memcpy(scBuf,&sc,sizeof(sc));
@@ -275,6 +276,7 @@ int __xstat(int ver, const char *path, struct stat *buf){
 fprintf(stderr,"6");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)]),path,strlen(path));
   fprintf(stderr,"7");
+  memcpy(&(scBuf[sizeof(sc)+sizeof(xs)+strlen(path)]),buf,sizeof(*buf));
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char retBuf[sizeof(*buf)];

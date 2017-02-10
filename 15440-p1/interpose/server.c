@@ -80,16 +80,18 @@ void handleLseek(int fd, struct LseekCall lc, char *buf, int size) {
 
 void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
   fprintf(stderr,"Xstat handle. size%d,sizeof(xs)%d\n",size,sizeof(xc));
-  char path[size - sizeof(xc)];
   fprintf(stderr,"1");
+  struct stat xcBuf;
   memcpy(&xc,buf,sizeof(xc));
   fprintf(stderr,"2");
-  memcpy(path,&(buf[sizeof(xc)]),size - sizeof(xc));
+  char path[xc.pathLen];
+  memcpy(path,&(buf[sizeof(xc)]),xc.pathLen);
   fprintf(stderr,"3");
-  path[size - sizeof(xc)] = '\0';
+  path[xc.pathLen] = '\0';
+  memcpy(&xcBuf,&(buf[sizeof(xc)+xc.pathLen]),sizeof(xcBuf));
   fprintf(stderr,"Received ver %d, path %s\n",xc.ver,path);
 
-  struct stat xcBuf;
+
   fprintf(stderr,"4");
   int ret = __xstat(xc.ver,path,&xcBuf);
   fprintf(stderr,"return %d\n",ret);
