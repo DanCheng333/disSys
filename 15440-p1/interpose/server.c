@@ -95,7 +95,7 @@ void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
   fprintf(stderr,"4");
   int ret = stat(path,&xcBuf);
   fprintf(stderr,"return %d\n",ret);
-  struct Result res;
+  struct  res;
   res.result = ret;
   res.err = errno;
   char resWithBuf[sizeof(res)+sizeof(xcBuf)];
@@ -136,7 +136,7 @@ void handleGetdirentries(int fd, struct GetdirentriesCall gdsc,
   char *gdscBuf[gdsc.nbytes];
   fprintf(stderr,"3Getdirentries handle\n");
   ssize_t ret = getdirentries(gdsc.fd,gdscBuf,gdsc.nbytes,&basep);
-  fprintf(stderr,"Getdirentries received:fildes %d, buf %s,nbytes%zu, basep %llu,result %zu\n",
+  fprintf(stderr,"Getdirentries received:fildes %d, buf %x,nbytes%zu, basep %llu,result %zu\n",
   gdsc.fd,gdscBuf,gdsc.nbytes,basep,ret);
 
   char *resultBuf[sizeof(ret)+sizeof(errno)+ret];

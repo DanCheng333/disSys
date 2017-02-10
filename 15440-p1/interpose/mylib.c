@@ -350,7 +350,7 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
     fprintf(stderr,"gds bufSize %d,result %d\n",bufSize,result);
   }
 
-  fprintf(stderr,"received result %zu\n",result);
+  fprintf(stderr,"received result %zu, buf %x\n",result,buf);
   fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
   return result;
 }
