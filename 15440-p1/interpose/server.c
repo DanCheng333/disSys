@@ -127,10 +127,10 @@ void handleGetdirentries(int fd, struct GetdirentriesCall gdsc,
   char *gdscBuf[gdsc.nbytes];
   fprintf(stderr,"3Getdirentries handle\n");
   ssize_t ret = getdirentries(gdsc.fd,gdscBuf,gdsc.nbytes,basep);
-  fprintf(stderr,"Getdirentries received:fildes %d, nbytes%zu, basep %llu,result %zu\n",
-  gdsc.fd,gdsc.nbytes,basep,ret);
+  fprintf(stderr,"Getdirentries received:fildes %d, buf %s,nbytes%zu, basep %llu,result %zu\n",
+  gdsc.fd,gdscBuf,gdsc.nbytes,basep,ret);
 
-  char *resultBuf[sizeof(ret)+sizeof(errno)+gdsc.nbytes];
+  char *resultBuf[sizeof(ret)+sizeof(errno)+ret];
   memcpy(resultBuf,&ret,sizeof(ret));
   memcpy(&(resultBuf[sizeof(ret)]),&errno,sizeof(errno));
   memcpy(&(resultBuf[sizeof(ret)+sizeof(errno)]),gdscBuf,ret);
