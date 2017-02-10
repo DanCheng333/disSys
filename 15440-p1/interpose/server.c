@@ -82,7 +82,7 @@ void handleXstat(int fd, struct XstatCall xc, char *buf, int size) {
   fprintf(stderr,"Xstat handle\n");
   char path[size-sizeof(xc)];
   memcpy(&xc,buf,sizeof(xc));
-  memcpy(path,&(buf[xc]),size-sizeof(xc));
+  memcpy(path,&(buf[sizeof(xc)]),size-sizeof(xc));
   path[size-sizeof(xc)] = '\0';
   fprintf(stderr,"Received ver %d, path %s\n",xc.ver,path);
 
