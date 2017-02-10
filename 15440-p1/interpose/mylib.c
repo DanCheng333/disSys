@@ -252,7 +252,7 @@ off_t lseek(int fildes, off_t offset, int whence) {
 
 int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"\n\n******* XSTAT*********");
-  fprintf(stderr,"ver %d,path %s\n,sizeof buf%zu xsBuf %zu\n",ver,path,sizeof(buf),sizeof(*buf));
+  fprintf(stderr,"ver %d,path %s\n, xsBuf %zu\n",ver,path,sizeof(*buf));
   struct XstatCall xs;
   fprintf(stderr,"1");
   xs.ver = ver;
@@ -263,7 +263,8 @@ int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"3");
 
   sc.sysCallName = __XSTAT;
-  sc.inputSize= sizeof(xs)+strlen(path);
+  sc.inputSize= (int)sizeof(xs)+strlen(path);
+
   char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)];
   fprintf(stderr,"4");
 
@@ -281,6 +282,9 @@ fprintf(stderr,"6");
   errno = res.err;
   recv(sockfd,retBuf,sizeof(retBuf),0);
   memcpy(buf,retBuf,sizeof(*buf));
+  if(res.result == -1) {
+    perror("Xstat error");
+  }
   return res.result;
 }
 
