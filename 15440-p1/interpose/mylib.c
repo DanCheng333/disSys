@@ -286,7 +286,7 @@ int unlink(const char *path){
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
   ssize_t result;
-  fprintf(stderr,"2fd %d, nbytes %zn basep %llun",fd,nbytes,*basep,sizeof(ssize_t));
+  fprintf(stderr,"2fd %d, nbytes %zu basep %llun",fd,nbytes,*basep,sizeof(ssize_t));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
