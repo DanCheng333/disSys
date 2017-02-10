@@ -285,21 +285,26 @@ int unlink(const char *path){
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
-  fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(result));
+  fprintf(stderr,"1fd %d, nbytes %zn basep %llu\n",fd,nbytes,*basep);
   ssize_t result;
-  fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(result));
+  fprintf(stderr,"2fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(result));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
   gdsc.basep = *basep;
   char *gdscBuf[sizeof(gdsc)];
+  fprintf(stderr,"3");
   memcpy(gdscBuf,&gdsc,sizeof(gdsc));
+  fprintf(stderr,"4");
 
   sc.sysCallName = GETDIRENTRIES;
   sc.inputSize= 1;
   char scBuf[sizeof(sc)+sizeof(gdsc)];
+  fprintf(stderr,"5");
   memcpy(scBuf,&sc,sizeof(sc));
+  fprintf(stderr,"6");
   memcpy(&(scBuf[sizeof(sc)]),gdscBuf,sizeof(gdsc));
+  fprintf(stderr,"7");
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char resultbuf[sizeof(ssize_t)+sizeof(errno)];
