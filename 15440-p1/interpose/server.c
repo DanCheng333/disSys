@@ -96,8 +96,18 @@ void handleGetdirtree(int fd, struct GetdirtreeCall gdc, char *buf, int size) {
   fprintf(stderr,"get dirtree handle\n");
 }
 
-void handleGetdirentries(int fd, struct GetdirentriesCall gdsc, char *buf, int size) {
-  fprintf(stderr,"get dirtrentries handle\n");
+void handleGetdirentries(int fd, struct GetdirentriesCall gdsc,
+                            char *buf, int size) {
+  memcpy(&gdsc,buf,sizeof(gdsc));
+  char *gdscBuf[gdsc.nbytes];
+  fprintf(stderr,"Getdirentries handle\n");
+  ssize_t ret = getdirentries(gdsc.fildes,gdscBuf,gdsc.nbytes,&gdsc.basep);
+  fprintf(stderr,"Getdirentries received:fildes %d, nbytes%zu, basep %llu,result %zu\n",
+  gdsc.fildes,gdsc.nbytes,&gdsc.basep,ret);
+  char *resultBuf[sizeof(ret)+sizeof(errno)];
+  memcpy(resultBuf,&ret,sizeof(ret));
+  memcpy(resultBuf[sizeof(ret)],&errno,sizeof(errno));
+  send(fd,resultBuf,sizeof(resultBuf),0);
 }
 //Recv and Fill the inputBuf till it reaches inputSize
 void fillInputBuf(int sessfd,char *buf,char *inputBuf,

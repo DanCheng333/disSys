@@ -283,7 +283,8 @@ int unlink(const char *path){
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
-  fprintf(stderr,"fd %d, nbytes %zn basep %llu\n",fd,nbytes,*basep);
+  ssize_t result;
+  fprintf(stderr,"fd %d, nbytes %zn basep %llu, size of ssize_t%zu\n",fd,nbytes,*basep,sizeof(lala));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
   gdsc.nbytes = nbytes;
@@ -297,8 +298,15 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   memcpy(scBuf,&sc,sizeof(sc));
   memcpy(&(scBuf[sizeof(sc)]),gdscBuf,sizeof(gdsc));
   send(sockfd,scBuf,sizeof(scBuf),0);
-  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
 
+  char resultbuf[sizeof(ssize_t)+sizeof(errno)];
+  recv(sockfd,resultbuf,sizeof(resultbuf),0);
+  memcpy(&result,resultbuf,sizeof(ssize_t));
+  memcpy(&errno,resultbuf[sizeof(ssize_t)],sizeof(errno));
+
+  fprintf("received result %zu\n",result);
+  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
+  return result;
 }
 
 struct dirtreenode* getdirtree( const char *path ) {
