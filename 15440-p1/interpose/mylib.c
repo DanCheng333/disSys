@@ -329,7 +329,7 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
     fprintf(stderr,"gds bufSize1 %d\n",bufSize);
     memcpy(&(buf[bufSize]),recvBuf,rv);
     bufSize += rv;
-    fprintf(stderr,"gds bufSize %d\n",bufSize);
+    fprintf(stderr,"gds bufSize %d,result %d\n",bufSize,result);
   }
 
   fprintf(stderr,"received result %zu\n",result);

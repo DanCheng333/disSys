@@ -120,7 +120,7 @@ void handleGetdirentries(int fd, struct GetdirentriesCall gdsc,
   off_t *basep;
   fprintf(stderr,"1Getdirentries handle\n");
   memcpy(&gdsc,buf,sizeof(gdsc));
-  memcpy(basep,&(buf[sizeof(gdsc)]),+sizeof(*basep));
+  memcpy(basep,&(buf[sizeof(gdsc)]),sizeof(*basep));
   fprintf(stderr,"2Getdirentries handle\n");
   //memcpy(basep,&(buf[sizeof(gdsc)]),sizeof(basep));
   //fprintf(stderr,"3Getdirentries handle\n");
