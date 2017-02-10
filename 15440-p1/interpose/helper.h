@@ -54,6 +54,9 @@ struct __attribute__((__packed__)) XstatCall {
 };
 
 struct __attribute__((__packed__)) GetdirentriesCall {
+  int fd;
+  size_t nbytes;
+  off_t basep;
 
 };
 

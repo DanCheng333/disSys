@@ -282,19 +282,42 @@ int unlink(const char *path){
 
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
+  fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
+  fprintf(stderr,"fd %d, nbytes %zn basep %llu\n",fd,nbytes,*basep);
+  struct GetdirentriesCall gdsc;
+  gdsc.fd = fd;
+  gdsc.nbytes = nbytes;
+  gdsc.basep = *basep;
+  char *gdscBuf[sizeof(gdsc)];
+  memcpy(gdscBuf,&gdsc,sizeof(gdsc));
+
   sc.sysCallName = GETDIRENTRIES;
   sc.inputSize= 1;
-  char scBuf[sizeof(sc)];
+  char scBuf[sizeof(sc)+sizeof(gdsc)];
   memcpy(scBuf,&sc,sizeof(sc));
+  memcpy(&(scBuf[sizeof(sc)]),gdscBuf,sizeof(gdsc));
   send(sockfd,scBuf,sizeof(scBuf),0);
+  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
+
 }
 
 struct dirtreenode* getdirtree( const char *path ) {
+  fprintf(stderr,"\n\n******* GETDIRTREE *********");
+  fprintf(stderr,"Unlink path %s\n",path);
+
   sc.sysCallName = GETDIRTREE;
-  sc.inputSize= 1;
-  char scBuf[sizeof(sc)];
+  sc.inputSize=strlen(path);
+  char scBuf[sizeof(sc)+strlen(path)];
   memcpy(scBuf,&sc,sizeof(sc));
+  memcpy(&(scBuf[sizeof(sc)]),path,strlen(path));
   send(sockfd,scBuf,sizeof(scBuf),0);
+
+  //struct dirtreenode* result;
+
+  perror("Getdirtree rror");
+  fprintf(stderr,"\n\n******* END OF GETDIRTREE *********");
+  //Success return 0
+  return ;
 }
 
 void freedirtree( struct dirtreenode* dt ){
