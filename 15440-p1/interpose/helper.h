@@ -50,7 +50,8 @@ struct __attribute__((__packed__)) LseekCall {
 };
 
 struct __attribute__((__packed__)) XstatCall {
-
+  int ver;
+  //struct stat buf;
 };
 
 struct __attribute__((__packed__)) GetdirentriesCall {

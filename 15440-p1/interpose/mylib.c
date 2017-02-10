@@ -252,12 +252,27 @@ off_t lseek(int fildes, off_t offset, int whence) {
 
 int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"\n\n******* XSTAT*********");
+  fprintf(stderr,"ver %d,path %s\n,sizeof buf%zu xsBuf %zu\n",ver,path,sizeof(buf),sizeof(*buf));
+  struct XstatCall xs;
+  fprintf(stderr,"1");
+  xs.ver = ver;
+  char xsBuf[sizeof(xs)+strlen(path)];
+  memcpy(xsBuf,&xs,sizeof(xs));
+  memcpy(&(xsBuf[sizeof(xs)]),path,strlen(path));
+
   sc.sysCallName = __XSTAT;
-  sc.inputSize= 1;
-  char scBuf[sizeof(sc)];
+  sc.inputSize= sizeof(xs)+strlen(path);
+  char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)];
   memcpy(scBuf,&sc,sizeof(sc));
+  memcpy(&(scBuf[sizeof(sc)],xsBuf,sizeof(xs)+strlen(path))
   send(sockfd,scBuf,sizeof(scBuf),0);
-  return 1;
+
+  char retBuf[sizeof(*buf)];
+  getResult(sockfd);
+  errno = res.err;
+  recv(sockfd,retBuf,sizeof(retBuf),0);
+  memcpy(buf,retBuf,sizeof(*buf));
+  return res.result;
 }
 
 int unlink(const char *path){
