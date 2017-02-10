@@ -277,6 +277,7 @@ fprintf(stderr,"6");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)]),path,strlen(path));
   fprintf(stderr,"7");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)+strlen(path)]),buf,sizeof(*buf));
+  fprintf(stderr,"8");
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char retBuf[sizeof(*buf)];
