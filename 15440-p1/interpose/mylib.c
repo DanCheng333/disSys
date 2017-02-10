@@ -254,30 +254,30 @@ int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"\n\n******* XSTAT*********");
   fprintf(stderr,"ver %d,path %s\n, xsBuf %zu\n",ver,path,sizeof(*buf));
   struct XstatCall xs;
-  fprintf(stderr,"1");
+  fprintf(stderr,"11\n");
   xs.ver = ver;
   xs.pathLen = strlen(path);
   char xsBuf[sizeof(xs)];
-  fprintf(stderr,"2");
+  fprintf(stderr,"22\n");
 
   memcpy(xsBuf,&xs,sizeof(xs));
-  fprintf(stderr,"3");
+  fprintf(stderr,"33\n");
 
   sc.sysCallName = __XSTAT;
   sc.inputSize= (int)sizeof(xs)+strlen(path)+sizeof(*buf);
 
   char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)+sizeof(*buf)];
-  fprintf(stderr,"4");
+  fprintf(stderr,"44\n");
 
   memcpy(scBuf,&sc,sizeof(sc));
-  fprintf(stderr,"5");
+  fprintf(stderr,"55\n");
 
   memcpy(&(scBuf[sizeof(sc)]),xsBuf,sizeof(xs));
-fprintf(stderr,"6");
+  fprintf(stderr,"66\n");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)]),path,strlen(path));
-  fprintf(stderr,"7");
+  fprintf(stderr,"77\n");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)+strlen(path)]),buf,sizeof(*buf));
-  fprintf(stderr,"8");
+  fprintf(stderr,"88\n");
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char retBuf[sizeof(*buf)];
