@@ -13,7 +13,7 @@
 #include <errno.h>
 #include "helper.h"
 
-#define MAXMSGLEN 100000
+#define MAXMSGLEN 1000013
 void sendResult(int fd, int ret, int err) {
   struct Result res;
   char resBuf[sizeof(res)];
