@@ -252,46 +252,42 @@ off_t lseek(int fildes, off_t offset, int whence) {
 
 int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"\n\n******* XSTAT*********");
-  /*
   fprintf(stderr,"ver %d,path %s\n, xsBuf %zu\n",ver,path,sizeof(*buf));
   struct XstatCall xs;
-  fprintf(stderr,"11\n");
+  fprintf(stderr,"1");
   xs.ver = ver;
   xs.pathLen = strlen(path);
   char xsBuf[sizeof(xs)];
-  fprintf(stderr,"22\n");
+  fprintf(stderr,"2");
 
   memcpy(xsBuf,&xs,sizeof(xs));
-  fprintf(stderr,"33\n");
+  fprintf(stderr,"3");
 
   sc.sysCallName = __XSTAT;
   sc.inputSize= (int)sizeof(xs)+strlen(path)+sizeof(*buf);
 
   char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)+sizeof(*buf)];
-  fprintf(stderr,"44\n");
+  fprintf(stderr,"4");
 
   memcpy(scBuf,&sc,sizeof(sc));
-  fprintf(stderr,"55\n");
+  fprintf(stderr,"5");
 
   memcpy(&(scBuf[sizeof(sc)]),xsBuf,sizeof(xs));
-  fprintf(stderr,"66\n");
+fprintf(stderr,"6");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)]),path,strlen(path));
-  fprintf(stderr,"77\n");
+  fprintf(stderr,"7");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)+strlen(path)]),buf,sizeof(*buf));
-  fprintf(stderr,"88\n");
   send(sockfd,scBuf,sizeof(scBuf),0);
 
   char retBuf[sizeof(*buf)];
   getResult(sockfd);
-  fprintf(stderr, "result recieived !!%d\n", res.result);
   errno = res.err;
   recv(sockfd,retBuf,sizeof(retBuf),0);
   memcpy(buf,retBuf,sizeof(*buf));
   if(res.result == -1) {
     perror("Xstat error");
   }
-  fprintf(stderr,"\n\n******* END OF XSTAT*********");*/
-  return 0;//res.result;
+  return res.result;
 }
 
 int unlink(const char *path){
@@ -351,7 +347,7 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
     fprintf(stderr,"gds bufSize %d,result %d\n",bufSize,result);
   }
 
-  fprintf(stderr,"received result %zu, buf %x\n",result,buf);
+  fprintf(stderr,"received result %zu\n",result);
   fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
   return result;
 }
