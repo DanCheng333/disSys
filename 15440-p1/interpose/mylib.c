@@ -252,6 +252,7 @@ off_t lseek(int fildes, off_t offset, int whence) {
 
 int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"\n\n******* XSTAT*********");
+  /*
   fprintf(stderr,"ver %d,path %s\n, xsBuf %zu\n",ver,path,sizeof(*buf));
   struct XstatCall xs;
   fprintf(stderr,"11\n");
@@ -289,7 +290,7 @@ int __xstat(int ver, const char *path, struct stat *buf){
   if(res.result == -1) {
     perror("Xstat error");
   }
-  fprintf(stderr,"\n\n******* END OF XSTAT*********");
+  fprintf(stderr,"\n\n******* END OF XSTAT*********");*/
   return 0;//res.result;
 }
 
