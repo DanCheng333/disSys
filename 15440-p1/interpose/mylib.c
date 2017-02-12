@@ -252,30 +252,21 @@ off_t lseek(int fildes, off_t offset, int whence) {
 
 int __xstat(int ver, const char *path, struct stat *buf){
   fprintf(stderr,"\n\n******* XSTAT*********");
-  fprintf(stderr,"ver %d,path %s\n, xsBuf %zu\n",ver,path,sizeof(*buf));
+  /*fprintf(stderr,"ver %d,path %s\n, xsBuf %zu\n",ver,path,sizeof(*buf));
+
   struct XstatCall xs;
-  fprintf(stderr,"1");
   xs.ver = ver;
   xs.pathLen = strlen(path);
   char xsBuf[sizeof(xs)];
-  fprintf(stderr,"2");
-
   memcpy(xsBuf,&xs,sizeof(xs));
-  fprintf(stderr,"3");
 
   sc.sysCallName = __XSTAT;
   sc.inputSize= (int)sizeof(xs)+strlen(path)+sizeof(*buf);
 
   char scBuf[sizeof(sc)+sizeof(xs)+strlen(path)+sizeof(*buf)];
-  fprintf(stderr,"4");
-
   memcpy(scBuf,&sc,sizeof(sc));
-  fprintf(stderr,"5");
-
   memcpy(&(scBuf[sizeof(sc)]),xsBuf,sizeof(xs));
-fprintf(stderr,"6");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)]),path,strlen(path));
-  fprintf(stderr,"7");
   memcpy(&(scBuf[sizeof(sc)+sizeof(xs)+strlen(path)]),buf,sizeof(*buf));
   send(sockfd,scBuf,sizeof(scBuf),0);
 
@@ -308,14 +299,14 @@ int unlink(const char *path){
     perror("Unlink error");
   }
   fprintf(stderr,"\n\n******* END OF UNLINK *********");
-  //Success return 0
+  //Success return 0*/
   return res.result;
 }
 
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
-  ssize_t result;
+  /*ssize_t result;
   fprintf(stderr,"fd %d, nbytes %zu basep %llu\n,sizeof off_t%zu\n",fd,nbytes,*basep,sizeof(*basep));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
@@ -348,8 +339,8 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   }
 
   fprintf(stderr,"received result %zu\n",result);
-  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
-  return result;
+  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");*/
+  return 1;
 }
 
 struct dirtreenode* getdirtree( const char *path ) {
