@@ -306,7 +306,7 @@ int unlink(const char *path){
 
 ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   fprintf(stderr,"\n\n******* GETDIRENTRIES*********");
-  /*ssize_t result;
+  ssize_t result;
   fprintf(stderr,"fd %d, nbytes %zu basep %llu\n,sizeof off_t%zu\n",fd,nbytes,*basep,sizeof(*basep));
   struct GetdirentriesCall gdsc;
   gdsc.fd = fd;
@@ -339,7 +339,7 @@ ssize_t getdirentries(int fd, char *buf, size_t nbytes , off_t *basep) {
   }
 
   fprintf(stderr,"received result %zu\n",result);
-  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");*/
+  fprintf(stderr,"\n\n******* END OF GETDIRENTRIES *********");
   return 1;
 }
 
