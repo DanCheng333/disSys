@@ -149,7 +149,7 @@ class Proxy {
 				raf.raf.write(buf);
 			} catch (IOException e) {
 				e.printStackTrace();
-				return -1;
+				return Errors.EBADF;
 			}
 			return buf.length;
 		}
