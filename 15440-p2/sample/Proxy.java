@@ -15,11 +15,10 @@ class FileInfo{
 
 
 class Proxy {
-	static ConcurrentHashMap<Integer,FileInfo> fd2Raf = 
-			new ConcurrentHashMap<Integer,FileInfo>();
 	public static final int MAXFDSIZE = 1000;
 	private static class FileHandler implements FileHandling {
-
+		ConcurrentHashMap<Integer,FileInfo> fd2Raf = 
+				new ConcurrentHashMap<Integer,FileInfo>();
 		public synchronized int open( String path, OpenOption o ) {
 			File f = new File(path);
 			int fd = fd2Raf.size()+1;
@@ -163,10 +162,11 @@ class Proxy {
 
 			FileInfo raf = fd2Raf.get(fd);
 			System.err.println("bad fd");
-			System.err.println(raf.file.getName());
+			
 			if (raf == null) {
 				return Errors.EBADF;
 			}
+			System.err.println(raf.file.getName());
 			System.err.println("dir");
 
 			if (raf.file.isDirectory()) {
