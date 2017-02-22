@@ -1,8 +1,8 @@
 /* Sample skeleton for proxy */
 
 import java.io.*;
-import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 class FileInfo{
 	File file;
@@ -15,7 +15,8 @@ class FileInfo{
 
 
 class Proxy {
-	static HashMap<Integer,FileInfo> fd2Raf = new HashMap<Integer,FileInfo>();
+	static ConcurrentHashMap<Integer,FileInfo> fd2Raf = 
+			new ConcurrentHashMap<Integer,FileInfo>();
 	public static final int MAXFDSIZE = 1000;
 	private static class FileHandler implements FileHandling {
 
@@ -124,7 +125,9 @@ class Proxy {
 				return Errors.EBADF;
 			}
 			try {
-				raf.raf.close();
+				if (raf.raf != null) {
+					raf.raf.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				return -1; //?
