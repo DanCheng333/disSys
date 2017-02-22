@@ -238,14 +238,16 @@ class Proxy {
 			System.err.println("clientdone op");
 
 			//close all files recylce
-			for (Entry<Integer,FileInfo> c : fd2Raf.entrySet()) {
-				try {
-					c.getValue().raf.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+			if (!fd2Raf.isEmpty()) {
+				for (Entry<Integer,FileInfo> c : fd2Raf.entrySet()) {
+					try {
+						c.getValue().raf.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					//Reuse fds
+					fd2Raf.remove(c.getKey());
 				}
-				//Reuse fds
-				fd2Raf.remove(c.getKey());
 			}
 			return;
 		}
