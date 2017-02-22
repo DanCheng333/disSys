@@ -29,13 +29,13 @@ class Proxy {
 				case CREATE:
 					System.err.println("CREATE");
 					
-					try {
+					/*try {
 						if (!f.createNewFile()) {
 							return Errors.EPERM;
 						}
 					} catch (IOException e1) {
 						e1.printStackTrace();
-					}
+					}*/
 
 					try {
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
@@ -51,13 +51,13 @@ class Proxy {
 					if (f.exists()) {
 						return Errors.EEXIST;
 					}
-					try {
+					/*try {
 						if (!f.createNewFile()) {
 							return Errors.EPERM;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
-					}
+					}*/
 					
 					try {
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
