@@ -39,7 +39,7 @@ class Proxy {
 						}
 					}		
 					
-					if (!f.isDirectory()) {
+					if (f.isDirectory()) {
 						return Errors.EISDIR;
 					}
 					try {
@@ -58,7 +58,7 @@ class Proxy {
 					if (f.exists()) {
 						return Errors.EEXIST;
 					}	
-					if (!f.isDirectory()) {
+					if (f.isDirectory()) {
 						return Errors.EISDIR;
 					}
 					try {
