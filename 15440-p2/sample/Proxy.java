@@ -52,9 +52,14 @@ class Proxy {
 							e.printStackTrace();
 						}
 					}
+					
+						
 					try {
 						System.err.println("CREATE_NEW");
-						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
+						RandomAccessFile raf_c = null;
+						if (!f.isDirectory()) {
+							raf_c = new RandomAccessFile(f,"rw");
+						}
 						System.err.println("CREATE_NEW");
 						FileInfo fi_c = new FileInfo(f,raf_c);
 						fd2Raf.put(fd,fi_c);
@@ -62,7 +67,7 @@ class Proxy {
 						System.err.println("CREATE_NEW");
 						e1.printStackTrace();
 					}
-									
+					}			
 					break;
 				case CREATE_NEW:
 					System.err.println("CREATE_NEW");
