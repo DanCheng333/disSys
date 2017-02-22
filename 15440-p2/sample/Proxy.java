@@ -28,62 +28,43 @@ class Proxy {
 			switch(o) {
 				case CREATE:
 					System.err.println("CREATE");
-					
-					/*try {
-						if (!f.createNewFile()) {
-							return Errors.EPERM;
-						}
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}*/
-				/*try {
-					f.createNewFile();
-				} catch (IOException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
-				}*/
+
 					System.err.println("CREATE_NEW");
 					if (!f.exists()) {
 						try {
 							System.err.println("CREATE_NEW");
 							f.createNewFile();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
+					}		
 					
-						
+					if (!f.isDirectory()) {
+						return Errors.EISDIR;
+					}
 					try {
 						System.err.println("CREATE_NEW");
-						RandomAccessFile raf_c = null;
-						if (!f.isDirectory()) {
-							raf_c = new RandomAccessFile(f,"rw");
-						}
-						System.err.println("CREATE_NEW");
+						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
+						System.err.println("create file info");
 						FileInfo fi_c = new FileInfo(f,raf_c);
 						fd2Raf.put(fd,fi_c);
 					} catch (FileNotFoundException e1) {
-						System.err.println("CREATE_NEW");
 						e1.printStackTrace();
 					}
-					}			
+								
 					break;
 				case CREATE_NEW:
 					System.err.println("CREATE_NEW");
 					if (f.exists()) {
 						return Errors.EEXIST;
+					}	
+					if (!f.isDirectory()) {
+						return Errors.EISDIR;
 					}
-					/*try {
-						if (!f.createNewFile()) {
-							return Errors.EPERM;
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}*/
-					
 					try {
+						System.err.println("CREATE_NEW");
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
+						System.err.println("create file info");
 						FileInfo fi_cn = new FileInfo(f,raf_cn);
 						fd2Raf.put(fd,fi_cn);
 					} catch (FileNotFoundException e1) {
@@ -95,15 +76,16 @@ class Proxy {
 					if (!f.exists()) {
 						return Errors.ENOENT;
 					}
-					
+					RandomAccessFile raf_r = null;
 					try {
-						RandomAccessFile raf_r = new RandomAccessFile(f,"r");
-						FileInfo fi_r = new FileInfo(f,raf_r);
-						fd2Raf.put(fd,fi_r);
+						if(!f.isDirectory()) {
+							raf_r = new RandomAccessFile(f,"r");
+						}
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
 					}
-					
+					FileInfo fi_r = new FileInfo(f,raf_r);
+					fd2Raf.put(fd,fi_r);
 					break;
 				case WRITE:
 					System.err.println("WRITE");
