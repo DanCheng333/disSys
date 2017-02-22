@@ -178,6 +178,9 @@ class Proxy {
 				ret = raf.raf.read(buf);
 				System.err.println("ret is");
 				System.err.println(ret);
+				if (ret == -1) {
+					ret = 0;
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				return Errors.EBADF;
