@@ -160,7 +160,7 @@ class Proxy {
 
 			FileInfo raf = fd2Raf.get(fd);
 			System.err.println("bad fd");
-
+			System.err.println(raf.file.getName());
 			if (raf == null) {
 				return Errors.EBADF;
 			}
