@@ -108,6 +108,7 @@ class Proxy {
 		
 		//EBADF
 		public int close( int fd ) {
+			System.err.println("close op");
 			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
 				return Errors.EBADF;
@@ -125,6 +126,8 @@ class Proxy {
 		
 		//EBADF,EINVAL,EPERM
 		public long write( int fd, byte[] buf ) {
+			System.err.println("write op");
+
 			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
 				return Errors.EBADF;
@@ -143,6 +146,8 @@ class Proxy {
 
 		//EBADF,ENINVAL,EISDIR
 		public long read( int fd, byte[] buf ) {
+			System.err.println("read op");
+
 			FileInfo raf = fd2Raf.get(fd);
 			if (raf == null) {
 				return Errors.EBADF;
@@ -158,11 +163,14 @@ class Proxy {
 				ret = raf.raf.read(buf);
 			} catch (IOException e) {
 				e.printStackTrace();
+				return Errors.EBADF;
 			}
 			return ret;
 		}
 
 		public long lseek( int fd, long pos, LseekOption o ) {
+			System.err.println("lseek op");
+
 			FileInfo raf = fd2Raf.get(fd);
 			long offset = -1;
 			if (raf == null) {
@@ -200,6 +208,8 @@ class Proxy {
 		}
 
 		public int unlink( String path ) {
+			System.err.println("unlink op");
+
 			File f = new File(path);
 			if (f.isDirectory()) {
 				return Errors.EISDIR;
@@ -220,6 +230,8 @@ class Proxy {
 		}
 
 		public void clientdone() {
+			System.err.println("clientdone op");
+
 			//close all files recylce
 			for (Entry<Integer,FileInfo> c : fd2Raf.entrySet()) {
 				try {
