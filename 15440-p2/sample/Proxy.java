@@ -42,6 +42,14 @@ class Proxy {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}*/
+					if (!f.exists()) {
+						try {
+							f.createNewFile();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 					try {
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						FileInfo fi_c = new FileInfo(f,raf_c);
