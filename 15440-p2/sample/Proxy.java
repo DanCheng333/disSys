@@ -42,8 +42,10 @@ class Proxy {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}*/
+					System.err.println("CREATE_NEW");
 					if (!f.exists()) {
 						try {
+							System.err.println("CREATE_NEW");
 							f.createNewFile();
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
@@ -51,10 +53,13 @@ class Proxy {
 						}
 					}
 					try {
+						System.err.println("CREATE_NEW");
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
+						System.err.println("CREATE_NEW");
 						FileInfo fi_c = new FileInfo(f,raf_c);
 						fd2Raf.put(fd,fi_c);
 					} catch (FileNotFoundException e1) {
+						System.err.println("CREATE_NEW");
 						e1.printStackTrace();
 					}
 									
