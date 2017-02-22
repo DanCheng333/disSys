@@ -36,7 +36,12 @@ class Proxy {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}*/
-
+				try {
+					f.createNewFile();
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
 					try {
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						FileInfo fi_c = new FileInfo(f,raf_c);
@@ -51,13 +56,13 @@ class Proxy {
 					if (f.exists()) {
 						return Errors.EEXIST;
 					}
-					/*try {
+					try {
 						if (!f.createNewFile()) {
 							return Errors.EPERM;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
-					}*/
+					}
 					
 					try {
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
