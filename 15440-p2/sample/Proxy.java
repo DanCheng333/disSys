@@ -19,7 +19,7 @@ class Proxy {
 	public static final int MAXFDSIZE = 1000;
 	private static class FileHandler implements FileHandling {
 
-		public int open( String path, OpenOption o ) {
+		public synchronized int open( String path, OpenOption o ) {
 			File f = new File(path);
 			int fd = fd2Raf.size()+1;
 			if (fd > MAXFDSIZE) {
@@ -36,12 +36,12 @@ class Proxy {
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}*/
-				try {
+				/*try {
 					f.createNewFile();
 				} catch (IOException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
-				}
+				}*/
 					try {
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						FileInfo fi_c = new FileInfo(f,raf_c);
@@ -56,13 +56,13 @@ class Proxy {
 					if (f.exists()) {
 						return Errors.EEXIST;
 					}
-					try {
+					/*try {
 						if (!f.createNewFile()) {
 							return Errors.EPERM;
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
-					}
+					}*/
 					
 					try {
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
@@ -112,7 +112,7 @@ class Proxy {
 		}
 		
 		//EBADF
-		public int close( int fd ) {
+		public synchronized int close( int fd ) {
 			System.err.println("close op");
 			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
@@ -130,7 +130,7 @@ class Proxy {
 		
 		
 		//EBADF,EINVAL,EPERM
-		public long write( int fd, byte[] buf ) {
+		public synchronized long write( int fd, byte[] buf ) {
 			System.err.println("write op");
 
 			FileInfo raf = fd2Raf.get(fd);
@@ -150,7 +150,7 @@ class Proxy {
 		}
 
 		//EBADF,ENINVAL,EISDIR
-		public long read( int fd, byte[] buf ) {
+		public synchronized long read( int fd, byte[] buf ) {
 			System.err.println("read op");
 
 			FileInfo raf = fd2Raf.get(fd);
@@ -173,7 +173,7 @@ class Proxy {
 			return ret;
 		}
 
-		public long lseek( int fd, long pos, LseekOption o ) {
+		public synchronized long lseek( int fd, long pos, LseekOption o ) {
 			System.err.println("lseek op");
 
 			FileInfo raf = fd2Raf.get(fd);
@@ -212,7 +212,7 @@ class Proxy {
 			return offset;
 		}
 
-		public int unlink( String path ) {
+		public synchronized int unlink( String path ) {
 			System.err.println("unlink op");
 
 			File f = new File(path);
