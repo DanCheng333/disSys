@@ -28,22 +28,21 @@ class Proxy {
 			switch(o) {
 				case CREATE:
 					System.err.println("CREATE");
-
-					System.err.println("CREATE_NEW");
+					if (f.isDirectory()) {
+						return Errors.EISDIR;
+					}
 					if (!f.exists()) {
 						try {
-							System.err.println("CREATE_NEW");
+							System.err.println("ct");
 							f.createNewFile();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}		
 					
-					if (f.isDirectory()) {
-						return Errors.EISDIR;
-					}
+					
 					try {
-						System.err.println("CREATE_NEW");
+						System.err.println("raf");
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
 						FileInfo fi_c = new FileInfo(f,raf_c);
@@ -58,6 +57,12 @@ class Proxy {
 					if (f.exists()) {
 						return Errors.EEXIST;
 					}	
+					try {
+						f.createNewFile();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					
 					if (f.isDirectory()) {
 						return Errors.EISDIR;
 					}
