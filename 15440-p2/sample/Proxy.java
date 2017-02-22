@@ -241,7 +241,9 @@ class Proxy {
 			if (!fd2Raf.isEmpty()) {
 				for (Entry<Integer,FileInfo> c : fd2Raf.entrySet()) {
 					try {
-						c.getValue().raf.close();
+						if (c.getValue().raf != null) {
+							c.getValue().raf.close();
+						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
