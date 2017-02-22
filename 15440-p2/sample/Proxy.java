@@ -159,18 +159,25 @@ class Proxy {
 			System.err.println("read op");
 
 			FileInfo raf = fd2Raf.get(fd);
+			System.err.println("bad fd");
+
 			if (raf == null) {
 				return Errors.EBADF;
 			}
+			System.err.println("dir");
+
 			if (raf.file.isDirectory()) {
 				return Errors.EISDIR;
 			}
+			System.err.println("eninval");
 			if (!raf.file.canRead()) {
 				return Errors.EINVAL;
 			}
 			int ret = -1;
 			try {
 				ret = raf.raf.read(buf);
+				System.err.println("ret is");
+				System.err.println(ret);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return Errors.EBADF;
