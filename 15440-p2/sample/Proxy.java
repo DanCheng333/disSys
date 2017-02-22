@@ -17,8 +17,7 @@ class FileInfo{
 class Proxy {
 	public static final int MAXFDSIZE = 1000;
 	private static class FileHandler implements FileHandling {
-		ConcurrentHashMap<Integer,FileInfo> fd2Raf = 
-				new ConcurrentHashMap<Integer,FileInfo>();
+		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
 		public synchronized int open( String path, OpenOption o ) {
 			File f = new File(path);
 			int fd = fd2Raf.size()+1;
@@ -276,12 +275,14 @@ class Proxy {
 	
 	private static class FileHandlingFactory implements FileHandlingMaking {
 		public FileHandling newclient() {
-			return new FileHandler();
+			FileHandler fh = new FileHandler();
+			fh.fd2Raf = new ConcurrentHashMap<Integer,FileInfo>();
+			return fh;
 		}
 	}
 
 	public static void main(String[] args) throws IOException {
-		System.out.println("Hello World");
+		System.out.println("Hello World");	
 		(new RPCreceiver(new FileHandlingFactory())).run();
 	}
 }
