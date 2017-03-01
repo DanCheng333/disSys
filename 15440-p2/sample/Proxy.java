@@ -3,6 +3,10 @@
 import java.io.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 class FileInfo{
 	File file;
@@ -15,6 +19,11 @@ class FileInfo{
 
 
 class Proxy {
+	public static String serverip;
+	public static int port;
+	public static String cachedir;
+	public static int cachesize;
+	public static RemoteInt server;
 	public static final int MAXFDSIZE = 1000;
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
@@ -282,8 +291,27 @@ class Proxy {
 	}
 
 	public static void main(String[] args) throws IOException {
-		System.out.println("Hello World");	
+		if (args.length < 4) {
+			System.err.println("Not enough arguments!");
+		}
+		System.err.println("Proxy args "+args[0]+args[1]+args[2]+args[3]);	
+		//Get Args for proxy
+		Proxy.serverip = args[0];
+		Proxy.port = Integer.parseInt(args[1]);
+		Proxy.cachedir = args[2];
+		Proxy.cachesize = Integer.parseInt(args[3]);
+		
+		try {
+			Proxy.server = (RemoteInt)Naming.lookup ("//127.0.0.1/Server");
+			System.err.println("CLient call hello");
+			Proxy.server.sayHello();
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		} 
+		
+		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
+		
 	}
 }
 
