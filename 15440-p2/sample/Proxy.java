@@ -302,7 +302,7 @@ class Proxy {
 		Proxy.cachesize = Integer.parseInt(args[3]);
 		
 		try {
-			Proxy.server = (RemoteInt)Naming.lookup ("//127.0.0.1/Server");
+			Proxy.server = (RemoteInt)Naming.lookup ("//localhost/Server");
 			System.err.println("CLient call hello");
 			Proxy.server.sayHello();
 		} catch (NotBoundException e) {

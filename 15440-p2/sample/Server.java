@@ -38,7 +38,7 @@ public class Server extends UnicastRemoteObject implements Remote {
 			e.printStackTrace();
 		} 
     	try {
-			Naming.rebind("//127.0.0.1/Server", server);
+			Naming.rebind("//localhost/Server", server);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
