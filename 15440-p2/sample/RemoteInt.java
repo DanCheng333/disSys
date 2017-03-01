@@ -1,6 +1,10 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-public interface RemoteInt extends Remote {
-    String sayHello() throws RemoteException;
+public class RemoteInt {
+
+	public interface ServerI extends Remote {
+		public String sayHello() throws RemoteException;
+	}
+
 }
