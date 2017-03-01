@@ -302,11 +302,11 @@ class Proxy {
 		Proxy.cachesize = Integer.parseInt(args[3]);
 		
 		try {
-			Proxy.server = (RemoteInt)Naming.lookup ("//127.0.0.1/Server");
+			Proxy.server = (RemoteInt)Naming.lookup (String.format("//127.0.0.1:%d/Server", Proxy.port));
 			System.err.println("CLient call hello");
 			Proxy.server.sayHello();
 		} catch (NotBoundException e) {
-			e.printStackTrace();
+			System.err.println("Proxy fails to create server");
 		} 
 		
 		//File handling

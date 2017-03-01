@@ -35,7 +35,7 @@ public class Server extends UnicastRemoteObject implements Remote {
 			e1.printStackTrace();
 		}
     	try { // create registry if it doesn’t exist 
-    		LocateRegistry.createRegistry(1099); // port
+    		LocateRegistry.createRegistry(port); // port
     	} catch (RemoteException e) {
     		System.err.println("Failed to create the RMI registry " + e);
     	}
@@ -47,7 +47,7 @@ public class Server extends UnicastRemoteObject implements Remote {
 			System.err.println("Failed to create server");
 		} 
     	try {
-			Naming.rebind("//127.0.0.1/Server", server);
+			Naming.rebind(String.format("//127.0.0.1:%d/Server", port), server);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
