@@ -302,6 +302,9 @@ class Proxy {
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]);
 		
+		//File handling
+		(new RPCreceiver(new FileHandlingFactory())).run();
+		
 		try {
 			String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
 			System.err.println("url is "+url);
@@ -311,10 +314,6 @@ class Proxy {
 		} catch (NotBoundException e) {
 			System.err.println("Proxy fails to create server");
 		} 
-		
-		//File handling
-		(new RPCreceiver(new FileHandlingFactory())).run();
-		
 	}
 }
 
