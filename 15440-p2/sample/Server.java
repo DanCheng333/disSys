@@ -8,7 +8,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
         
-public class Server extends UnicastRemoteObject implements Remote {
+public class Server extends UnicastRemoteObject implements IServer {
     public int port;
     public String rootdir;
     public Server(int p, String rt) throws RemoteException{

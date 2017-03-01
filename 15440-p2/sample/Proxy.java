@@ -24,7 +24,7 @@ class Proxy {
 	public static int port;
 	public static String cachedir;
 	public static int cachesize;
-	public static RemoteInt.ServerI server;
+	public static IServer server;
 	public static final int MAXFDSIZE = 1000;
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
@@ -303,7 +303,9 @@ class Proxy {
 		Proxy.cachesize = Integer.parseInt(args[3]);
 		
 		try {
-			Proxy.server = (RemoteInt.ServerI)Naming.lookup (String.format("//127.0.0.1:%d/Server", Proxy.port));
+			String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
+			System.err.println("url is "+url);
+			Proxy.server = (IServer)Naming.lookup (url);
 			System.err.println("CLient call hello");
 			Proxy.server.sayHello();
 		} catch (NotBoundException e) {
