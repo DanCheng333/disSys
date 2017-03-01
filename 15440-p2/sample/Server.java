@@ -1,6 +1,8 @@
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -26,8 +28,14 @@ public class Server extends UnicastRemoteObject implements Remote {
     	}
     	System.err.println("Server args "+args[0]+args[1]);
         int port = Integer.parseInt(args[0]);
+        try {
+			System.err.println("IP address"+InetAddress.getLocalHost().getHostAddress());
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     	try { // create registry if it doesn’t exist 
-    		LocateRegistry.createRegistry(port); // port
+    		LocateRegistry.createRegistry(1099); // port
     	} catch (RemoteException e) {
     		System.err.println("Failed to create the RMI registry " + e);
     	}
