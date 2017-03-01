@@ -307,7 +307,7 @@ class Proxy {
 			System.err.println("url is "+url);
 			Proxy.server = (IServer)Naming.lookup (url);
 			System.err.println("CLient call hello");
-			Proxy.server.sayHello();
+			System.err.println(Proxy.server.sayHello());
 		} catch (NotBoundException e) {
 			System.err.println("Proxy fails to create server");
 		} 
