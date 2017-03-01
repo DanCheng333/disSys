@@ -29,16 +29,17 @@ public class Server extends UnicastRemoteObject implements Remote {
     	try { // create registry if it doesn’t exist 
     		LocateRegistry.createRegistry(port); // port
     	} catch (RemoteException e) {
+    		System.err.println("Failed to create the RMI registry " + e);
     	}
     	
     	Server server = null;
 		try {
 			server = new Server(port,args[1]);
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			System.err.println("Failed to create server");
 		} 
     	try {
-			Naming.rebind("//localhost/Server", server);
+			Naming.rebind("//127.0.0.1/Server", server);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
