@@ -6,11 +6,14 @@ all: Proxy.class IServer.class Server.class
 clean:
 	rm -f *.class
 	
+env:
+	env proxyport15440=15921 
+	
 proxy1:
-	env proxyport15440=15121 java Proxy 127.0.0.1 21122 /tmp/cache 100000 &
+	java Proxy 127.0.0.1 29122 /tmp/cache 100000 &
 
 server1:
-	java Server 21122 fileroot &
+	java Server 29122 fileroot &
 
 testCat:
 	rm -rf /tmp/cache/*
