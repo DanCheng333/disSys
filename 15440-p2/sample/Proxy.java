@@ -67,6 +67,7 @@ class Proxy {
 			String newPath = path;
 			//HIT, get file from cache
 			if(cache.contains(path)) {
+				System.err.print("Hit!");
 				newPath = cacheMap.get(path);
 			}
 			//MISS, download from server, put in cache
@@ -77,11 +78,11 @@ class Proxy {
 				System.err.print("file:"+path+", new path for this cache: "+newPath);
 				
 				//Create a newFile and write to it.
-				File newCache = new File(newPath);
-				if (!newCache.exists()) {
+				File f = new File(newPath);
+				if (!f.exists()) {
 					System.err.print("create a new file called "+newPath);
 					try {
-						newCache.createNewFile();
+						f.createNewFile();
 					} catch (IOException e) {
 						System.err.print("failed to create new file"); 
 						e.printStackTrace();
@@ -94,6 +95,7 @@ class Proxy {
 					outputFile.write(data, 0, data.length);
 					outputFile.flush();
 					outputFile.close();
+					System.err.print("Finish write to cachefile");
 				} catch (FileNotFoundException e) {
 					System.err.print("Failed to create a cachefile");
 					e.printStackTrace();
@@ -103,8 +105,7 @@ class Proxy {
 				}
 			}
 			
-			
-			File f = new File(newPath);
+	
 			if (fd > MAXFDSIZE) {
 				return Errors.EMFILE;
 			}
