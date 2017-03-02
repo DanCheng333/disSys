@@ -59,7 +59,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-    	try { // create registry if it doesn’t exist 
+    	try { 
     		LocateRegistry.createRegistry(port); // port
     	} catch (RemoteException e) {
     		System.err.println("Failed to create the RMI registry " + e);
