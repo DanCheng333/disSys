@@ -7,13 +7,13 @@ clean:
 	rm -f *.class
 	
 env:
-	env proxyport15440=15921 
+	env proxyport15440=15440 
 	
 proxy1:
-	java Proxy 127.0.0.1 29119 /tmp/cache 100000 &
+	java Proxy 127.0.0.1 29110 /tmp/cache 100000 &
 
 server1:
-	java Server 29119 fileroot &
+	java Server 29110 fileroot &
 
 testCat:
 	rm -rf /tmp/cache/*

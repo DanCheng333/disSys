@@ -38,6 +38,31 @@ class Proxy {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
 		
 		public synchronized int open( String path, OpenOption o ) {
+			try {
+				String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
+				System.err.println("url is "+url);
+				try {
+					Proxy.server = (IServer)Naming.lookup (url);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.err.println("CLient call hello");
+				try {
+					System.err.println(Proxy.server.sayHello());
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (NotBoundException e) {
+				System.err.println("Proxy fails to create server");
+			}
+			
+			
+			
 			int fd = fd2Raf.size()+1;
 			String newPath = path;
 			//HIT, get file from cache
@@ -326,28 +351,6 @@ class Proxy {
 		public FileHandling newclient() {
 			FileHandler fh = new FileHandler();
 			fh.fd2Raf = new ConcurrentHashMap<Integer,FileInfo>();
-			try {
-				String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
-				System.err.println("url is "+url);
-				try {
-					Proxy.server = (IServer)Naming.lookup (url);
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.err.println("CLient call hello");
-				try {
-					System.err.println(Proxy.server.sayHello());
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} catch (NotBoundException e) {
-				System.err.println("Proxy fails to create server");
-			}
 			return fh;
 		}
 	}
