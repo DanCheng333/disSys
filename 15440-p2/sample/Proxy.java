@@ -217,11 +217,16 @@ class Proxy {
 			System.err.println("Closing this path in server"+ path+"  file length "+len);
 			String cachePath = cacheMap.get(path);
 			System.err.println("Cache file path : "+cachePath);
-			
-			//update files
+			BufferedOutputStream outputFile;			
+			//update cache files and server files
 			byte buffer[] = new byte[len];
 			try {
+				outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
 				raf.raf.read(buffer, 0, len);
+				outputFile.write(buffer, 0, len);
+				outputFile.flush();
+				outputFile.close();
+				
 			} catch (IOException e1) {
 				System.err.println("read cache content failed");
 				e1.printStackTrace();
