@@ -70,6 +70,7 @@ class Proxy {
 			if(cache.contains(path)) {
 				System.err.print("Hit!");
 				newPath = cacheMap.get(path);
+				System.err.print("newPath "+newPath);
 				f = new File(newPath);
 			}
 			//MISS, download from server, put in cache
