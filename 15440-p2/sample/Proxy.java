@@ -77,6 +77,16 @@ class Proxy {
 				System.err.print("file:"+path+", new path for this cache: "+newPath);
 				
 				//Create a newFile and write to it.
+				File newCache = new File(newPath);
+				if (!newCache.exists()) {
+					System.err.print("create a new file called "+newPath);
+					try {
+						newCache.createNewFile();
+					} catch (IOException e) {
+						System.err.print("failed to create new file"); 
+						e.printStackTrace();
+					}
+				}
 				BufferedOutputStream outputFile;
 				try {
 					outputFile = new BufferedOutputStream(new FileOutputStream(newPath));
