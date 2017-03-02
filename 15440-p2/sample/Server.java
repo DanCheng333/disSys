@@ -27,7 +27,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public byte[] downloadFile(String path) throws RemoteException {
 		byte buffer[] = new byte[1000000];
 		try {
-			String serverFilePath = this.rootdir+path;
+			String serverFilePath = this.rootdir+String.format("/%s",path);
 			System.err.println("Server File Path "+ serverFilePath);
 			BufferedInputStream input = new BufferedInputStream(new FileInputStream(serverFilePath));
 			input.read(buffer, 0, 1000000);
