@@ -1,8 +1,10 @@
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -45,9 +47,19 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 
 	@Override
-	public byte[] uploadFile(String path, byte[] buffer) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+	public boolean uploadFile(String path, byte[] buffer) throws RemoteException {
+		String serverFilePath = this.rootdir+String.format("/%s",path);
+		try {
+			System.err.println("uploadFile Path: " + serverFilePath);
+			File file = new File(serverFilePath);
+			RandomAccessFile raf = new RandomAccessFile(file, "rw");
+			raf.write(buffer, 0, buffer.length);
+			raf.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 
 

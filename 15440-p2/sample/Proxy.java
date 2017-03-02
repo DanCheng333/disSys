@@ -13,11 +13,13 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 class FileInfo{
+	String path;
 	File file;
 	RandomAccessFile raf;
-	public FileInfo(File f, RandomAccessFile r) {
+	public FileInfo(File f, RandomAccessFile r, String p) {
 		this.file=f;
 		this.raf=r;
+		this.path=p;
 	}
 }
 
@@ -133,7 +135,7 @@ class Proxy {
 						System.err.println("raf");
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
-						FileInfo fi_c = new FileInfo(f,raf_c);
+						FileInfo fi_c = new FileInfo(f,raf_c,path);
 						fd2Raf.put(fd,fi_c);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -158,7 +160,7 @@ class Proxy {
 						System.err.println("CREATE_NEW");
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
-						FileInfo fi_cn = new FileInfo(f,raf_cn);
+						FileInfo fi_cn = new FileInfo(f,raf_cn,path);
 						fd2Raf.put(fd,fi_cn);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -177,7 +179,7 @@ class Proxy {
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
 					}
-					FileInfo fi_r = new FileInfo(f,raf_r);
+					FileInfo fi_r = new FileInfo(f,raf_r,path);
 					fd2Raf.put(fd,fi_r);
 					break;
 				case WRITE:
@@ -191,7 +193,7 @@ class Proxy {
 					
 					try {
 						RandomAccessFile raf_w = new RandomAccessFile(f,"rw");
-						FileInfo fi_w = new FileInfo(f,raf_w);
+						FileInfo fi_w = new FileInfo(f,raf_w,path);
 						fd2Raf.put(fd,fi_w);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -207,7 +209,31 @@ class Proxy {
 		//EBADF
 		public synchronized int close( int fd ) {
 			System.err.println("close op");
+
+			
 			FileInfo raf = fd2Raf.get(fd);
+			int len = (int) raf.file.length();
+			String path = raf.path;
+			System.err.println("Closing this path in server"+ path+"  file length "+len);
+			String cachePath = cacheMap.get(path);
+			System.err.println("Cache file path : "+cachePath);
+			
+			//update files
+			byte buffer[] = new byte[len];
+			try {
+				raf.raf.read(buffer, 0, len);
+			} catch (IOException e1) {
+				System.err.println("read cache content failed");
+				e1.printStackTrace();
+			}
+			try {
+				server.uploadFile(path, buffer);
+			} catch (RemoteException e1) {
+				System.err.println("upload files failed");
+				e1.printStackTrace();
+			}
+			
+			
 			if(raf == null) {
 				return Errors.EBADF;
 			}
