@@ -65,10 +65,12 @@ class Proxy {
 			
 			int fd = fd2Raf.size()+1;
 			String newPath = path;
+			File f;
 			//HIT, get file from cache
 			if(cache.contains(path)) {
 				System.err.print("Hit!");
 				newPath = cacheMap.get(path);
+				f = new File(newPath);
 			}
 			//MISS, download from server, put in cache
 			else {
@@ -78,7 +80,7 @@ class Proxy {
 				System.err.print("file:"+path+", new path for this cache: "+newPath);
 				
 				//Create a newFile and write to it.
-				File f = new File(newPath);
+				f = new File(newPath);
 				if (!f.exists()) {
 					System.err.print("create a new file called "+newPath);
 					try {
