@@ -5,9 +5,12 @@ all: Proxy.class IServer.class Server.class
 
 clean:
 	rm -f *.class
+
+setPath:
+	setenv CLASSPATH ../sample:../lib
 	
 env:
-	env proxyport15440=15440 
+	env proxyport15440=11140 
 	
 proxy1:
 	java Proxy 127.0.0.1 29110 /tmp/cache 100000 &
@@ -17,4 +20,4 @@ server1:
 
 testCat:
 	rm -rf /tmp/cache/*
-	env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat hello.txt
+	env LD_PRELOAD=../lib/lib440lib.so ../tools/440read hello.txt
