@@ -1,6 +1,7 @@
 /* Sample skeleton for proxy */
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -325,6 +326,28 @@ class Proxy {
 		public FileHandling newclient() {
 			FileHandler fh = new FileHandler();
 			fh.fd2Raf = new ConcurrentHashMap<Integer,FileInfo>();
+			try {
+				String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
+				System.err.println("url is "+url);
+				try {
+					Proxy.server = (IServer)Naming.lookup (url);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				System.err.println("CLient call hello");
+				try {
+					System.err.println(Proxy.server.sayHello());
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (NotBoundException e) {
+				System.err.println("Proxy fails to create server");
+			}
 			return fh;
 		}
 	}
@@ -338,16 +361,7 @@ class Proxy {
 		Proxy.serverip = args[0];
 		Proxy.port = Integer.parseInt(args[1]);
 		Proxy.cachedir = args[2];
-		Proxy.cachesize = Integer.parseInt(args[3]);
-		try {
-			String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
-			System.err.println("url is "+url);
-			Proxy.server = (IServer)Naming.lookup (url);
-			System.err.println("CLient call hello");
-			System.err.println(Proxy.server.sayHello());
-		} catch (NotBoundException e) {
-			System.err.println("Proxy fails to create server");
-		} 
+		Proxy.cachesize = Integer.parseInt(args[3]); 
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
