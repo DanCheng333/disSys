@@ -244,29 +244,25 @@ class Proxy {
 
 		//EBADF,ENINVAL,EISDIR
 		public synchronized long read( int fd, byte[] buf ) {
-			System.err.println("read op");
+			//System.err.println("read op");
 
-			FileInfo raf = fd2Raf.get(fd);
-			System.err.println("bad fd");
-			
+			FileInfo raf = fd2Raf.get(fd);			
 			if (raf == null) {
 				return Errors.EBADF;
 			}
-			System.err.println(raf.file.getName());
-			System.err.println("dir");
-
+			//System.err.println(raf.file.getName());
 			if (raf.file.isDirectory()) {
 				return Errors.EISDIR;
 			}
-			System.err.println("eninval");
+			//System.err.println("eninval");
 			if (!raf.file.canRead()) {
 				return Errors.EINVAL;
 			}
 			int ret = -1;
 			try {
 				ret = raf.raf.read(buf);
-				System.err.println("ret is");
-				System.err.println(ret);
+				//System.err.println("ret is");
+				//System.err.println(ret);
 				if (ret == -1) {
 					ret = 0;
 				}
