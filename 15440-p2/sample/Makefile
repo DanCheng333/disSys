@@ -9,15 +9,12 @@ clean:
 setPath:
 	setenv CLASSPATH ../sample:../lib
 	
-env:
-	env proxyport15440=11240 
-	
 proxy1:
-	java Proxy 127.0.0.1 29210 /tmp/cache 100000 &
+	env proxyport15440=11243 java Proxy 127.0.0.1 20329 /tmp/cache 100000 &
 
 server1:
-	java Server 29210 fileroot &
+	java Server 20329 fileroot &
 
 testCat:
 	rm -rf /tmp/cache/*
-	env LD_PRELOAD=../lib/lib440lib.so ../tools/440read hello.txt
+	env proxyport15440=11243 env LD_PRELOAD=../lib/lib440lib.so ../tools/440read hello.txt

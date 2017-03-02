@@ -365,6 +365,8 @@ class Proxy {
 		Proxy.port = Integer.parseInt(args[1]);
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]); 
+		Proxy.cache = new LinkedList<String>();
+		Proxy.cacheMap = new ConcurrentHashMap<String, String>();
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
