@@ -16,10 +16,12 @@ class FileInfo{
 	String path;
 	File file;
 	RandomAccessFile raf;
-	public FileInfo(File f, RandomAccessFile r, String p) {
+	boolean modified;
+	public FileInfo(File f, RandomAccessFile r, String p, boolean m) {
 		this.file=f;
 		this.raf=r;
 		this.path=p;
+		this.modified=m;
 	}
 }
 
@@ -135,7 +137,7 @@ class Proxy {
 						System.err.println("raf");
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
-						FileInfo fi_c = new FileInfo(f,raf_c,path);
+						FileInfo fi_c = new FileInfo(f,raf_c,path,false);
 						fd2Raf.put(fd,fi_c);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -160,7 +162,7 @@ class Proxy {
 						System.err.println("CREATE_NEW");
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
-						FileInfo fi_cn = new FileInfo(f,raf_cn,path);
+						FileInfo fi_cn = new FileInfo(f,raf_cn,path,false);
 						fd2Raf.put(fd,fi_cn);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -179,7 +181,7 @@ class Proxy {
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
 					}
-					FileInfo fi_r = new FileInfo(f,raf_r,path);
+					FileInfo fi_r = new FileInfo(f,raf_r,path,false);
 					fd2Raf.put(fd,fi_r);
 					break;
 				case WRITE:
@@ -193,7 +195,7 @@ class Proxy {
 					
 					try {
 						RandomAccessFile raf_w = new RandomAccessFile(f,"rw");
-						FileInfo fi_w = new FileInfo(f,raf_w,path);
+						FileInfo fi_w = new FileInfo(f,raf_w,path,false);
 						fd2Raf.put(fd,fi_w);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -212,6 +214,9 @@ class Proxy {
 
 			
 			FileInfo raf = fd2Raf.get(fd);
+			if(raf == null) {
+				return Errors.EBADF;
+			}
 			int len = (int) raf.file.length();
 			String path = raf.path;
 			System.err.println("Closing this path in server"+ path+"  file length "+len);
@@ -219,28 +224,25 @@ class Proxy {
 			System.err.println("Cache file path : "+cachePath);
 			BufferedOutputStream outputFile;			
 			//update cache files and server files
-			byte buffer[] = new byte[len];
-			try {
-				outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
-				raf.raf.read(buffer, 0, len);
-				outputFile.write(buffer, 0, len);
-				outputFile.flush();
-				outputFile.close();
-				
-			} catch (IOException e1) {
-				System.err.println("read cache content failed");
-				e1.printStackTrace();
-			}
-			try {
-				server.uploadFile(path, buffer);
-			} catch (RemoteException e1) {
-				System.err.println("upload files failed");
-				e1.printStackTrace();
-			}
-			
-			
-			if(raf == null) {
-				return Errors.EBADF;
+			if (raf.modified) {
+				byte buffer[] = new byte[len];
+				try {
+					outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
+					raf.raf.read(buffer, 0, len);
+					outputFile.write(buffer, 0, len);
+					outputFile.flush();
+					outputFile.close();
+					
+				} catch (IOException e1) {
+					System.err.println("read cache content failed");
+					e1.printStackTrace();
+				}
+				try {
+					server.uploadFile(path, buffer);
+				} catch (RemoteException e1) {
+					System.err.println("upload files failed");
+					e1.printStackTrace();
+				}
 			}
 			try {
 				if (raf.raf != null) {
@@ -259,10 +261,11 @@ class Proxy {
 		public synchronized long write( int fd, byte[] buf ) {
 			System.err.println("write op");
 
-			FileInfo raf = fd2Raf.get(fd);
+			FileInfo raf = fd2Raf.get(fd);		
 			if(raf == null) {
 				return Errors.EBADF;
 			}
+			raf.modified = true;
 			if (!raf.file.canWrite()) {
 				return Errors.EINVAL;
 			}
