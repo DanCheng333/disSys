@@ -95,6 +95,7 @@ class Proxy {
 				try {
 					outputFile = new BufferedOutputStream(new FileOutputStream(newPath));
 					byte data[] = server.downloadFile(path);
+					System.err.print("datalength " + String.valueOf(data.length));
 					outputFile.write(data, 0, data.length);
 					outputFile.flush();
 					outputFile.close();

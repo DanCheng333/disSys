@@ -1,6 +1,7 @@
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -25,12 +26,15 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	@Override
 	public byte[] downloadFile(String path) throws RemoteException {
-		byte buffer[] = new byte[1000000];
+		File f = new File(path);
+		int len = (int) f.length();
+		System.err.println("file length "+len);
+		byte buffer[] = new byte[len];
 		try {
 			String serverFilePath = this.rootdir+String.format("/%s",path);
 			System.err.println("Server File Path "+ serverFilePath);
 			BufferedInputStream input = new BufferedInputStream(new FileInputStream(serverFilePath));
-			input.read(buffer, 0, 1000000);
+			input.read(buffer, 0, len);
 			input.close();
 		}catch(Exception e) {
 			System.err.println("Server Failed to read file");
