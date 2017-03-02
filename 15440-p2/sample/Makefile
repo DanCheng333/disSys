@@ -9,5 +9,8 @@ clean:
 proxy1:
 	env proxyport15440=15440 java Proxy 127.0.0.1 11122 /tmp/cache 100000 &
 
+server1:
+	java Server 11122 fileroot &
+
 testCat:
 	env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat lh.txt

@@ -1,11 +1,13 @@
 /* Sample skeleton for proxy */
 
 import java.io.*;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -25,12 +27,48 @@ class Proxy {
 	public static String cachedir;
 	public static int cachesize;
 	public static IServer server;
+	
+	public static LinkedList<String> cache;
+	public static ConcurrentHashMap<String,String> cacheMap;
+	
 	public static final int MAXFDSIZE = 1000;
+	
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
+		
 		public synchronized int open( String path, OpenOption o ) {
-			File f = new File(path);
 			int fd = fd2Raf.size()+1;
+			String newPath = path;
+			//HIT, get file from cache
+			if(cache.contains(path)) {
+				newPath = cacheMap.get(path);
+			}
+			//MISS, download from server, put in cache
+			else {
+				newPath = Proxy.cachedir + "/"+String.valueOf(fd)+".txt";
+				cache.add(path);
+				cacheMap.put(path, newPath);
+				System.err.print("file:"+path+", new path for this cache: "+newPath);
+				
+				//Create a newFile and write to it.
+				BufferedOutputStream outputFile;
+				try {
+					outputFile = new BufferedOutputStream(new FileOutputStream(newPath));
+					byte data[] = server.downloadFile(path);
+					outputFile.write(data, 0, data.length);
+					outputFile.flush();
+					outputFile.close();
+				} catch (FileNotFoundException e) {
+					System.err.print("Failed to create a cachefile");
+					e.printStackTrace();
+				} catch (IOException e) {
+					System.err.print("File to write,flush or close");
+					e.printStackTrace();
+				}
+			}
+			
+			
+			File f = new File(newPath);
 			if (fd > MAXFDSIZE) {
 				return Errors.EMFILE;
 			}

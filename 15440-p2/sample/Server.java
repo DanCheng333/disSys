@@ -1,5 +1,7 @@
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -12,7 +14,6 @@ public class Server extends UnicastRemoteObject implements IServer {
     public int port;
     public String rootdir;
     public Server(int p, String rt) throws RemoteException{
-    	super(0);
     	this.port=p;
     	this.rootdir=rt;
     	
@@ -21,7 +22,31 @@ public class Server extends UnicastRemoteObject implements IServer {
     public String sayHello() {
         return "Hello, world!";
     }
-        
+
+	@Override
+	public byte[] downloadFile(String path) throws RemoteException {
+		byte buffer[] = new byte[1000000];
+		try {
+			String serverFilePath = this.rootdir+path;
+			System.err.println("Server File Path "+ serverFilePath);
+			BufferedInputStream input = new BufferedInputStream(new FileInputStream(serverFilePath));
+			input.read(buffer, 0, 1000000);
+			input.close();
+		}catch(Exception e) {
+			System.err.println("Server Failed to read file");
+			e.printStackTrace();
+		}
+		return buffer;
+	}
+
+
+	@Override
+	public byte[] uploadFile(String path, byte[] buffer) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
     public static void main(String args[]) {
     	if (args.length < 2) {
     		System.err.println("Not enough args for Server");
@@ -54,4 +79,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			e.printStackTrace();
 		}
     }
+
+
+
 }
