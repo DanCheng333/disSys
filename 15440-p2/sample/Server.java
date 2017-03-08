@@ -80,7 +80,8 @@ public class Server extends UnicastRemoteObject implements IServer {
     	}
     	
 		try {
-			Server server = new Server(port,args[1]);		
+			Server server = new Server(port,args[1]);	
+			server.VersionMap = new ConcurrentHashMap<String,Integer>();
 	    	try {
 				Naming.rebind(String.format("//127.0.0.1:%d/Server", port), server);
 			} catch (RemoteException e) {
@@ -92,7 +93,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 			e.printStackTrace();
 			System.err.println("Failed to create server");
 		} 
-		//server.VersionMap = new ConcurrentHashMap<String,Integer>();
     }
 
 
