@@ -95,7 +95,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	Server server = null;
 		try {
 			server = new Server(port,args[1]);
-			server.VersionMap = new ConcurrentHashMap();
+			server.VersionMap = new ConcurrentHashMap<String,Integer>();
 		} catch (RemoteException e) {
 			System.err.println("Failed to create server");
 		} 
