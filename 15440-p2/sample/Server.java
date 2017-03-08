@@ -80,12 +80,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	}
     	System.err.println("Server args "+args[0]+args[1]);
         int port = Integer.parseInt(args[0]);
-        try {
-			System.err.println("IP address"+InetAddress.getLocalHost().getHostAddress());
-		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        
     	try { 
     		LocateRegistry.createRegistry(port); // port
     	} catch (RemoteException e) {
@@ -94,7 +89,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	
 		try {
 			Server server = new Server(port,args[1]);
-			server.VersionMap = new ConcurrentHashMap<String,Integer>();
+			
 	    	try {
 				Naming.rebind(String.format("//127.0.0.1:%d/Server", port), server);
 			} catch (RemoteException e) {
@@ -105,6 +100,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		} catch (RemoteException e) {
 			System.err.println("Failed to create server");
 		} 
+		//server.VersionMap = new ConcurrentHashMap<String,Integer>();
     }
 
 
