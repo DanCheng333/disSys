@@ -105,6 +105,7 @@ class Proxy {
 				System.err.println("Hit!");
 				cacheVersion = cacheMap.get(path).versionNum;
 				cachePath = cacheMap.get(path).cachePathName;
+				cacheMap.get(path).modified = false; //open is not modifying
 				try {
 					serverVersion = server.getVersionNum(path);
 				} catch (RemoteException e) {
@@ -117,6 +118,7 @@ class Proxy {
 				if (cacheVersion < serverVersion) { 
 					//Cache Version Does not Match Server Version
 					getFileFromServer(path,cachePath);
+					cacheMap.get(path).versionNum = serverVersion;
 					System.err.println("Version Unmatched! :(");									
 				}
 				f = new File(cachePath);				
