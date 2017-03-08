@@ -10,10 +10,10 @@ setPath:
 	setenv CLASSPATH ../sample:../lib
 	
 proxy1:
-	env proxyport15440=17117 java Proxy 127.0.0.1 27111 tmp 100000 &
+	env proxyport15440=17117 java Proxy 127.0.0.1 26111 tmp 100000 &
 
 server1:
-	java Server 27111 . &
+	env proxyport15440=17117 java Server 26111 . &
 
 rmCache:
 	rm -rf tmp/*
