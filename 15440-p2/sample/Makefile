@@ -20,11 +20,9 @@ rmCache:
 
 testCat:
 	env proxyport15440=13342 env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat hello.txt
-	env proxyport15440=13342 env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat world.txt
-
+	
 testRead:
 	env proxyport15440=13342 env LD_PRELOAD=../lib/lib440lib.so ../tools/440read hello.txt
-	env proxyport15440=13342 env LD_PRELOAD=../lib/lib440lib.so ../tools/440read world.txt
 
 testWrite:
 	cat world.txt | env proxyport15440=13342 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
