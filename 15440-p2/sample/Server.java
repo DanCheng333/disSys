@@ -93,6 +93,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				e.printStackTrace();
 			}
 		} catch (RemoteException e) {
+			e.printStackTrace();
 			System.err.println("Failed to create server");
 		} 
 		//server.VersionMap = new ConcurrentHashMap<String,Integer>();
