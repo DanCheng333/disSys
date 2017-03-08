@@ -113,7 +113,7 @@ class Proxy {
 				System.err.println("Cache Version"+cacheVersion);
 				System.err.println("Server Version" + serverVersion);
 				System.err.print("cahcePath in Hit"+cachePath);
-				if (cacheVersion <= serverVersion) { 
+				if (cacheVersion < serverVersion) { 
 					//Cache Version Does not Match Server Version
 					getFileFromServer(path,cachePath);
 					System.err.println("Version Unmatched! :(");									
