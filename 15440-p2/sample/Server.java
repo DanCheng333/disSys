@@ -1,13 +1,9 @@
-import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
-import java.net.UnknownHostException;
 import java.rmi.Naming;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.ConcurrentHashMap;
@@ -88,8 +84,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	}
     	
 		try {
-			Server server = new Server(port,args[1]);
-			
+			Server server = new Server(port,args[1]);		
 	    	try {
 				Naming.rebind(String.format("//127.0.0.1:%d/Server", port), server);
 			} catch (RemoteException e) {
