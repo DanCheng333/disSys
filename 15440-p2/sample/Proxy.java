@@ -104,7 +104,12 @@ class Proxy {
 				System.err.println("Hit!");
 				cacheVersion = cacheMap.get(path).versionNum;
 				cachePath = cacheMap.get(path).cachePathName;
-				serverVersion = server.getVersionNum(path);
+				try {
+					serverVersion = server.getVersionNum(path);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				System.err.println("Cache Version"+cacheVersion);
 				System.err.println("Server Version" + serverVersion);
 				System.err.print("cahcePath in Hit"+cachePath);
@@ -124,7 +129,12 @@ class Proxy {
 				cacheMap.put(path, cInfo);
 				System.err.println("file:"+path+", new path for this cache: "+cachePath);
 				
-				server.initVersionNum(path);
+				try {
+					server.initVersionNum(path);
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				getFileFromServer(path,cachePath);
 				
 				f = new File(cachePath);
