@@ -60,10 +60,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 		return VersionMap.get(path);
 	}
 
-	@Override
-	public void evictVersion(String path) {
-		VersionMap.remove(path); //not in cache anymore
-	}
 	
 	@Override
 	public void initVersionNum(String path) {
