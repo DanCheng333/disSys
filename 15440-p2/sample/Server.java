@@ -1,7 +1,11 @@
 import java.rmi.registry.LocateRegistry;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -55,15 +59,21 @@ public class Server extends UnicastRemoteObject implements IServer {
 			VersionMap.put(path, 0);
 		} // What happen if cacheGet evicted?
 		String serverFilePath = this.rootdir + String.format("/%s", path);
+		
+		BufferedOutputStream outputFile;
 		try {
-			System.err.println("uploadFile Path: " + serverFilePath);
-			File file = new File(serverFilePath);
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			raf.write(buffer, 0, buffer.length);
-			raf.close();
-		} catch (Exception e) {
+			outputFile = new BufferedOutputStream(new FileOutputStream(serverFilePath));
+			System.err.print("datalength " + String.valueOf(buffer.length));
+			outputFile.write(buffer, 0, buffer.length);
+			outputFile.flush();
+			outputFile.close();
+			System.err.print("Finish write to serverfile");
+		} catch (FileNotFoundException e) {
+			System.err.print("Failed to create a serverfile");
 			e.printStackTrace();
-			return false;
+		} catch (IOException e) {
+			System.err.print("File to write,flush or close");
+			e.printStackTrace();
 		}
 		return true;
 

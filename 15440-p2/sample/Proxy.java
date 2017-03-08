@@ -72,6 +72,7 @@ class Proxy {
 		}
 		
 		public synchronized void getFileFromServer(String path, String cachePath) {
+			System.err.println("Download file from server ..... ");
 			BufferedOutputStream outputFile;
 			try {
 				outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
@@ -91,11 +92,35 @@ class Proxy {
 			}
 		}
 		
+		public synchronized void uploadFileToServer(String path, String cachePath) {
+			System.err.println("Upload file from server ..... ");
+			File cacheF = new File(cachePath);
+			int len = (int) cacheF.length();
+			System.err.println("cache file length " + len);
+			
+			byte buffer[] = new byte[len];
+			try {
+				BufferedInputStream input = new BufferedInputStream(new FileInputStream(cachePath));
+				input.read(buffer, 0, len);
+				input.close();
+			} catch (Exception e) {
+				System.err.println("Proxy Failed to read cache file");
+				e.printStackTrace();
+			}
+			
+			try {
+				server.uploadFile(path, buffer);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 		public synchronized int open( String path, OpenOption o ) {
 			System.err.println("Call open");	
 			
 			int fd = fd2Raf.size()+1;
-			String cachePath = Proxy.cachedir + "/"+String.valueOf(fd)+".txt";
+			String cachePath = Proxy.cachedir + "/"+ path + String.valueOf(fd)+".txt";
 			int cacheVersion = 0;
 			int serverVersion = 0;
 			File f;
@@ -260,26 +285,12 @@ class Proxy {
 			if (cacheMap.get(raf.pathName).modified) {
 	            int len = (int) raf.file.length();
 	            String path = raf.pathName;
-	            System.err.println("Closing this path in server"+ path+"  file length "+len);
 	            String cachePath = cacheMap.get(path).cachePathName;
+	            uploadFileToServer(path,cachePath);
+	            
+	            System.err.println("Closing this path in server"+ path+"  file length "+len);
 	            System.err.println("Cache file path : "+cachePath);
 	            
-	            //update files
-	            byte buffer[] = new byte[len];
-	            try {
-	                raf.raf.read(buffer, 0, len);
-	            } catch (IOException e1) {
-	                System.err.println("read cache content failed");
-	                e1.printStackTrace();
-	            }
-	            try {
-	                server.uploadFile(path, buffer);
-	                System.err.println("Cache ver:"+cacheMap.get(path).versionNum);
-	                System.err.println("Server ver:"+server.getVersionNum(path));
-	            } catch (RemoteException e1) {
-	                System.err.println("upload files failed");
-	                e1.printStackTrace();
-	            }
 			}
 			try {
 				if (raf.raf != null) {
