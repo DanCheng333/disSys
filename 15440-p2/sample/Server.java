@@ -1,10 +1,8 @@
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -12,10 +10,13 @@ import java.rmi.Naming;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.ConcurrentHashMap;
         
 public class Server extends UnicastRemoteObject implements IServer {
     public int port;
     public String rootdir;
+    public ConcurrentHashMap<String, Integer> VersionMap;
+    
     public Server(int p, String rt) throws RemoteException{
     	this.port=p;
     	this.rootdir=rt;
@@ -47,21 +48,31 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 
 	@Override
-	public boolean uploadFile(String path, byte[] buffer) throws RemoteException {
-		String serverFilePath = this.rootdir+String.format("/%s",path);
-		try {
-			System.err.println("uploadFile Path: " + serverFilePath);
-			File file = new File(serverFilePath);
-			RandomAccessFile raf = new RandomAccessFile(file, "rw");
-			raf.write(buffer, 0, buffer.length);
-			raf.close();
-		}catch (Exception e) {
-			e.printStackTrace();
-			return false;
+	public byte[] uploadFile(String path, byte[] buffer, int versionNum) throws RemoteException {
+		if (VersionMap.containsKey(path)) {
+			int oldVer = VersionMap.get(path);
+			VersionMap.replace(path, oldVer+1); //Inc version Num
 		}
-		return true;
+		else { //not in VersionMap.
+			VersionMap.put(path, 0);			
+		} //What happen if cacheGet evicted?
+		return null;
+	}
+	
+	@Override
+	public int getVersionNum(String path) {
+		return VersionMap.get(path);
 	}
 
+	@Override
+	public void evictVersion(String path) {
+		VersionMap.remove(path); //not in cache anymore
+	}
+	
+	@Override
+	public void initVersionNum(String path) {
+		VersionMap.put(path, 0);
+	}
 
     public static void main(String args[]) {
     	if (args.length < 2) {
@@ -84,6 +95,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	Server server = null;
 		try {
 			server = new Server(port,args[1]);
+			server.VersionMap = new ConcurrentHashMap();
 		} catch (RemoteException e) {
 			System.err.println("Failed to create server");
 		} 

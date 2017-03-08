@@ -12,16 +12,25 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+class CacheInfo {
+	String cachePathName;
+	int versionNum;
+	public CacheInfo(String n, int ver) {
+		this.cachePathName = n;
+		this.versionNum = ver;
+	}
+}
+
 class FileInfo{
-	String path;
+	String pathName;
+	String cachePathName;
 	File file;
 	RandomAccessFile raf;
-	boolean modified;
-	public FileInfo(File f, RandomAccessFile r, String p, boolean m) {
+	public FileInfo(String path, String cachePath, File f, RandomAccessFile r) {
+		this.pathName = path;
+		this.cachePathName = cachePath;
 		this.file=f;
 		this.raf=r;
-		this.path=p;
-		this.modified=m;
 	}
 }
 
@@ -34,82 +43,102 @@ class Proxy {
 	public static IServer server;
 	
 	public static LinkedList<String> cache;
-	public static ConcurrentHashMap<String,String> cacheMap;
+	public static ConcurrentHashMap<String,CacheInfo> cacheMap;
 	
 	public static final int MAXFDSIZE = 1000;
 	
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
 		
-		public synchronized int open( String path, OpenOption o ) {
+		public synchronized void connect2Server() {
+			/* Connect to server */
 			try {
 				String url = String.format("//127.0.0.1:%d/Server", Proxy.port);
-				System.err.println("url is "+url);
+				System.err.println("Try to connect to server .... url is "+url);
 				try {
 					Proxy.server = (IServer)Naming.lookup (url);
 				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				System.err.println("CLient call hello");
 				try {
 					System.err.println(Proxy.server.sayHello());
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			} catch (NotBoundException e) {
 				System.err.println("Proxy fails to create server");
+			}	
+		}
+		
+		public synchronized void getFileFromServer(String path, String cachePath) {
+			BufferedOutputStream outputFile;
+			try {
+				outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
+				byte data[] = server.downloadFile(path);
+				System.err.print("datalength " + String.valueOf(data.length));
+				outputFile.write(data, 0, data.length);
+				// rewrite everything?
+				outputFile.flush();
+				outputFile.close();
+				System.err.print("Finish write to cachefile");
+			} catch (FileNotFoundException e) {
+				System.err.print("Failed to create a cachefile");
+				e.printStackTrace();
+			} catch (IOException e) {
+				System.err.print("File to write,flush or close");
+				e.printStackTrace();
 			}
-			
-			
+		}
+		
+		public synchronized int open( String path, OpenOption o ) {
+			System.err.println("Call open");	
 			
 			int fd = fd2Raf.size()+1;
-			String newPath = path;
+			String cachePath = Proxy.cachedir + "/"+String.valueOf(fd)+".txt";
+			int cacheVersion = 0;
+			int serverVersion = 0;
 			File f;
+			
 			//HIT, get file from cache
-			if(cache.contains(path)) {
-				System.err.print("Hit!");
-				newPath = cacheMap.get(path);
-				System.err.print("newPath "+newPath);
-				f = new File(newPath);
+			if(cache.contains(path)) { //File in cache
+				System.err.println("Hit!");
+				cacheVersion = cacheMap.get(path).versionNum;
+				cachePath = cacheMap.get(path).cachePathName;
+				serverVersion = server.getVersionNum(path);
+				System.err.println("Cache Version"+cacheVersion);
+				System.err.println("Server Version" + serverVersion);
+				System.err.print("cahcePath in Hit"+cachePath);
+				if (cacheVersion <= serverVersion) { 
+					//Cache Version Does not Match Server Version
+					getFileFromServer(path,cachePath);
+					System.err.println("Version Unmatched! :(");									
+				}
+				f = new File(cachePath);				
 			}
 			//MISS, download from server, put in cache
 			else {
-				newPath = Proxy.cachedir + "/"+String.valueOf(fd)+".txt";
+				System.err.println("Miss, cacheVersionNum " + cacheVersion);
 				cache.add(path);
-				cacheMap.put(path, newPath);
-				System.err.print("file:"+path+", new path for this cache: "+newPath);
+				System.err.print("cahcePath in Miss"+cachePath);
+				CacheInfo cInfo = new CacheInfo(cachePath,cacheVersion);
+				cacheMap.put(path, cInfo);
+				System.err.println("file:"+path+", new path for this cache: "+cachePath);
 				
-				//Create a newFile and write to it.
-				f = new File(newPath);
+				server.initVersionNum(path);
+				getFileFromServer(path,cachePath);
+				
+				f = new File(cachePath);
+				
 				if (!f.exists()) {
-					System.err.print("create a new file called "+newPath);
+					System.err.print("create a new cache file called "+cachePath);
 					try {
 						f.createNewFile();
 					} catch (IOException e) {
-						System.err.print("failed to create new file"); 
+						System.err.print("failed to create new cache file"); 
 						e.printStackTrace();
 					}
-				}
-				BufferedOutputStream outputFile;
-				try {
-					outputFile = new BufferedOutputStream(new FileOutputStream(newPath));
-					byte data[] = server.downloadFile(path);
-					System.err.print("datalength " + String.valueOf(data.length));
-					outputFile.write(data, 0, data.length);
-					outputFile.flush();
-					outputFile.close();
-					System.err.print("Finish write to cachefile");
-				} catch (FileNotFoundException e) {
-					System.err.print("Failed to create a cachefile");
-					e.printStackTrace();
-				} catch (IOException e) {
-					System.err.print("File to write,flush or close");
-					e.printStackTrace();
 				}
 			}
 			
@@ -137,7 +166,7 @@ class Proxy {
 						System.err.println("raf");
 						RandomAccessFile raf_c = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
-						FileInfo fi_c = new FileInfo(f,raf_c,path,false);
+						FileInfo fi_c = new FileInfo(path,cachePath,f,raf_c);
 						fd2Raf.put(fd,fi_c);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -162,7 +191,7 @@ class Proxy {
 						System.err.println("CREATE_NEW");
 						RandomAccessFile raf_cn = new RandomAccessFile(f,"rw");
 						System.err.println("create file info");
-						FileInfo fi_cn = new FileInfo(f,raf_cn,path,false);
+						FileInfo fi_cn = new FileInfo(path,cachePath,f,raf_cn);
 						fd2Raf.put(fd,fi_cn);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -181,7 +210,7 @@ class Proxy {
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
 					}
-					FileInfo fi_r = new FileInfo(f,raf_r,path,false);
+					FileInfo fi_r = new FileInfo(path,cachePath,f,raf_r);
 					fd2Raf.put(fd,fi_r);
 					break;
 				case WRITE:
@@ -195,7 +224,7 @@ class Proxy {
 					
 					try {
 						RandomAccessFile raf_w = new RandomAccessFile(f,"rw");
-						FileInfo fi_w = new FileInfo(f,raf_w,path,false);
+						FileInfo fi_w = new FileInfo(path,cachePath,f,raf_w);
 						fd2Raf.put(fd,fi_w);
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -211,38 +240,9 @@ class Proxy {
 		//EBADF
 		public synchronized int close( int fd ) {
 			System.err.println("close op");
-
-			
 			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
 				return Errors.EBADF;
-			}
-			int len = (int) raf.file.length();
-			String path = raf.path;
-			System.err.println("Closing this path in server"+ path+"  file length "+len);
-			String cachePath = cacheMap.get(path);
-			System.err.println("Cache file path : "+cachePath);
-			BufferedOutputStream outputFile;			
-			//update cache files and server files
-			if (raf.modified) {
-				byte buffer[] = new byte[len];
-				try {
-					outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
-					raf.raf.read(buffer, 0, len);
-					outputFile.write(buffer, 0, len);
-					outputFile.flush();
-					outputFile.close();
-					
-				} catch (IOException e1) {
-					System.err.println("read cache content failed");
-					e1.printStackTrace();
-				}
-				try {
-					server.uploadFile(path, buffer);
-				} catch (RemoteException e1) {
-					System.err.println("upload files failed");
-					e1.printStackTrace();
-				}
 			}
 			try {
 				if (raf.raf != null) {
@@ -261,11 +261,10 @@ class Proxy {
 		public synchronized long write( int fd, byte[] buf ) {
 			System.err.println("write op");
 
-			FileInfo raf = fd2Raf.get(fd);		
+			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
 				return Errors.EBADF;
 			}
-			raf.modified = true;
 			if (!raf.file.canWrite()) {
 				return Errors.EINVAL;
 			}
@@ -396,6 +395,7 @@ class Proxy {
 		public FileHandling newclient() {
 			FileHandler fh = new FileHandler();
 			fh.fd2Raf = new ConcurrentHashMap<Integer,FileInfo>();
+			fh.connect2Server();
 			return fh;
 		}
 	}
@@ -411,7 +411,7 @@ class Proxy {
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]); 
 		Proxy.cache = new LinkedList<String>();
-		Proxy.cacheMap = new ConcurrentHashMap<String, String>();
+		Proxy.cacheMap = new ConcurrentHashMap<String, CacheInfo>();
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
