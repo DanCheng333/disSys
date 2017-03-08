@@ -13,7 +13,8 @@ import java.rmi.RemoteException;
 class CacheInfo {
 	String cachePathName;
 	int versionNum;
-	public CacheInfo(String n, int ver) {
+	boolean modified;
+	public CacheInfo(String n, int ver, boolean modified) {
 		this.cachePathName = n;
 		this.versionNum = ver;
 	}
@@ -125,14 +126,13 @@ class Proxy {
 				System.err.println("Miss, cacheVersionNum " + cacheVersion);
 				cache.add(path);
 				System.err.println("cahcePath in Miss"+cachePath);
-				CacheInfo cInfo = new CacheInfo(cachePath,cacheVersion);
+				CacheInfo cInfo = new CacheInfo(cachePath,cacheVersion,false);
 				cacheMap.put(path, cInfo);
 				System.err.println("file:"+path+", new path for this cache: "+cachePath);
 				
 				try {
 					server.initVersionNum(path);
 				} catch (RemoteException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				getFileFromServer(path,cachePath);
@@ -253,6 +253,32 @@ class Proxy {
 			if(raf == null) {
 				return Errors.EBADF;
 			}
+			
+			//Upload cache file to server original file
+			if (cacheMap.get(raf.pathName).modified) {
+	            int len = (int) raf.file.length();
+	            String path = raf.pathName;
+	            System.err.println("Closing this path in server"+ path+"  file length "+len);
+	            String cachePath = cacheMap.get(path).cachePathName;
+	            System.err.println("Cache file path : "+cachePath);
+	            
+	            //update files
+	            byte buffer[] = new byte[len];
+	            try {
+	                raf.raf.read(buffer, 0, len);
+	            } catch (IOException e1) {
+	                System.err.println("read cache content failed");
+	                e1.printStackTrace();
+	            }
+	            try {
+	                server.uploadFile(path, buffer);
+	                System.err.println("Cache ver:"+cacheMap.get(path).versionNum);
+	                System.err.println("Server ver:"+server.getVersionNum(path));
+	            } catch (RemoteException e1) {
+	                System.err.println("upload files failed");
+	                e1.printStackTrace();
+	            }
+			}
 			try {
 				if (raf.raf != null) {
 					raf.raf.close();
@@ -279,6 +305,9 @@ class Proxy {
 			}
 			try {
 				raf.raf.write(buf);
+				System.err.println("Cache path Name: " + cacheMap.get(raf.pathName).cachePathName);
+				cacheMap.get(raf.pathName).modified = true;
+				System.err.println("Change cache modifed ?: " +  cacheMap.get(raf.pathName).modified);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return Errors.EBADF;
