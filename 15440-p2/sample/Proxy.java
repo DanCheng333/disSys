@@ -176,6 +176,7 @@ class Proxy {
 						System.err.println("create file info");
 						FileInfo fi_c = new FileInfo(path,cachePath,f,raf_c);
 						fd2Raf.put(fd,fi_c);
+						System.err.println("put in track");
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
 					}
@@ -381,7 +382,7 @@ class Proxy {
 			System.err.println("clientdone op");
 
 			//close all files recylce
-			/*if (!fd2Raf.isEmpty()) {
+			if (!fd2Raf.isEmpty()) {
 				for (Entry<Integer,FileInfo> c : fd2Raf.entrySet()) {
 					try {
 						if (c.getValue().raf != null) {
@@ -393,7 +394,7 @@ class Proxy {
 					//Reuse fds
 					fd2Raf.remove(c.getKey());
 				}
-			}*/
+			}
 			return;
 		}
 
