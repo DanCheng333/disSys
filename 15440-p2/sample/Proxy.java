@@ -112,7 +112,7 @@ class Proxy {
 				}
 				System.err.println("Cache Version"+cacheVersion);
 				System.err.println("Server Version" + serverVersion);
-				System.err.print("cahcePath in Hit"+cachePath);
+				System.err.println("cahcePath in Hit:"+cachePath);
 				if (cacheVersion < serverVersion) { 
 					//Cache Version Does not Match Server Version
 					getFileFromServer(path,cachePath);
@@ -124,7 +124,7 @@ class Proxy {
 			else {
 				System.err.println("Miss, cacheVersionNum " + cacheVersion);
 				cache.add(path);
-				System.err.print("cahcePath in Miss"+cachePath);
+				System.err.println("cahcePath in Miss"+cachePath);
 				CacheInfo cInfo = new CacheInfo(cachePath,cacheVersion);
 				cacheMap.put(path, cInfo);
 				System.err.println("file:"+path+", new path for this cache: "+cachePath);
@@ -140,11 +140,11 @@ class Proxy {
 				f = new File(cachePath);
 				
 				if (!f.exists()) {
-					System.err.print("create a new cache file called "+cachePath);
+					System.err.println("create a new cache file called "+cachePath);
 					try {
 						f.createNewFile();
 					} catch (IOException e) {
-						System.err.print("failed to create new cache file"); 
+						System.err.println("failed to create new cache file"); 
 						e.printStackTrace();
 					}
 				}
@@ -287,7 +287,7 @@ class Proxy {
 
 		//EBADF,ENINVAL,EISDIR
 		public synchronized long read( int fd, byte[] buf ) {
-			//System.err.println("read op");
+			System.err.println("read op");
 
 			FileInfo raf = fd2Raf.get(fd);			
 			if (raf == null) {
@@ -381,7 +381,7 @@ class Proxy {
 			System.err.println("clientdone op");
 
 			//close all files recylce
-			if (!fd2Raf.isEmpty()) {
+			/*if (!fd2Raf.isEmpty()) {
 				for (Entry<Integer,FileInfo> c : fd2Raf.entrySet()) {
 					try {
 						if (c.getValue().raf != null) {
@@ -393,7 +393,7 @@ class Proxy {
 					//Reuse fds
 					fd2Raf.remove(c.getKey());
 				}
-			}
+			}*/
 			return;
 		}
 
