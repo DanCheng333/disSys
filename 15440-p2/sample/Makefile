@@ -10,24 +10,24 @@ setPath:
 	setenv CLASSPATH ../sample:../lib
 	
 proxy1:
-	env proxyport15440=13373 java Proxy 127.0.0.1 26149 tmp 100 &
+	env proxyport15440=13374 java Proxy 127.0.0.1 26150 tmp 1000000 &
 
 server1:
-	env proxyport15440=13373 java Server 26149 . &
+	env proxyport15440=13374 java Server 26150 . &
 
 rmCache:
 	rm -rf tmp/*
 
 testCat:
-	env proxyport15440=13373 env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat fileroot/../hello.txt
+	env proxyport15440=13374 env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat fileroot/../hello.txt
 
 testRead:
-	env proxyport15440=13373 env LD_PRELOAD=../lib/lib440lib.so ../tools/440read fileroot/.././fileroot/hello.txt
+	env proxyport15440=13374 env LD_PRELOAD=../lib/lib440lib.so ../tools/440read fileroot/.././fileroot/hello.txt
 
 testWrite:
-	cat world.txt | env proxyport15440=13373 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
+	cat world.txt | env proxyport15440=13374 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
 
 testRm:
-	env proxyport15440=13373 env LD_PRELOAD=../lib/lib440lib.so ../tools/440rm fileroot/../hello.txt 
-	cat world.txt | env proxyport15440=13373 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
+	env proxyport15440=13374 env LD_PRELOAD=../lib/lib440lib.so ../tools/440rm fileroot/../hello.txt 
+	cat world.txt | env proxyport15440=13374 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
 	
