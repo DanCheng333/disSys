@@ -212,8 +212,10 @@ class Proxy {
 			//simpe path
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
-			if(!new File(Proxy.cacheDir).mkdirs()){
-				System.err.println("makedir fails, dir:"+Proxy.cacheDir);
+			if(cacheDir.length() > 0) {
+				if(!new File(Proxy.cacheDir).mkdirs()){
+					System.err.println("makedir fails, dir:"+Proxy.cacheDir);
+				}
 			}
 			
 			
@@ -583,6 +585,7 @@ class Proxy {
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]); 
 		Proxy.cacheLRU = new LRU(cachesize);
+		Proxy.cachedir = "";
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
