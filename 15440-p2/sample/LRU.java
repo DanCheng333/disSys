@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -13,6 +14,9 @@ public class LRU {
 	public int cacheSizeLimit;
 	
 	public ConcurrentHashMap<String,CacheInfo> getMap() {
+		for(Entry<String, CacheInfo> s:cacheMap.entrySet()) {
+			System.err.println("cache in map"+s.getKey());
+		}
 		return this.cacheMap;
 	}
 	
