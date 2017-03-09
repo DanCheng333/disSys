@@ -360,12 +360,11 @@ class Proxy {
 	            
 	            //Put this cache to MRU
 	            cInfo.modified = false;
-	            cInfo.size = len;
-	            cacheLRU.move2MRU(path, cInfo);
-	            
+	            cInfo.size = len;	            
 	            System.err.println("Closing this path in server"+ path+"  file length "+len);
 	            System.err.println("Cache file path : "+cachePath);            
 			}
+			cacheLRU.move2MRU(raf.pathName, cInfo);
 			try {
 				if (raf.raf != null) {
 					raf.raf.close();

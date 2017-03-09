@@ -45,7 +45,7 @@ public class LRU {
 	//For Open
 	public boolean add(String path,CacheInfo cInfo) {
 		//isUsing true
-		System.err.println("Adding path to cache:" + path);
+		System.err.println("......Adding path to cache:" + path);
 		int currCacheSize = this.cacheSize+cInfo.size;
 		//Evict to make space for new cache
 		if (currCacheSize > this.cacheSizeLimit) {
@@ -60,7 +60,7 @@ public class LRU {
 		this.cacheSize = currCacheSize;
 		this.cacheList.add(path);
 		this.cacheMap.put(path, cInfo);
-		System.err.println("size of cache now:" + this.cacheSize);
+		System.err.println("......size of cache now:" + this.cacheSize);
 		return true;
 	}
 
