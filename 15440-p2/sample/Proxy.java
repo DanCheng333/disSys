@@ -52,11 +52,12 @@ class Proxy {
 	public static int clientID;
 	
 	public static LRU cacheLRU;	
-	public static String cacheAddedDir;
 	public static final int MAXFDSIZE = 1000;
 	
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
+		public String cacheAddedDir;
+		public String fileName;
 		
 		public synchronized void connect2Server() {
 			/* Connect to server */
@@ -183,10 +184,11 @@ class Proxy {
 			while (dirStack.size() > 1) {
 				String d = dirStack.pop();
 				System.err.println("dir:"+d);
-				s = '\\'+s+d;
+				s = "/"+s+d;
 			}
-			Proxy.cacheAddedDir = s;
-			System.err.println("cacheDir:"+Proxy.cacheAddedDir);
+			this.cacheAddedDir = s;
+			this.fileName = dirStack.pop();
+			System.err.println("cacheDir:"+this.cacheAddedDir);
 			return sb.toString().substring(1);
 		}
 		
@@ -212,17 +214,18 @@ class Proxy {
 			//simpe path
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
-			if(Proxy.cacheAddedDir != null && Proxy.cacheAddedDir.length() > 0) {
-				if(!new File(Proxy.cacheAddedDir).mkdirs()){
-					System.err.println("makedir fails, dir:"+Proxy.cacheAddedDir);
+			if(this.cacheAddedDir != null && this.cacheAddedDir.length() > 0) {
+				if(!new File(Proxy.cachedir+this.cacheAddedDir).mkdirs()){
+					System.err.println("makedir fails, dir:"+Proxy.cachedir+this.cacheAddedDir);
 				}
 			}
 			
 			
-			String cachePath = Proxy.cachedir + "/"+ path+".txt";
-			String privateName = path + "clientID" +String.valueOf(Proxy.clientID);
+			String cachePath = Proxy.cachedir + "/"+ this.fileName+".txt";
+			System.err.println("!!!!!!cachePath:"+cachePath);
+			String privateName = this.fileName + "clientID" +String.valueOf(Proxy.clientID);
 			String privateCachePath = Proxy.cachedir + "/"+privateName+".txt";
-			
+			System.err.println("!!!!!!privatecachePath:"+privateCachePath);
 			int cacheVersion = 0;
 			int serverVersion = 0;
 			File f;
@@ -570,6 +573,8 @@ class Proxy {
 			FileHandler fh = new FileHandler();
 			fh.fd2Raf = new ConcurrentHashMap<Integer,FileInfo>();
 			fh.connect2Server();
+			fh.cacheAddedDir = "";
+			fh.fileName = "";
 			return fh;
 		}
 	}
@@ -585,7 +590,6 @@ class Proxy {
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]); 
 		Proxy.cacheLRU = new LRU(cachesize);
-		Proxy.cacheAddedDir = "";
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
