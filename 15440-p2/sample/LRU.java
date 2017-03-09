@@ -14,10 +14,14 @@ public class LRU {
 	public int cacheSize;
 	public int cacheSizeLimit;
 	
-	public ConcurrentHashMap<String,CacheInfo> getMap() {
+	private void printCache() {
+		System.err.println("~~~~~~~IN cache ~~~~~~");
 		for(Entry<String, CacheInfo> s:cacheMap.entrySet()) {
 			System.err.println("cache in map"+s.getKey()+"cache path:"+s.getValue().cachePathName);
 		}
+		System.err.println("~~~~~~~end of cache ~~~~~~");
+	}
+	public ConcurrentHashMap<String,CacheInfo> getMap() {
 		return this.cacheMap;
 	}
 	
@@ -38,7 +42,7 @@ public class LRU {
 				System.err.println("Remove cache path:"+lruCache);
 				currCacheSize = currCacheSize - cInfo.size;
 				System.err.println("curr size now"+currCacheSize);
-				File rmFile = new File(lruCache);
+				File rmFile = new File(cInfo.cachePathName);
 				rmFile.delete();
 				cacheList.remove(lruCache);
 				cacheMap.remove(lruCache);
@@ -46,6 +50,7 @@ public class LRU {
 			listIndex--;
 			
 		}
+		printCache();
 		return currCacheSize;
 	}
 	
@@ -70,6 +75,7 @@ public class LRU {
 		this.cacheList.add(path);
 		this.cacheMap.put(path, cInfo);
 		System.err.println("......size of cache now:" + this.cacheSize);
+		printCache();
 		return true;
 	}
 
@@ -90,6 +96,7 @@ public class LRU {
 		}
 		cacheList.addFirst(path);
 		cacheMap.put(path, cInfo);
+		printCache();
 		return true;
 	}
 	
