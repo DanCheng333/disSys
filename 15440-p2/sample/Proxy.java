@@ -14,10 +14,14 @@ class CacheInfo {
 	String cachePathName;
 	int versionNum;
 	boolean modified;
-	public CacheInfo(String n, int ver, boolean modified) {
+	boolean isUsing;
+	int size;
+	public CacheInfo(String n, int ver, boolean modified,boolean use,int s) {
 		this.cachePathName = n;
 		this.versionNum = ver;
 		this.modified = modified;
+		this.isUsing = use;
+		this.size = s;
 	}
 }
 
@@ -47,9 +51,7 @@ class Proxy {
 	public static IServer server;
 	public static int clientID;
 	
-	public static LinkedList<String> cache;
-	public static ConcurrentHashMap<String,CacheInfo> cacheMap;
-	
+	public static LRU cacheLRU;	
 	public static final int MAXFDSIZE = 1000;
 	
 	private static class FileHandler implements FileHandling {
@@ -79,7 +81,7 @@ class Proxy {
 			}	
 		}
 		
-		public synchronized void getFileFromServer(String path, String cachePath) {
+		public synchronized int getFileFromServer(String path, String cachePath) {
 			System.err.println("Download file from server ..... ");
 			BufferedOutputStream outputFile;
 			try {
@@ -91,6 +93,7 @@ class Proxy {
 				outputFile.flush();
 				outputFile.close();
 				System.err.println("Finish write to cachefile");
+				return data.length;
 			} catch (FileNotFoundException e) {
 				System.err.println("Failed to create a cachefile");
 				e.printStackTrace();
@@ -98,6 +101,8 @@ class Proxy {
 				System.err.println("File to write,flush or close");
 				e.printStackTrace();
 			}
+			//Should never get here
+			return -1;
 		}
 		
 		public synchronized void uploadFileToServer(String path, String cachePath) {
@@ -172,15 +177,13 @@ class Proxy {
 			File f;
 			
 			//HIT, get file from cache
-			if(cache.contains(path)) { //File in cache
+			if(cacheLRU.getMap().containsKey(path)) { //File in cache
 				System.err.println("Hit!");
-				cacheVersion = cacheMap.get(path).versionNum;
-				cachePath = cacheMap.get(path).cachePathName;
-				cacheMap.get(path).modified = false; //open is not modifying
+				cacheVersion = cacheLRU.getMap().get(path).versionNum;
+				cachePath = cacheLRU.getMap().get(path).cachePathName;
 				try {
 					serverVersion = server.getVersionNum(path);
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				System.err.println("Cache Version"+cacheVersion);
@@ -189,7 +192,7 @@ class Proxy {
 				if (cacheVersion < serverVersion) { 
 					//Cache Version Does not Match Server Version
 					getFileFromServer(path,cachePath);
-					cacheMap.get(path).versionNum = serverVersion;
+					cacheLRU.getMap().get(path).versionNum = serverVersion;
 					System.err.println("Version Unmatched! :(");									
 				}
 				f = new File(cachePath);				
@@ -197,10 +200,7 @@ class Proxy {
 			//MISS, download from server, put in cache
 			else {
 				System.err.println("Miss, cacheVersionNum " + cacheVersion);
-				cache.add(path);
 				System.err.println("cahcePath in Miss"+cachePath);
-				CacheInfo cInfo = new CacheInfo(cachePath,cacheVersion,false);
-				cacheMap.put(path, cInfo);
 				System.err.println("file:"+path+", new path for this cache: "+cachePath);
 				
 				try {
@@ -208,7 +208,13 @@ class Proxy {
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
-				getFileFromServer(path,cachePath);
+				
+				int fileSize = getFileFromServer(path,cachePath);
+				CacheInfo cInfo = new CacheInfo(cachePath,cacheVersion,false,true,fileSize);
+				if (!cacheLRU.add(path, cInfo)) { //no more mem for cache
+					return Errors.ENOMEM;
+				}
+				
 				
 				f = new File(cachePath);
 				
@@ -345,15 +351,20 @@ class Proxy {
 			}
 			
 			//Upload cache file to server original file
-			if (cacheMap.get(raf.pathName).modified) {
+			CacheInfo cInfo = cacheLRU.getMap().get(raf.pathName);
+			if (cInfo.modified) {
 	            int len = (int) raf.file.length();
 	            String path = raf.pathName;
-	            String cachePath = cacheMap.get(path).cachePathName;
+	            String cachePath = cacheLRU.getMap().get(path).cachePathName;
 	            uploadFileToServer(path,cachePath);
 	            
-	            System.err.println("Closing this path in server"+ path+"  file length "+len);
-	            System.err.println("Cache file path : "+cachePath);
+	            //Put this cache to MRU
+	            cInfo.modified = false;
+	            cInfo.size = len;
+	            cacheLRU.move2MRU(path, cInfo);
 	            
+	            System.err.println("Closing this path in server"+ path+"  file length "+len);
+	            System.err.println("Cache file path : "+cachePath);            
 			}
 			try {
 				if (raf.raf != null) {
@@ -381,9 +392,9 @@ class Proxy {
 			}
 			try {
 				raf.raf.write(buf);
-				System.err.println("Cache path Name: " + cacheMap.get(raf.pathName).cachePathName);
-				cacheMap.get(raf.pathName).modified = true;
-				System.err.println("Change cache modifed ?: " +  cacheMap.get(raf.pathName).modified);
+				System.err.println("Cache path Name: " + cacheLRU.getMap().get(raf.pathName).cachePathName);
+				cacheLRU.getMap().get(raf.pathName).modified = true;
+				System.err.println("Change cache modifed ?: " +  cacheLRU.getMap().get(raf.pathName).modified);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return Errors.EBADF;
@@ -521,8 +532,7 @@ class Proxy {
 		Proxy.port = Integer.parseInt(args[1]);
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]); 
-		Proxy.cache = new LinkedList<String>();
-		Proxy.cacheMap = new ConcurrentHashMap<String, CacheInfo>();
+		Proxy.cacheLRU = new LRU(cachesize);
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
