@@ -537,7 +537,7 @@ class Proxy {
 
 		public synchronized int unlink( String path ) {
 			System.err.println("------unlink op------");
-
+			path = simplifyPath(path);
 			File f = new File(path);
 			if (f.isDirectory()) {
 				return Errors.EISDIR;
