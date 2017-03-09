@@ -66,6 +66,7 @@ public class LRU {
 
 	//For Close
 	public boolean move2MRU(String path, CacheInfo cInfo) {
+		System.err.println(".....Move 2 MRU");
 		if (cacheList.contains(path)) {
 			cInfo.isUsing = false;
 			cacheList.remove(path);
