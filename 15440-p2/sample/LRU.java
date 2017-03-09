@@ -59,9 +59,11 @@ public class LRU {
 			}
 			this.cacheSize = size;
 		}
+		else {
+			this.cacheSize = currCacheSize;
+		}
 		
 		cInfo.isUsing = true;
-		this.cacheSize = currCacheSize;
 		this.cacheList.add(path);
 		this.cacheMap.put(path, cInfo);
 		System.err.println("......size of cache now:" + this.cacheSize);

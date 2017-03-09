@@ -166,20 +166,24 @@ class Proxy {
 		
 		private String simplifyPath(String path) {
 			LinkedList<String> dirStack = new LinkedList<String>();
-			String[] pathsplit = path.split("/");
-			for(String p : pathsplit) {
-				if( p.equals("..") && !dirStack.isEmpty() ) {  // stack pop
-					dirStack.removeLast();
-				} else if(p.length()!=0 && !p.equals(".") && !p.equals("..")) {
-					dirStack.addLast(p);   // stack push
-				}   // other cases: do nothing
+			String[] pathSplit = path.split("/");
+			//Get rid of .. and .  simplify the path
+			for(String p : pathSplit) {
+				if( p.equals("..") && !dirStack.isEmpty() ) { 
+					dirStack.removeLast();//pop
+				} else if(p.length()!=0 && !p.equals("..") && !p.equals(".") ) {
+					dirStack.addLast(p); //push
+				}   
 			}
+			
+			//Build simplified path
 			StringBuilder sb = new StringBuilder();
 			if(dirStack.isEmpty()) return "/"; //!!! corner case
 			for(String p : dirStack) { // build output
 				sb.append("/");
 				sb.append(p);
 			}
+			//Get the directory of the path
 			String s="";
 			while (dirStack.size() > 1) {
 				String d = dirStack.pop();
@@ -187,6 +191,7 @@ class Proxy {
 				s = "/"+s+d;
 			}
 			this.cacheAddedDir = s;
+			//Get the filename of input
 			this.fileName = dirStack.pop();
 			System.err.println("cacheDir:"+this.cacheAddedDir);
 			return sb.toString().substring(1);
@@ -199,19 +204,19 @@ class Proxy {
 			
 			int fd = fd2Raf.size()+1;
 			
-			String c_path;
-			String dir_path;
-			/*try {
-				dir_path = new File(Proxy.cachedir).getCanonicalPath();
-				System.err.println("dir path is: "+dir_path);
+			/*String c_path;
+			String d_path;
+			try {
+				d_path = new File(Proxy.cachedir).getCanonicalPath();
+				System.err.println("dir path is: "+d_path);
 				c_path = new File(Proxy.cachedir + path).getCanonicalPath();
 				System.err.println("c path is: "+c_path);
-				if(!c_path.contains(dir_path)) return Errors.EPERM;
+				if(!c_path.contains(d_path)) return Errors.EPERM;
 			} catch (IOException e2) {
 				e2.printStackTrace();
 			}*/
 			
-			//simpe path
+			//simplify path, get rid of dots
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
 			String cacheFulldir = Proxy.cachedir;
