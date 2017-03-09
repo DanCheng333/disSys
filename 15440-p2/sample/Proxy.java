@@ -185,7 +185,7 @@ class Proxy {
 				System.err.println("dir:"+d);
 				s = '\\'+s+d;
 			}
-			Proxy.cachedir = s.substring(1);
+			Proxy.cachedir = s;
 			System.err.println("cacheDir:"+Proxy.cachedir);
 			return sb.toString().substring(1);
 		}
