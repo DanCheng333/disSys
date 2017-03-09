@@ -38,7 +38,7 @@ public class LRU {
 			String lruCache = cacheList.get(listIndex);
 			CacheInfo cInfo = cacheMap.get(lruCache);
 			System.err.println("Try to evict index " +listIndex + " path" +lruCache);
-			if (!cInfo.isUsing) { //not in use we can evict it
+			if (!cInfo.isUsing.get()) { //not in use we can evict it
 				System.err.println("Remove cache path:"+lruCache);
 				currCacheSize = currCacheSize - cInfo.size;
 				System.err.println("curr size now"+currCacheSize);
@@ -71,7 +71,7 @@ public class LRU {
 			this.cacheSize = currCacheSize;
 		}
 		
-		cInfo.isUsing = true;
+		cInfo.isUsing.set(true); 
 		this.cacheList.add(path);
 		this.cacheMap.put(path, cInfo);
 		System.err.println("......size of cache now:" + this.cacheSize);
@@ -86,7 +86,7 @@ public class LRU {
 			System.err.println("cache in list"+s);
 		}
 		if (cacheList.contains(path)) {
-			cInfo.isUsing = false;
+			cInfo.isUsing.set(false);
 			cacheList.remove(path);
 			cacheMap.remove(path);			
 		}
@@ -113,7 +113,7 @@ public class LRU {
 	}
 	public void using(String path) {
 		CacheInfo c = this.cacheMap.get(path);
-		c.isUsing = true;
+		c.isUsing.set(true); 
 		cacheMap.replace(path, c);
 		
 	}
@@ -122,7 +122,7 @@ public class LRU {
 		if (cacheList.contains(path)) {
 			System.err.println("In cache");
 			CacheInfo c = cacheMap.get(path);
-			if (!c.isUsing) {
+			if (!c.isUsing.get()) {
 				System.err.println("cachePathName" + c.cachePathName);
 				File f = new File(c.cachePathName);
 				System.err.println("remove this file:"+c.cachePathName);

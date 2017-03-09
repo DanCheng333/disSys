@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -13,14 +13,14 @@ import java.rmi.RemoteException;
 class CacheInfo {
 	String cachePathName;
 	int versionNum;
-	boolean modified;
-	boolean isUsing;
+	AtomicBoolean modified;
+	AtomicBoolean isUsing;
 	int size;
 	public CacheInfo(String n, int ver, boolean modified,boolean use,int s) {
 		this.cachePathName = n;
 		this.versionNum = ver;
-		this.modified = modified;
-		this.isUsing = use;
+		this.modified = new AtomicBoolean(modified);
+		this.isUsing = new AtomicBoolean(use);
 		this.size = s;
 	}
 }
@@ -53,6 +53,7 @@ class Proxy {
 	
 	public static LRU cacheLRU;	
 	public static final int MAXFDSIZE = 1000;
+	public static final int MAXBUFSIZE = 1000000;
 	
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
@@ -138,22 +139,39 @@ class Proxy {
 				int len = (int) cacheF.length();
 				System.err.println("src file length " + len);
 				
-				byte buffer[] = new byte[len];
+				
 				try {
 					BufferedInputStream input = new BufferedInputStream(new FileInputStream(src));
-					input.read(buffer, 0, len);
+					BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
+					int start = 0;
+					while(len > MAXBUFSIZE) {
+						byte buffer[] = new byte[MAXBUFSIZE];
+						input.read(buffer, start, MAXBUFSIZE);						
+						System.err.println("datalength " + String.valueOf(buffer.length));
+						outputFile.write(buffer, start, MAXBUFSIZE);								
+						System.err.println("Finish write to dest");
+						len = len - MAXBUFSIZE;
+						start = start + MAXBUFSIZE;
+					}
+					while (len > 0) {
+						byte buffer[] = new byte[len];
+						input.read(buffer, start, len);						
+						System.err.println("datalength " + String.valueOf(buffer.length));
+						outputFile.write(buffer, start, len);								
+						System.err.println("Finish write to dest");
+						len = len - len;
+						start = start + len;
+					}
 					input.close();
+					outputFile.flush();
+					outputFile.close();	
 				} catch (Exception e) {
 					System.err.println("Proxy Failed to read src file");
 					e.printStackTrace();
 				}
 				
-				BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
-				System.err.println("datalength " + String.valueOf(buffer.length));
-				outputFile.write(buffer, 0, buffer.length);
-				outputFile.flush();
-				outputFile.close();				
-				System.err.println("Finish write to dest");
+				
+				
 			} catch (FileNotFoundException e) {
 				System.err.print("Failed to create a dest");
 				e.printStackTrace();
@@ -245,7 +263,6 @@ class Proxy {
 				System.err.println("Hit!");
 				cacheVersion = cacheLRU.getMap().get(path).versionNum;
 				cachePath = cacheLRU.getMap().get(path).cachePathName;
-				cacheLRU.using(path);
 				try {
 					serverVersion = server.getVersionNum(path);
 				} catch (RemoteException e) {
@@ -293,7 +310,7 @@ class Proxy {
 					}
 				}
 			}
-			
+			cacheLRU.using(path);
 			
 			if (fd > MAXFDSIZE) {
 				return Errors.EMFILE;
@@ -419,14 +436,14 @@ class Proxy {
 			
 			//Upload cache file to server original file
 			CacheInfo cInfo = cacheLRU.getMap().get(raf.pathName);
-			if (cInfo.modified) {
+			if (cInfo.modified.get()) {
 	            int len = (int) raf.file.length();
 	            String path = raf.pathName;
 	            String cachePath = cacheLRU.getMap().get(path).cachePathName;
 	            uploadFileToServer(path,cachePath);
 	            
 	            //Put this cache to MRU
-	            cInfo.modified = false;
+	            cInfo.modified.set(false);
 	            cInfo.size = len;	            
 	            System.err.println("Closing this path in server"+ path+"  file length "+len);
 	            System.err.println("Cache file path : "+cachePath);            
@@ -459,7 +476,7 @@ class Proxy {
 			try {
 				raf.raf.write(buf);
 				System.err.println("Cache path Name: " + cacheLRU.getMap().get(raf.pathName).cachePathName);
-				cacheLRU.getMap().get(raf.pathName).modified = true;
+				cacheLRU.getMap().get(raf.pathName).modified.set(true);
 				System.err.println("Change cache modifed ?: " +  cacheLRU.getMap().get(raf.pathName).modified);
 			} catch (IOException e) {
 				e.printStackTrace();
