@@ -550,7 +550,7 @@ class Proxy {
 					fd2Raf.remove(c.getKey());
 				}
 			}
-			f.delete();
+
 			boolean cDelete = cacheLRU.delete(path);
 			boolean sDelete = true;
 			if (cDelete) {
