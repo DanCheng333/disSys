@@ -214,17 +214,22 @@ class Proxy {
 			//simpe path
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
+			String cacheFulldir = Proxy.cachedir;
 			if(this.cacheAddedDir != null && this.cacheAddedDir.length() > 0) {
-				if(!new File(Proxy.cachedir+this.cacheAddedDir).mkdirs()){
-					System.err.println("makedir fails, dir:"+Proxy.cachedir+this.cacheAddedDir);
+				cacheFulldir = Proxy.cachedir+this.cacheAddedDir;
+				File cfd = new File(cacheFulldir);
+				if(!cfd.exists()){
+					if(!cfd.mkdirs()){
+						System.err.println("makedir fails, dir:"+Proxy.cachedir+this.cacheAddedDir);
+					}
 				}
 			}
 			
 			
-			String cachePath = Proxy.cachedir + "/"+ this.fileName+".txt";
+			String cachePath = cacheFulldir + "/"+ this.fileName+".txt";
 			System.err.println("!!!!!!cachePath:"+cachePath);
 			String privateName = this.fileName + "clientID" +String.valueOf(Proxy.clientID);
-			String privateCachePath = Proxy.cachedir + "/"+privateName+".txt";
+			String privateCachePath = cacheFulldir + "/"+privateName+".txt";
 			System.err.println("!!!!!!privatecachePath:"+privateCachePath);
 			int cacheVersion = 0;
 			int serverVersion = 0;
