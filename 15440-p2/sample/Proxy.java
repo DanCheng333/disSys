@@ -52,7 +52,7 @@ class Proxy {
 	public static int clientID;
 	
 	public static LRU cacheLRU;	
-	public static String cacheDir;
+	public static String cacheAddedDir;
 	public static final int MAXFDSIZE = 1000;
 	
 	private static class FileHandler implements FileHandling {
@@ -185,8 +185,8 @@ class Proxy {
 				System.err.println("dir:"+d);
 				s = '\\'+s+d;
 			}
-			Proxy.cachedir = s;
-			System.err.println("cacheDir:"+Proxy.cachedir);
+			Proxy.cacheAddedDir = s;
+			System.err.println("cacheDir:"+Proxy.cacheAddedDir);
 			return sb.toString().substring(1);
 		}
 		
@@ -212,9 +212,9 @@ class Proxy {
 			//simpe path
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
-			if(cacheDir != null && cacheDir.length() > 0) {
-				if(!new File(Proxy.cacheDir).mkdirs()){
-					System.err.println("makedir fails, dir:"+Proxy.cacheDir);
+			if(Proxy.cacheAddedDir != null && Proxy.cacheAddedDir.length() > 0) {
+				if(!new File(Proxy.cacheAddedDir).mkdirs()){
+					System.err.println("makedir fails, dir:"+Proxy.cacheAddedDir);
 				}
 			}
 			
@@ -585,7 +585,7 @@ class Proxy {
 		Proxy.cachedir = args[2];
 		Proxy.cachesize = Integer.parseInt(args[3]); 
 		Proxy.cacheLRU = new LRU(cachesize);
-		Proxy.cachedir = "";
+		Proxy.cacheAddedDir = "";
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		
