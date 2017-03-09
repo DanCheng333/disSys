@@ -26,4 +26,8 @@ testRead:
 
 testWrite:
 	cat world.txt | env proxyport15440=13367 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
-		
+
+testRm:
+	env proxyport15440=13367 env LD_PRELOAD=../lib/lib440lib.so ../tools/440cat fileroot/../hello.txt 
+	cat world.txt | env proxyport15440=13367 env LD_PRELOAD=../lib/lib440lib.so ../tools/440write hello.txt 2
+	
