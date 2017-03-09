@@ -99,6 +99,26 @@ public class Server extends UnicastRemoteObject implements IServer {
 		this.clientID = id;
 	}
 	
+	@Override
+	public boolean rmFile(String path) {
+		System.err.print("Call remove file path:"+path);
+		if (VersionMap.containsKey(path))  {
+			VersionMap.remove(path);
+		}
+		String serverFilePath = this.rootdir + String.format("/%s", path);
+		File file = new File(serverFilePath);
+		if (!file.exists()) {
+			System.err.print("This file do not exist");
+			return false;
+		}
+		if(!file.delete()) {
+			System.err.println("delete fail");
+			return false;
+		}
+		return true;
+		
+	}
+	
 	public static void main(String args[]) {
 		if (args.length < 2) {
 			System.err.println("Not enough args for Server");

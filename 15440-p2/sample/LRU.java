@@ -17,7 +17,7 @@ public class LRU {
 	private void printCache() {
 		System.err.println("~~~~~~~IN cache ~~~~~~");
 		for(Entry<String, CacheInfo> s:cacheMap.entrySet()) {
-			System.err.println("cache in map"+s.getKey()+"cache path:"+s.getValue().cachePathName);
+			System.err.println("cache in map "+s.getKey()+" cache path: "+s.getValue().cachePathName);
 		}
 		System.err.println("~~~~~~~end of cache ~~~~~~");
 	}
@@ -50,7 +50,7 @@ public class LRU {
 			listIndex--;
 			
 		}
-		printCache();
+		//printCache();
 		return currCacheSize;
 	}
 	
@@ -75,13 +75,13 @@ public class LRU {
 		this.cacheList.add(path);
 		this.cacheMap.put(path, cInfo);
 		System.err.println("......size of cache now:" + this.cacheSize);
-		printCache();
+		//printCache();
 		return true;
 	}
 
 	//For Close
 	public boolean move2MRU(String path, CacheInfo cInfo) {
-		System.err.println(".....Move 2 MRU");
+		System.err.println(".....Move 2 MRU...before");
 		for (String s:this.cacheList) {
 			System.err.println("cache in list"+s);
 		}
@@ -96,7 +96,11 @@ public class LRU {
 		}
 		cacheList.addFirst(path);
 		cacheMap.put(path, cInfo);
-		printCache();
+		System.err.println(".....Move 2 MRU...after");
+		for (String s:this.cacheList) {
+			System.err.println("cache in list"+s);
+		}
+		//printCache();
 		return true;
 	}
 	
@@ -106,6 +110,30 @@ public class LRU {
 		this.cacheList = new LinkedList<String>();
 		this.cacheSize = 0;
 		this.cacheSizeLimit = limit;
+	}
+	public void using(String path) {
+		CacheInfo c = this.cacheMap.get(path);
+		c.isUsing = true;
+		cacheMap.replace(path, c);
+		
+	}
+	public boolean delete(String path) {
+		System.err.println("Delete in cache");
+		if (cacheList.contains(path)) {
+			System.err.println("In cache");
+			CacheInfo c = cacheMap.get(path);
+			if (!c.isUsing) {
+				File f = new File(c.cachePathName);
+				cacheList.remove(path);
+				cacheMap.remove(path);
+				return f.delete();
+			}
+			System.err.println("File in use, cannot delete");
+			return false;
+		}
+		System.err.println("Not in cache....");
+		return true;
+		
 	}
 	
 	/*public static void main(String[] args) {

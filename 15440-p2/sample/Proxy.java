@@ -245,6 +245,7 @@ class Proxy {
 				System.err.println("Hit!");
 				cacheVersion = cacheLRU.getMap().get(path).versionNum;
 				cachePath = cacheLRU.getMap().get(path).cachePathName;
+				cacheLRU.using(path);
 				try {
 					serverVersion = server.getVersionNum(path);
 				} catch (RemoteException e) {
@@ -550,6 +551,18 @@ class Proxy {
 				}
 			}
 			f.delete();
+			boolean cDelete = cacheLRU.delete(path);
+			boolean sDelete = true;
+			if (cDelete) {
+				try {
+					sDelete = server.rmFile(path);					
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
+			if (!(cDelete && sDelete)) {
+				return Errors.ENOENT;
+			}
 			if (f.exists()) {
 				return -1;
 			}

@@ -9,4 +9,5 @@ public interface IServer extends Remote {
     int getVersionNum(String path) throws RemoteException;
     int getClientID() throws RemoteException;
     void setClientID(int id) throws RemoteException;
+    boolean rmFile(String path) throws RemoteException;
 }
