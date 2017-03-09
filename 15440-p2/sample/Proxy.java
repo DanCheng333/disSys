@@ -53,7 +53,7 @@ class Proxy {
 	
 	public static LRU cacheLRU;	
 	public static final int MAXFDSIZE = 1000;
-	public static final int MAXBUFSIZE = 1000000;
+	public static final int MAXBUFSIZE = 100;
 	
 	private static class FileHandler implements FileHandling {
 		ConcurrentHashMap<Integer,FileInfo> fd2Raf;
@@ -145,11 +145,11 @@ class Proxy {
 				while(len > MAXBUFSIZE) {
 					byte buffer[] = new byte[MAXBUFSIZE];
 					input.read(buffer, start, MAXBUFSIZE);						
-					System.err.println("datalength " + String.valueOf(buffer.length));
 					outputFile.write(buffer, start, MAXBUFSIZE);								
-					System.err.println("Finish write to dest");
 					len = len - MAXBUFSIZE;
 					start = start + MAXBUFSIZE;
+					System.err.println("Start: "+start);
+					System.err.println("Len:"+ len);
 				}
 				while (len > 0) {
 					byte buffer[] = new byte[len];
