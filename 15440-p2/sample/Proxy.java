@@ -85,17 +85,17 @@ class Proxy {
 			try {
 				outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
 				byte data[] = server.downloadFile(path);
-				System.err.print("datalength " + String.valueOf(data.length));
+				System.err.println("datalength " + String.valueOf(data.length));
 				outputFile.write(data, 0, data.length);
 				// rewrite everything?
 				outputFile.flush();
 				outputFile.close();
-				System.err.print("Finish write to cachefile");
+				System.err.println("Finish write to cachefile");
 			} catch (FileNotFoundException e) {
-				System.err.print("Failed to create a cachefile");
+				System.err.println("Failed to create a cachefile");
 				e.printStackTrace();
 			} catch (IOException e) {
-				System.err.print("File to write,flush or close");
+				System.err.println("File to write,flush or close");
 				e.printStackTrace();
 			}
 		}
@@ -159,7 +159,7 @@ class Proxy {
 		
 		//If path is directory, we do not cache.
 		public synchronized int open( String path, OpenOption o ) {
-			System.err.println("-----Call open, client ID:"+Proxy.clientID);	
+			System.err.println("-----Call open, client ID:"+Proxy.clientID + "-----");	
 			
 			int fd = fd2Raf.size()+1;
 			String[] splitPath = path.split("[.]");
