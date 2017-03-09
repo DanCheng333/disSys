@@ -45,7 +45,7 @@ class Proxy {
 	public static String cachedir;
 	public static int cachesize;
 	public static IServer server;
-	public static int clientID = 0;
+	public static int clientID;
 	
 	public static LinkedList<String> cache;
 	public static ConcurrentHashMap<String,CacheInfo> cacheMap;
@@ -62,6 +62,8 @@ class Proxy {
 				System.err.println("Try to connect to server .... url is "+url);
 				try {
 					Proxy.server = (IServer)Naming.lookup (url);
+					Proxy.clientID = server.getClientID()+1;
+					server.setClientID(clientID);
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				} catch (RemoteException e) {
@@ -162,7 +164,7 @@ class Proxy {
 			
 			int fd = fd2Raf.size()+1;
 			String[] splitPath = path.split("[.]");
-			String cachePath = Proxy.cachedir + "/"+ splitPath[1]+".txt";
+			String cachePath = Proxy.cachedir + "/"+ splitPath[0]+".txt";
 			String privateName = splitPath[1] + String.valueOf(Proxy.clientID);
 			String privateCachePath = Proxy.cachedir + "/"+privateName+".txt";
 			
@@ -522,7 +524,6 @@ class Proxy {
 		Proxy.cachesize = Integer.parseInt(args[3]); 
 		Proxy.cache = new LinkedList<String>();
 		Proxy.cacheMap = new ConcurrentHashMap<String, CacheInfo>();
-		Proxy.clientID = Proxy.clientID + 1;
 		//File handling
 		(new RPCreceiver(new FileHandlingFactory())).run();
 		

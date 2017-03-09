@@ -7,4 +7,6 @@ public interface IServer extends Remote {
     boolean uploadFile(String path, byte[] buffer) throws RemoteException;
     void initVersionNum(String path) throws RemoteException;
     int getVersionNum(String path) throws RemoteException;
+    int getClientID() throws RemoteException;
+    void setClientID(int id) throws RemoteException;
 }

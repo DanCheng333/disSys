@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Server extends UnicastRemoteObject implements IServer {
 	public int port;
 	public String rootdir;
+	public int clientID;
 	public ConcurrentHashMap<String, Integer> VersionMap;
 
 	public Server(int p, String rt) throws RemoteException {
@@ -89,6 +90,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 		VersionMap.put(path, 0);
 	}
 
+	@Override
+	public int getClientID() {
+		return this.clientID;
+	}
+	
+	@Override
+	public void setClientID(int id) {
+		this.clientID = id;
+	}
+	
 	public static void main(String args[]) {
 		if (args.length < 2) {
 			System.err.println("Not enough args for Server");
@@ -104,6 +115,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		try {
 			Server server = new Server(port, args[1]);
+			server.clientID = 0;
 			server.VersionMap = new ConcurrentHashMap<String, Integer>();
 			try {
 				Naming.rebind(String.format("//127.0.0.1:%d/Server", port), server);
