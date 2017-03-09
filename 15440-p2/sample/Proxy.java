@@ -174,6 +174,9 @@ class Proxy {
 			}
 			StringBuilder sb = new StringBuilder();
 			if(stack.isEmpty()) return "/"; //!!! corner case
+			if(stack.size() == 1) {
+				return stack.pop();
+			}
 			for(String p : stack) { // build output
 				sb.append("/");
 				sb.append(p);
