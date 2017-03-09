@@ -551,9 +551,7 @@ class Proxy {
 				}
 			}
 			f.delete();
-			String cDir = Proxy.cachedir+this.cacheAddedDir;
-			System.err.println("cDir???: "+cDir);
-			boolean cDelete = cacheLRU.delete(path,cDir);
+			boolean cDelete = cacheLRU.delete(path);
 			boolean sDelete = true;
 			if (cDelete) {
 				try {

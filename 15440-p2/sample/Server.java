@@ -105,7 +105,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			VersionMap.remove(path);
 		}
 		String serverFilePath = this.rootdir + String.format("/%s", path);
-		System.err.print("Call remove file path:"+serverFilePath);
+		System.err.print("...Call remove file path in server :"+serverFilePath);
 		File file = new File(serverFilePath);
 		if (!file.exists()) {
 			System.err.print("This file do not exist");
