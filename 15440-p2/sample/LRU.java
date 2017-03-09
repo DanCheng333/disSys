@@ -67,6 +67,9 @@ public class LRU {
 	//For Close
 	public boolean move2MRU(String path, CacheInfo cInfo) {
 		System.err.println(".....Move 2 MRU");
+		for (String s:this.cacheList) {
+			System.err.println("cache in list"+s);
+		}
 		if (cacheList.contains(path)) {
 			cInfo.isUsing = false;
 			cacheList.remove(path);
@@ -82,6 +85,7 @@ public class LRU {
 	}
 	
 	public LRU(int limit) {
+		System.err.println("New LRU");
 		this.cacheMap = new ConcurrentHashMap<String,CacheInfo>();
 		this.cacheList = new LinkedList<String>();
 		this.cacheSize = 0;
