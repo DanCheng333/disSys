@@ -52,6 +52,7 @@ class Proxy {
 	public static int clientID;
 	
 	public static LRU cacheLRU;	
+	public static String cacheDir;
 	public static final int MAXFDSIZE = 1000;
 	
 	private static class FileHandler implements FileHandling {
@@ -163,25 +164,30 @@ class Proxy {
 		}
 		
 		private String simplifyPath(String path) {
-			LinkedList<String> stack = new LinkedList<String>();
+			LinkedList<String> dirStack = new LinkedList<String>();
 			String[] pathsplit = path.split("/");
 			for(String p : pathsplit) {
-				if( p.equals("..") && !stack.isEmpty() ) {  // stack pop
-					stack.removeLast();
+				if( p.equals("..") && !dirStack.isEmpty() ) {  // stack pop
+					dirStack.removeLast();
 				} else if(p.length()!=0 && !p.equals(".") && !p.equals("..")) {
-					stack.addLast(p);   // stack push
+					dirStack.addLast(p);   // stack push
 				}   // other cases: do nothing
 			}
 			StringBuilder sb = new StringBuilder();
-			if(stack.isEmpty()) return "/"; //!!! corner case
-			if(stack.size() == 1) {
-				return stack.pop();
-			}
-			for(String p : stack) { // build output
+			if(dirStack.isEmpty()) return "/"; //!!! corner case
+			for(String p : dirStack) { // build output
 				sb.append("/");
 				sb.append(p);
 			}
-			return sb.toString();
+			String s="";
+			while (dirStack.size() > 1) {
+				String d = dirStack.pop();
+				System.err.println("dir:"+d);
+				s = '\\'+s+d;
+			}
+			Proxy.cachedir = s.substring(1);
+			System.err.println("cacheDir:"+Proxy.cachedir);
+			return sb.toString().substring(1);
 		}
 		
 		
@@ -206,6 +212,9 @@ class Proxy {
 			//simpe path
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
+			if(!new File(Proxy.cacheDir).mkdirs()){
+				System.err.println("makedir fails, dir:"+Proxy.cacheDir);
+			}
 			
 			
 			String cachePath = Proxy.cachedir + "/"+ path+".txt";
