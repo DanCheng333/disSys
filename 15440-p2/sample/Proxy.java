@@ -142,12 +142,11 @@ class Proxy {
 				}
 				
 				BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
-				System.err.print("datalength " + String.valueOf(buffer.length));
+				System.err.println("datalength " + String.valueOf(buffer.length));
 				outputFile.write(buffer, 0, buffer.length);
 				outputFile.flush();
-				outputFile.close();
-				
-				System.err.print("Finish write to dest");
+				outputFile.close();				
+				System.err.println("Finish write to dest");
 			} catch (FileNotFoundException e) {
 				System.err.print("Failed to create a dest");
 				e.printStackTrace();
@@ -160,12 +159,12 @@ class Proxy {
 		
 		//If path is directory, we do not cache.
 		public synchronized int open( String path, OpenOption o ) {
-			System.err.println("Call open, client ID:"+Proxy.clientID);	
+			System.err.println("-----Call open, client ID:"+Proxy.clientID);	
 			
 			int fd = fd2Raf.size()+1;
 			String[] splitPath = path.split("[.]");
 			String cachePath = Proxy.cachedir + "/"+ splitPath[0]+".txt";
-			String privateName = splitPath[1] + String.valueOf(Proxy.clientID);
+			String privateName = splitPath[1] + "clientID" +String.valueOf(Proxy.clientID);
 			String privateCachePath = Proxy.cachedir + "/"+privateName+".txt";
 			
 			int cacheVersion = 0;
@@ -331,7 +330,7 @@ class Proxy {
 
 		//EBADF
 		public synchronized int close( int fd ) {
-			System.err.println("close op");
+			System.err.println("------close op------");
 			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
 				return Errors.EBADF;
@@ -371,7 +370,7 @@ class Proxy {
 		
 		//EBADF,EINVAL,EPERM
 		public synchronized long write( int fd, byte[] buf ) {
-			System.err.println("write op");
+			System.err.println("------write op------");
 
 			FileInfo raf = fd2Raf.get(fd);
 			if(raf == null) {
@@ -394,7 +393,7 @@ class Proxy {
 
 		//EBADF,ENINVAL,EISDIR
 		public synchronized long read( int fd, byte[] buf ) {
-			System.err.println("read op");
+			System.err.println("------read op------");
 
 			FileInfo raf = fd2Raf.get(fd);			
 			if (raf == null) {
@@ -421,7 +420,7 @@ class Proxy {
 		}
 
 		public synchronized long lseek( int fd, long pos, LseekOption o ) {
-			System.err.println("lseek op");
+			System.err.println("------lseek op------");
 
 			FileInfo raf = fd2Raf.get(fd);
 			long offset = -1;
@@ -460,7 +459,7 @@ class Proxy {
 		}
 
 		public synchronized int unlink( String path ) {
-			System.err.println("unlink op");
+			System.err.println("------unlink op------");
 
 			File f = new File(path);
 			if (f.isDirectory()) {
@@ -482,7 +481,7 @@ class Proxy {
 		}
 
 		public void clientdone() {
-			System.err.println("clientdone op");
+			System.err.println("------clientdone op------");
 
 			//close all files recylce
 			if (!fd2Raf.isEmpty()) {
