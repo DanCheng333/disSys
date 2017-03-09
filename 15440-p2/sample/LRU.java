@@ -117,13 +117,15 @@ public class LRU {
 		cacheMap.replace(path, c);
 		
 	}
-	public boolean delete(String path) {
+	public boolean delete(String path, String cachedir) {
 		System.err.println("Delete in cache");
 		if (cacheList.contains(path)) {
 			System.err.println("In cache");
 			CacheInfo c = cacheMap.get(path);
 			if (!c.isUsing) {
-				File f = new File(c.cachePathName);
+				String cPath = cachedir+c.cachePathName;
+				File f = new File(cPath);
+				System.err.println("remove this file:"+cPath);
 				cacheList.remove(path);
 				cacheMap.remove(path);
 				return f.delete();
