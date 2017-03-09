@@ -123,6 +123,7 @@ public class LRU {
 			System.err.println("In cache");
 			CacheInfo c = cacheMap.get(path);
 			if (!c.isUsing) {
+				System.err.println("cachePathName" + c.cachePathName);
 				String cPath = cachedir+c.cachePathName;
 				File f = new File(cPath);
 				System.err.println("remove this file:"+cPath);
