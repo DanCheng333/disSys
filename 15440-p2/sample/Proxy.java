@@ -142,20 +142,19 @@ class Proxy {
 				BufferedInputStream input = new BufferedInputStream(new FileInputStream(src));
 				BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
 				int start = 0;
-				while(len > MAXBUFSIZE) {
-					byte buffer[] = new byte[MAXBUFSIZE];
-					input.read(buffer, start, MAXBUFSIZE);						
-					outputFile.write(buffer, start, MAXBUFSIZE);								
-					len = len - MAXBUFSIZE;
-					start = start + MAXBUFSIZE;
-					System.err.println("Start: "+start);
-					System.err.println("Len:"+ len);
+				int bytesRead = 0;
+				byte buffer[] = new byte[MAXBUFSIZE];
+				while ((bytesRead = input.read(buffer,start,MAXBUFSIZE)) != -1) {
+				    outputFile.write(buffer,start,bytesRead);
+				    System.err.println("start:"+start);
+				    start = start+bytesRead;
 				}
+				
 				while (len > 0) {
-					byte buffer[] = new byte[len];
-					input.read(buffer, start, len);						
-					System.err.println("datalength " + String.valueOf(buffer.length));
-					outputFile.write(buffer, start, len);								
+					byte buffer2[] = new byte[len];
+					input.read(buffer2, start, len);						
+					System.err.println("datalength " + String.valueOf(buffer2.length));
+					outputFile.write(buffer2, start, len);								
 					System.err.println("Finish write to dest");
 					len = len - len;
 					start = start + len;
