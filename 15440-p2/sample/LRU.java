@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,7 +16,7 @@ public class LRU {
 	
 	public ConcurrentHashMap<String,CacheInfo> getMap() {
 		for(Entry<String, CacheInfo> s:cacheMap.entrySet()) {
-			System.err.println("cache in map"+s.getKey());
+			System.err.println("cache in map"+s.getKey()+"cache path:"+s.getValue().cachePathName);
 		}
 		return this.cacheMap;
 	}
@@ -37,7 +38,9 @@ public class LRU {
 				System.err.println("Remove cache path:"+lruCache);
 				currCacheSize = currCacheSize - cInfo.size;
 				System.err.println("curr size now"+currCacheSize);
-				cacheList.remove(listIndex);
+				File rmFile = new File(lruCache);
+				rmFile.delete();
+				cacheList.remove(lruCache);
 				cacheMap.remove(lruCache);
 			}
 			listIndex--;
