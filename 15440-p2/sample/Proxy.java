@@ -162,14 +162,51 @@ class Proxy {
 			
 		}
 		
+		private String simplifyPath(String path) {
+			LinkedList<String> stack = new LinkedList<String>();
+			String[] pathsplit = path.split("/");
+			for(String p : pathsplit) {
+				if( p.equals("..") && !stack.isEmpty() ) {  // stack pop
+					stack.removeLast();
+				} else if(p.length()!=0 && !p.equals(".") && !p.equals("..")) {
+					stack.addLast(p);   // stack push
+				}   // other cases: do nothing
+			}
+			StringBuilder sb = new StringBuilder();
+			if(stack.isEmpty()) return "/"; //!!! corner case
+			for(String p : stack) { // build output
+				sb.append("/");
+				sb.append(p);
+			}
+			return sb.toString();
+		}
+		
+		
 		//If path is directory, we do not cache.
 		public synchronized int open( String path, OpenOption o ) {
-			System.err.println("-----Call open, client ID:"+Proxy.clientID + "-----");	
+			System.err.println("-----Call open, client ID:"+Proxy.clientID + " path:" + path+"-----");	
 			
 			int fd = fd2Raf.size()+1;
-			String[] splitPath = path.split("[.]");
-			String cachePath = Proxy.cachedir + "/"+ splitPath[0]+".txt";
-			String privateName = splitPath[1] + "clientID" +String.valueOf(Proxy.clientID);
+			
+			String c_path;
+			String dir_path;
+			try {
+				dir_path = new File(Proxy.cachedir).getCanonicalPath();
+				System.err.println("dir path is: "+dir_path);
+				c_path = new File(Proxy.cachedir + path).getCanonicalPath();
+				System.err.println("c path is: "+c_path);
+				if(!c_path.contains(dir_path)) return Errors.EPERM;
+			} catch (IOException e2) {
+				e2.printStackTrace();
+			}
+			
+			//simpe path
+			path = simplifyPath(path);
+			System.err.println("path is: " + path);
+			
+			
+			String cachePath = Proxy.cachedir + "/"+ path+".txt";
+			String privateName = path + "clientID" +String.valueOf(Proxy.clientID);
 			String privateCachePath = Proxy.cachedir + "/"+privateName+".txt";
 			
 			int cacheVersion = 0;
@@ -332,6 +369,8 @@ class Proxy {
 			return fd;
 		}
 		
+
+
 
 
 		//EBADF
