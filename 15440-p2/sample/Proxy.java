@@ -190,7 +190,7 @@ class Proxy {
 			
 			String c_path;
 			String dir_path;
-			try {
+			/*try {
 				dir_path = new File(Proxy.cachedir).getCanonicalPath();
 				System.err.println("dir path is: "+dir_path);
 				c_path = new File(Proxy.cachedir + path).getCanonicalPath();
@@ -198,7 +198,7 @@ class Proxy {
 				if(!c_path.contains(dir_path)) return Errors.EPERM;
 			} catch (IOException e2) {
 				e2.printStackTrace();
-			}
+			}*/
 			
 			//simpe path
 			path = simplifyPath(path);
