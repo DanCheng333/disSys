@@ -161,7 +161,7 @@ class Proxy {
 			System.err.println("Call open, client ID:"+Proxy.clientID);	
 			
 			int fd = fd2Raf.size()+1;
-			String[] splitPath = path.split(".");
+			String[] splitPath = path.split("[.]");
 			String cachePath = Proxy.cachedir + "/"+ splitPath[1]+".txt";
 			String privateName = splitPath[1] + String.valueOf(Proxy.clientID);
 			String privateCachePath = Proxy.cachedir + "/"+privateName+".txt";
