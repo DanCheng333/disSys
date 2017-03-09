@@ -212,7 +212,7 @@ class Proxy {
 			//simpe path
 			path = simplifyPath(path);
 			System.err.println("path is: " + path);
-			if(cacheDir.length() > 0) {
+			if(cacheDir != null && cacheDir.length() > 0) {
 				if(!new File(Proxy.cacheDir).mkdirs()){
 					System.err.println("makedir fails, dir:"+Proxy.cacheDir);
 				}
