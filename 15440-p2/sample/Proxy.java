@@ -144,10 +144,12 @@ class Proxy {
 				int start = 0;
 				int bytesRead = 0;
 				byte buffer[] = new byte[MAXBUFSIZE];
-				while ((bytesRead = input.read(buffer,start,MAXBUFSIZE-start)) != -1) {
+				while (len > MAXBUFSIZE) {
+					bytesRead = input.read(buffer,start,MAXBUFSIZE-start);
 				    outputFile.write(buffer,start,bytesRead);
-				    System.err.println("start:"+start);
+				    System.err.println("start:"+start +" bytes read:"+bytesRead);
 				    start = start+bytesRead;
+				    len = len - bytesRead;
 				}
 				
 				while (len > 0) {
