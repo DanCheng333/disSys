@@ -89,18 +89,18 @@ class Proxy {
 		public synchronized int getFileFromServer(String path, String cachePath) {
 			System.err.println("Download file from server ..... ");
 			File srcFile = new File(path);
-			File destFile = new File(cachePath);
 			int srcFileLen = (int) srcFile.length();
+			
+			File destFile = new File(cachePath);			
 			System.err.println("src file length " + srcFileLen);
 
-			byte buffer[] = new byte[MAXBUFSIZE];
 			int start = 0;
 			int len = srcFileLen;
 			try {
 				RandomAccessFile output = new RandomAccessFile(destFile, "rw");
 				while (len > 0) {
 					int byteSize = Math.min(MAXBUFSIZE, len);
-					server.downloadFile(path, start, byteSize);
+					byte[] buffer = server.downloadFile(path, start, byteSize);
 					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
 					output.seek(start);
 					output.write(buffer, 0, byteSize);
