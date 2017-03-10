@@ -24,10 +24,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	}
 
-	public String sayHello() {
-		return "Hello, world!";
-	}
-
 	@Override
 	public byte[] downloadFile(String path) throws RemoteException {
 		File f = new File(path);
