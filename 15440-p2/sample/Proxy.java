@@ -146,8 +146,8 @@ class Proxy {
 				byte buffer[] = new byte[MAXBUFSIZE];
 				while (len > MAXBUFSIZE) {
 					input.skip(start);
-					bytesRead = input.read(buffer,start,MAXBUFSIZE);
-				    outputFile.write(buffer,start,bytesRead);
+					bytesRead = input.read(buffer,0,MAXBUFSIZE);
+				    outputFile.write(buffer);
 				    System.err.println("start:"+start +" bytes read:"+bytesRead);
 				    start = start+bytesRead;
 				    len = len - bytesRead;
