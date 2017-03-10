@@ -125,7 +125,7 @@ class Proxy {
 					input.seek(start);
 					input.read(buffer, 0, byteSize);
 					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
-					server.uploadFile(path, buffer, start, len);
+					server.uploadFile(path, buffer, start, byteSize);
 					start = start + byteSize;
 					len = len - byteSize;
 				}
