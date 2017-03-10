@@ -47,9 +47,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 		return buffer;
 	}
-
 	@Override
-	public boolean uploadFile(String path, byte[] buffer, int start, int len) throws RemoteException {
+	public void updateVersionNum(String path) {
 		if (VersionMap.containsKey(path)) {
 			int newVer = VersionMap.get(path)+1;
 			System.err.println("Update version in server");
@@ -59,8 +58,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 			System.err.println("Not in version map should never happen");
 			VersionMap.put(path, 0);
 		} // What happen if cacheGet evicted?
-		String serverFilePath = this.rootdir + String.format("/%s", path);
-		
+	}
+	
+	@Override
+	public boolean uploadFile(String path, byte[] buffer, int start, int len) throws RemoteException {		
+		String serverFilePath = this.rootdir + String.format("/%s", path);		
 		File serverFile = new File(serverFilePath);
 		try {
 			RandomAccessFile serverRaf = new RandomAccessFile(serverFile, "rw");

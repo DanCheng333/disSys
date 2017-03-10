@@ -119,6 +119,7 @@ class Proxy {
 			byte buffer[] = new byte[MAXBUFSIZE];
 			int start = 0;
 			try {
+				server.updateVersionNum(cachePath);
 				RandomAccessFile input = new RandomAccessFile(cacheF, "rw");				
 				while (len > 0) {
 					int byteSize = Math.min(MAXBUFSIZE, len);
