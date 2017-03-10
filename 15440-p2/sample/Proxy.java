@@ -144,17 +144,18 @@ class Proxy {
 			int start = 0;
 			try {
 				BufferedInputStream input = new BufferedInputStream(new FileInputStream(src));
-				BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
+				File file = new File(dest);
+				RandomAccessFile outputFile = new RandomAccessFile(file, "rw");
 				while (len > 0) {
 					int byteSize = Math.min(MAXBUFSIZE, len);
 					input.skip(start);
 					input.read(buffer, 0, byteSize);
 					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
-					outputFile.write(buffer);
+					outputFile.seek(start);
+					outputFile.write(buffer, 0, byteSize);
 					start = start + byteSize;
 					len = len - byteSize;
 				}
-				outputFile.flush();
 				outputFile.close();
 				input.close();
 			} catch (Exception e) {
