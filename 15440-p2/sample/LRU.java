@@ -19,6 +19,7 @@ public class LRU {
 		System.err.println("New LRU");
 		this.cacheMap = new ConcurrentHashMap<String,CacheInfo>();
 		this.cacheList = new LinkedList<String>();
+		this.useMap = new ConcurrentHashMap<String,Boolean>();
 		this.cacheSize = 0;
 		this.cacheSizeLimit = limit;
 	}
