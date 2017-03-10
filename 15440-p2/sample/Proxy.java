@@ -155,9 +155,10 @@ class Proxy {
 				
 				while (len > 0) {
 					byte buffer2[] = new byte[len];
-					input.read(buffer2, start, len);						
+					input.skip(start);
+					input.read(buffer2, 0, len);						
 					System.err.println("datalength " + String.valueOf(buffer2.length));
-					outputFile.write(buffer2, start, len);								
+					outputFile.write(buffer2);								
 					System.err.println("Finish write to dest");
 					len = len - len;
 					start = start + len;
