@@ -30,17 +30,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	@Override
-	public byte[] downloadFile(String path) throws RemoteException {
+	public byte[] downloadFile(String path, int start, int byteSize) throws RemoteException {
 		File f = new File(path);
-		int len = (int) f.length();
-		System.err.println("file length " + len);
-		byte buffer[] = new byte[len];
+		byte buffer[] = new byte[byteSize];
 		try {
-			String serverFilePath = this.rootdir + String.format("/%s", path);
-			System.err.println("Server File Path " + serverFilePath);
-			BufferedInputStream input = new BufferedInputStream(new FileInputStream(serverFilePath));
-			input.read(buffer, 0, len);
-			input.close();
+			RandomAccessFile serverRaf = new RandomAccessFile(f, "rw");
+			serverRaf.seek(start);
+			serverRaf.read(buffer, 0, byteSize);
+			serverRaf.close();
 		} catch (Exception e) {
 			System.err.println("Server Failed to read file");
 			e.printStackTrace();

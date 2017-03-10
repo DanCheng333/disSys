@@ -88,26 +88,32 @@ class Proxy {
 
 		public synchronized int getFileFromServer(String path, String cachePath) {
 			System.err.println("Download file from server ..... ");
-			BufferedOutputStream outputFile;
+			File srcFile = new File(path);
+			File destFile = new File(cachePath);
+			int srcFileLen = (int) srcFile.length();
+			System.err.println("src file length " + srcFileLen);
+
+			byte buffer[] = new byte[MAXBUFSIZE];
+			int start = 0;
+			int len = srcFileLen;
 			try {
-				outputFile = new BufferedOutputStream(new FileOutputStream(cachePath));
-				byte data[] = server.downloadFile(path);
-				System.err.println("datalength " + String.valueOf(data.length));
-				outputFile.write(data, 0, data.length);
-				// rewrite everything?
-				outputFile.flush();
-				outputFile.close();
-				System.err.println("Finish write to cachefile");
-				return data.length;
-			} catch (FileNotFoundException e) {
-				System.err.println("Failed to create a cachefile");
+				RandomAccessFile output = new RandomAccessFile(destFile, "rw");
+				while (len > 0) {
+					int byteSize = Math.min(MAXBUFSIZE, len);
+					server.downloadFile(path, start, byteSize);
+					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
+					output.seek(start);
+					output.write(buffer, 0, byteSize);
+					start = start + byteSize;
+					len = len - byteSize;
+				}
+				output.close();
+				return srcFileLen;
+			} catch (Exception e) {
+				System.err.println("Proxy Failed to read src file");
 				e.printStackTrace();
-			} catch (IOException e) {
-				System.err.println("File to write,flush or close");
-				e.printStackTrace();
+				return -1;
 			}
-			// Should never get here
-			return -1;
 		}
 
 		public synchronized void uploadFileToServer(String path, String cachePath) {
