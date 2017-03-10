@@ -143,20 +143,21 @@ class Proxy {
 			byte buffer[] = new byte[MAXBUFSIZE];
 			int start = 0;
 			try {
-				BufferedInputStream input = new BufferedInputStream(new FileInputStream(src));
-				File file = new File(dest);
-				RandomAccessFile outputFile = new RandomAccessFile(file, "rw");
+				File srcFile = new File(src);
+				RandomAccessFile input = new RandomAccessFile(srcFile, "rw");
+				File destFile = new File(dest);
+				RandomAccessFile output = new RandomAccessFile(destFile, "rw");
 				while (len > 0) {
 					int byteSize = Math.min(MAXBUFSIZE, len);
-					input.skip(byteSize);
+					input.seek(start);
 					input.read(buffer, 0, byteSize);
 					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
-					outputFile.seek(start);
-					outputFile.write(buffer, 0, byteSize);
+					output.seek(start);
+					output.write(buffer, 0, byteSize);
 					start = start + byteSize;
 					len = len - byteSize;
 				}
-				outputFile.close();
+				output.close();
 				input.close();
 			} catch (Exception e) {
 				System.err.println("Proxy Failed to read src file");
