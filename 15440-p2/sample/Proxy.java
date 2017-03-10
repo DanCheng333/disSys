@@ -114,38 +114,39 @@ class Proxy {
 			System.err.println("Upload file from server ..... ");
 			File cacheF = new File(cachePath);
 			int len = (int) cacheF.length();
-			System.err.println("cache file length " + len);
+			System.err.println("cacheF file length " + len);
 
-			byte buffer[] = new byte[len];
+			byte buffer[] = new byte[MAXBUFSIZE];
+			int start = 0;
 			try {
-				BufferedInputStream input = new BufferedInputStream(new FileInputStream(cachePath));
-				input.read(buffer, 0, len);
+				RandomAccessFile input = new RandomAccessFile(cacheF, "rw");				
+				while (len > 0) {
+					int byteSize = Math.min(MAXBUFSIZE, len);
+					input.seek(start);
+					input.read(buffer, 0, byteSize);
+					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
+					server.uploadFile(path, buffer, start, len);
+					start = start + byteSize;
+					len = len - byteSize;
+				}
 				input.close();
 			} catch (Exception e) {
-				System.err.println("Proxy Failed to read cache file");
-				e.printStackTrace();
-			}
-
-			try {
-				server.uploadFile(path, buffer);
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
+				System.err.println("Proxy Failed to read src file");
 				e.printStackTrace();
 			}
 		}
 
 		private void copyFileContent(String src, String dest) {
 
-			File cacheF = new File(src);
-			int len = (int) cacheF.length();
+			File srcFile = new File(src);
+			File destFile = new File(dest);
+			int len = (int) srcFile.length();
 			System.err.println("src file length " + len);
 
 			byte buffer[] = new byte[MAXBUFSIZE];
 			int start = 0;
 			try {
-				File srcFile = new File(src);
-				RandomAccessFile input = new RandomAccessFile(srcFile, "rw");
-				File destFile = new File(dest);
+				RandomAccessFile input = new RandomAccessFile(srcFile, "rw");				
 				RandomAccessFile output = new RandomAccessFile(destFile, "rw");
 				while (len > 0) {
 					int byteSize = Math.min(MAXBUFSIZE, len);

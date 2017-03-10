@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -48,7 +49,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	@Override
-	public boolean uploadFile(String path, byte[] buffer) throws RemoteException {
+	public boolean uploadFile(String path, byte[] buffer, int start, int len) throws RemoteException {
 		if (VersionMap.containsKey(path)) {
 			int newVer = VersionMap.get(path)+1;
 			System.err.println("Update version in server");
@@ -60,21 +61,20 @@ public class Server extends UnicastRemoteObject implements IServer {
 		} // What happen if cacheGet evicted?
 		String serverFilePath = this.rootdir + String.format("/%s", path);
 		
-		BufferedOutputStream outputFile;
+		File serverFile = new File(serverFilePath);
 		try {
-			outputFile = new BufferedOutputStream(new FileOutputStream(serverFilePath));
-			System.err.print("datalength " + String.valueOf(buffer.length));
-			outputFile.write(buffer, 0, buffer.length);
-			outputFile.flush();
-			outputFile.close();
-			System.err.print("Finish write to serverfile");
+			RandomAccessFile serverRaf = new RandomAccessFile(serverFile, "rw");
+			serverRaf.seek(start);
+			serverRaf.write(buffer, 0, len);
+			serverRaf.close();
 		} catch (FileNotFoundException e) {
-			System.err.print("Failed to create a serverfile");
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.err.print("File to write,flush or close");
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		return true;
 
 	}
