@@ -10,9 +10,18 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LRU {
 	public ConcurrentHashMap<String,CacheInfo> cacheMap;
+	public ConcurrentHashMap<String,Boolean> useMap;
 	public LinkedList<String> cacheList;
 	public int cacheSize;
 	public int cacheSizeLimit;
+
+	public LRU(int limit) {
+		System.err.println("New LRU");
+		this.cacheMap = new ConcurrentHashMap<String,CacheInfo>();
+		this.cacheList = new LinkedList<String>();
+		this.cacheSize = 0;
+		this.cacheSizeLimit = limit;
+	}
 	
 	private void printCache() {
 		System.err.println("~~~~~~~IN cache ~~~~~~");
@@ -38,7 +47,7 @@ public class LRU {
 			String lruCache = cacheList.get(listIndex);
 			CacheInfo cInfo = cacheMap.get(lruCache);
 			System.err.println("Try to evict index " +listIndex + " path" +lruCache);
-			if (!cInfo.isUsing.get()) { //not in use we can evict it
+			if (!useMap.get(lruCache)) { //not in use we can evict it
 				System.err.println("Remove cache path:"+lruCache);
 				currCacheSize = currCacheSize - cInfo.size;
 				System.err.println("curr size now"+currCacheSize);
@@ -46,6 +55,7 @@ public class LRU {
 				rmFile.delete();
 				cacheList.remove(lruCache);
 				cacheMap.remove(lruCache);
+				useMap.remove(lruCache);
 			}
 			listIndex--;
 			
@@ -74,6 +84,7 @@ public class LRU {
 		cInfo.isUsing.set(true); 
 		this.cacheList.add(path);
 		this.cacheMap.put(path, cInfo);
+		this.useMap.put(path, true);
 		System.err.println("......size of cache now:" + this.cacheSize);
 		//printCache();
 		return true;
@@ -88,7 +99,8 @@ public class LRU {
 		if (cacheList.contains(path)) {
 			cInfo.isUsing.set(false);
 			cacheList.remove(path);
-			cacheMap.remove(path);			
+			cacheMap.remove(path);	
+			useMap.remove(path);
 		}
 		else {
 			System.err.println(" should never get here");
@@ -96,6 +108,7 @@ public class LRU {
 		}
 		cacheList.addFirst(path);
 		cacheMap.put(path, cInfo);
+		useMap.put(path, false);
 		System.err.println(".....Move 2 MRU...after");
 		for (String s:this.cacheList) {
 			System.err.println("cache in list"+s);
@@ -104,17 +117,9 @@ public class LRU {
 		return true;
 	}
 	
-	public LRU(int limit) {
-		System.err.println("New LRU");
-		this.cacheMap = new ConcurrentHashMap<String,CacheInfo>();
-		this.cacheList = new LinkedList<String>();
-		this.cacheSize = 0;
-		this.cacheSizeLimit = limit;
-	}
 	public void using(String path) {
-		CacheInfo c = this.cacheMap.get(path);
-		c.isUsing.set(true); 
-		cacheMap.replace(path, c);
+		this.useMap.remove(path);
+		this.useMap.put(path, true);
 		
 	}
 	public boolean delete(String path) {

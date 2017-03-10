@@ -135,32 +135,30 @@ class Proxy {
 		}
 
 		private void copyFileContent(String src, String dest) {
+
+			File cacheF = new File(src);
+			int len = (int) cacheF.length();
+			System.err.println("src file length " + len);
+
+			byte buffer[] = new byte[MAXBUFSIZE];
+			int start = 0;
 			try {
-				File cacheF = new File(src);
-				int len = (int) cacheF.length();
-				System.err.println("src file length " + len);
-
-				byte buffer[] = new byte[len];
-				try {
-					BufferedInputStream input = new BufferedInputStream(new FileInputStream(src));
-					input.read(buffer, 0, len);
-					input.close();
-				} catch (Exception e) {
-					System.err.println("Proxy Failed to read src file");
-					e.printStackTrace();
-				}
-
+				BufferedInputStream input = new BufferedInputStream(new FileInputStream(src));
 				BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
-				System.err.println("datalength " + String.valueOf(buffer.length));
-				outputFile.write(buffer, 0, buffer.length);
+				while (len > 0) {
+					int byteSize = Math.min(MAXBUFSIZE, len);
+					input.skip(start);
+					input.read(buffer, 0, byteSize);
+					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
+					outputFile.write(buffer);
+					start = start + byteSize;
+					len = len - byteSize;
+				}
 				outputFile.flush();
 				outputFile.close();
-				System.err.println("Finish write to dest");
-			} catch (FileNotFoundException e) {
-				System.err.print("Failed to create a dest");
-				e.printStackTrace();
-			} catch (IOException e) {
-				System.err.print("File to write,flush or close");
+				input.close();
+			} catch (Exception e) {
+				System.err.println("Proxy Failed to read src file");
 				e.printStackTrace();
 			}
 
