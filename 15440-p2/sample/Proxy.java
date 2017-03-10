@@ -143,8 +143,8 @@ class Proxy {
 				BufferedOutputStream outputFile = new BufferedOutputStream(new FileOutputStream(dest));
 				int start = 0;
 				int bytesRead = 0;
-				byte buffer[] = new byte[MAXBUFSIZE+MAXBUFSIZE];
-				while ((bytesRead = input.read(buffer,start,MAXBUFSIZE)) != -1) {
+				byte buffer[] = new byte[MAXBUFSIZE];
+				while ((bytesRead = input.read(buffer,start,MAXBUFSIZE-start)) != -1) {
 				    outputFile.write(buffer,start,bytesRead);
 				    System.err.println("start:"+start);
 				    start = start+bytesRead;
