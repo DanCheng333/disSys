@@ -148,7 +148,7 @@ class Proxy {
 				RandomAccessFile outputFile = new RandomAccessFile(file, "rw");
 				while (len > 0) {
 					int byteSize = Math.min(MAXBUFSIZE, len);
-					input.skip(start);
+					input.skip(byteSize);
 					input.read(buffer, 0, byteSize);
 					System.err.println("start : " + start + "len: " + len + "bytesize: "+byteSize);
 					outputFile.seek(start);
