@@ -12,14 +12,14 @@ public class Server {
 		while (true) {
 			float timeOfDay = SL.getTime();
 			/* Benchmarking */
-			//1:3-6  => 2 VMs
-			if (timeOfDay >= 3 && timeOfDay <= 6) {
+			//1:4-8  => 2 VMs
+			if (timeOfDay >= 4 && timeOfDay <= 8) {
 				if (SL.getStatusVM(2) == Cloud.CloudOps.VMStatus.NonExistent) {
 					SL.startVM();
 				}
 			}
-			//2:7-15  => 3 VMs
-			if (timeOfDay >= 7 && timeOfDay <= 15) {
+			//2:9-15  => 3 VMs
+			if (timeOfDay >= 9 && timeOfDay <= 15) {
 				if (SL.getStatusVM(3) == Cloud.CloudOps.VMStatus.NonExistent) {
 					SL.startVM();
 				}
