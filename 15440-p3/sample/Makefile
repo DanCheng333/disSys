@@ -5,3 +5,6 @@ all: Server.class
 
 clean:
 	rm -f *.class
+
+setPath:
+	setenv CLASSPATH ../sample:../lib
