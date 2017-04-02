@@ -10,4 +10,4 @@ setPath:
 	setenv CLASSPATH ../sample:../lib
 	
 test:
-	java Cloud 15440 ../lib/db1.txt c-1000-13 15
+	java Cloud 15440 ../lib/db1.txt c-300-13 60
