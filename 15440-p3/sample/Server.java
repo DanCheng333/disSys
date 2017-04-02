@@ -154,7 +154,8 @@ public class Server extends UnicastRemoteObject implements IServer {
                     masterServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port).lookup("//localhost/vmID" + String.valueOf(MASTER));
                     break;
                 } catch (Exception e) {
-                	e.printStackTrace();
+                	//shutDown();
+                	//e.printStackTrace();
                 	continue;
                 }
             }
