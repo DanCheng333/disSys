@@ -12,6 +12,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static long interval = 1000;
 	private static int startNum = 1;
 	private static int startForNum = 0;
+	private static long lastScaleOutAppTime;
+    private static long lastScaleOutForTime;
+    private static long lastScaleInTime;
 
 	public static String cloud_ip;
 	public static int cloud_port;
@@ -37,14 +40,51 @@ public class Server extends UnicastRemoteObject implements IServer {
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
+        
+		while(SL.getQueueLength() == 0 );
+        long time1 = System.currentTimeMillis();
+        SL.dropHead();
+        while(SL.getQueueLength() == 0 );
+        long time2 = System.currentTimeMillis();
+        interval = time2 - time1;
+        System.out.println("time2-time1:" + interval);
 
-		// init drop
-					Cloud.FrontEndOps.Request r = SL.getNextRequest();
-					if (SL.getStatusVM(2) == Cloud.CloudOps.VMStatus.Booting) {
-						SL.drop(r);
-					} else {
-						requestQueue.add(r);
-					}
+        if (interval < 130) {
+            startNum = 7;
+            startForNum = 1;
+        } else if (interval < 200) {
+            startNum = 6;
+            startForNum = 1;
+        } else if (interval < 650) {
+            startNum = 3;
+            startForNum = 0;
+        } else {
+            startNum = 1;
+            startForNum = 0;
+        }
+
+        for (int i = 0; i < startNum; ++i) {
+            SL.startVM();
+        }
+
+        if (interval < 300) {
+            lastScaleInTime = 0 ;
+            lastScaleOutAppTime = System.currentTimeMillis();
+            lastScaleOutForTime = System.currentTimeMillis();
+        }else {
+            lastScaleInTime = System.currentTimeMillis();
+            lastScaleOutAppTime = 0;
+            lastScaleOutForTime = 0;
+        }
+
+        for (int i = 0; i < startForNum; ++i) {
+            frontServerList.add(SL.startVM());
+        }
+
+        while( middleServerList.size() == 0){
+            SL.dropHead();
+        }
+
 
 		System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
@@ -52,7 +92,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			try {
 				// if queue is too long, drop head
 				if (requestQueue.size() > middleServerList.size()) {
-					while (requestQueue.size() > middleServerList.size() * 3) {
+					while (requestQueue.size() > middleServerList.size() * 2) {
 						SL.drop(requestQueue.poll());
 					}
 				}
@@ -70,14 +110,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 				// int tmp = deltaFront > deltaMid ? deltaFront : deltaMid;
 				for (int i = 0; i < deltaFront; i++) {
 
-					if (SL.getStatusVM(vmSize + i + 2) == Cloud.CloudOps.VMStatus.NonExistent) {
+					if (SL.getStatusVM(vmSize + i) == Cloud.CloudOps.VMStatus.NonExistent) {
 						System.err.println("Start front");
 						frontServerList.add(SL.startVM());
 					}
 				}
 				for (int i = 0; i < deltaMid; i++) {
 
-					if (SL.getStatusVM(vmSize + i + 2) == Cloud.CloudOps.VMStatus.NonExistent) {
+					if (SL.getStatusVM(vmSize + i) == Cloud.CloudOps.VMStatus.NonExistent) {
 						System.err.println("Start middle");
 						middleServerList.add(SL.startVM());
 					}
