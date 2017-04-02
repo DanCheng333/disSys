@@ -46,7 +46,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			try {
 				// if queue is too long, drop head
 				if (requestQueue.size() > middleServerList.size()) {
-					while (requestQueue.size() > middleServerList.size() * 1.5) {
+					while (requestQueue.size() > middleServerList.size() * 3) {
 						SL.drop(requestQueue.poll());
 					}
 				}
@@ -163,12 +163,12 @@ public class Server extends UnicastRemoteObject implements IServer {
 			// front
 			if (reply == Role.FRONT) {
 				frontTierAction();
-				masterServer.shutDownVM(vmID, Role.FRONT);
+				
 			}
 			// middle
 			else if (reply == Role.MIDDLE) {
 				middleTierAction();
-				masterServer.shutDownVM(vmID, Role.MIDDLE);
+				
 			} else {
 				masterServer.shutDownVM(vmID, Role.NONE);
 			}
