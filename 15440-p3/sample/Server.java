@@ -62,7 +62,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
         	SL.drop(SL.getNextRequest());
         	System.err.println("drop request");
-        	if (startF.get() && startM.get()) {
+        	if (startF.get() || startM.get()) {
         		break;
         	}
         }
