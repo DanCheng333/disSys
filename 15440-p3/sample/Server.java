@@ -70,10 +70,9 @@ public class Server extends UnicastRemoteObject implements IServer {
         }
 
         while( middleServerList.size() == 0){
-        	if (SL.getQueueLength() > 0) {
-        		System.err.println("drop head middle is 0");
+        	
         		SL.dropHead();
-        	}
+        
         	break;
         }
 
