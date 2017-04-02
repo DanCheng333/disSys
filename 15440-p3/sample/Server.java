@@ -329,7 +329,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 	@Override
 	public void kill() throws RemoteException{
-        kill = true;
+        kill = true
+	}
     
 	public synchronized void shutDown() throws RemoteException {
 		UnicastRemoteObject.unexportObject(this, true);	
