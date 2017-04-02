@@ -28,6 +28,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public Server() throws RemoteException {
 
 	}
+	
+	/*Before front server and middle server before start, => SL.drophead*/
 
 	public static void masterAction() {
 		SL.startVM();
