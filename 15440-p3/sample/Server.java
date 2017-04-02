@@ -64,7 +64,8 @@ public class Server extends UnicastRemoteObject implements IServer {
         startNum = 2;
         startForNum = 2;
         for (int i = 0; i < startNum; ++i) {
-            SL.startVM();
+        	System.err.println("Start front outside of while loop");
+            middleServerList.add(SL.startVM());
         }
         for (int i = 0; i < startForNum; ++i) {
         	System.err.println("Start front outside of while loop");
@@ -192,7 +193,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public Role getRole(Integer vmID) throws RemoteException {
 		if (!frontServerList.contains(vmID)) {
 			System.err.println(" Middle, ID:" + vmID);
-			middleServerList.add(vmID);
+			//middleServerList.add(vmID);
 			return Role.MIDDLE;
 		} else {
 			System.out.println("Front,ID:" + vmID);
