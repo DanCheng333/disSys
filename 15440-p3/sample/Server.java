@@ -48,7 +48,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         long interval = time2 - time1;
        
 
-        if (interval < 100) {
+       /* if (interval < 100) {
             startNum = 7;
             startForNum = 1;
         } else if (interval < 300) {
@@ -56,12 +56,13 @@ public class Server extends UnicastRemoteObject implements IServer {
             startForNum = 1;
         } else if (interval < 600) {
             startNum = 3;
-            startForNum = 0;
+            startForNum = 1;
         } else {
             startNum = 1;
-            startForNum = 0;
-        }
-
+            startForNum = 1;
+        }*/
+        startNum = 2;
+        startForNum = 2;
         for (int i = 0; i < startNum; ++i) {
             SL.startVM();
         }
@@ -78,7 +79,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
-			try {
+			/*try {
 				// if queue is too long, drop head
 				if (requestQueue.size() > middleServerList.size()) {
 					while (requestQueue.size() > middleServerList.size() * 2) {
@@ -88,7 +89,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				}
 			} catch (Exception e) {
 				continue;
-			}
+			}*/
 			
 		}
 	}
