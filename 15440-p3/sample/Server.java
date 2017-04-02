@@ -204,8 +204,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	@Override
 	public Cloud.FrontEndOps.Request getRequest() throws RemoteException {
-		 Cloud.FrontEndOps.Request r = requestQueue.poll();
-		while (r != null) {
+		Cloud.FrontEndOps.Request r = requestQueue.poll();
+		while (r == null) {
 			r = requestQueue.poll();
 		}
 		return r;
