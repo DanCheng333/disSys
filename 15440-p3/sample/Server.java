@@ -97,7 +97,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			// measure current traffic
 			int deltaFront = SL.getQueueLength() - frontServerList.size();
 			int deltaMid = requestQueue.size() - middleServerList.size();
-			System.err.println("middleServerList.size();"+middleServerList.size());
+			
 			int vmSize = middleServerList.size() + frontServerList.size();
 			if (deltaFront > 0 || deltaMid > 0) {
 				// lackFront = deltaFront > deltaMid ? true : false;
@@ -186,7 +186,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 				}
 			}
 
-			// get role
 			Role reply = null;
 			try {
 				reply = masterServer.getRole(vmID);
