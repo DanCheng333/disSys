@@ -62,14 +62,14 @@ public class Server extends UnicastRemoteObject implements IServer {
     				
     				if(SL.getStatusVM(vmSize + i + 2) == 
     				   Cloud.CloudOps.VMStatus.NonExistent){
-    				    SL.startVM();
+    					frontServerList.add(SL.startVM());
     				}
     			    }
     			    for(int i = 0; i < deltaMid; i++) {
     			
     				if(SL.getStatusVM(vmSize + i + 2) == 
     				   Cloud.CloudOps.VMStatus.NonExistent){
-    				    SL.startVM();
+    					middleServerList.add(SL.startVM());
     				}
     			    }
     			}
