@@ -46,7 +46,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	
     	while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();
-        SL.dropHead();
+        //SL.dropHead();
         while(SL.getQueueLength() == 0 );
         long time2 = System.currentTimeMillis();
         interval = time2 - time1;
@@ -84,9 +84,9 @@ public class Server extends UnicastRemoteObject implements IServer {
             frontServerList.add(SL.startVM());
         }
 
-        while( middleServerList.size() == 0){
+        /*while( middleServerList.size() == 0){
             SL.dropHead();
-        }
+        }*/
 
         System.out.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
         Cloud.FrontEndOps.Request r = null;
