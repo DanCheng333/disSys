@@ -64,6 +64,30 @@ public class Server extends UnicastRemoteObject implements IServer {
             lastScaleOutForTime = System.currentTimeMillis();
         }
     }
+    
+    public static boolean scaleIn(int appNumber, int forNumber) throws Exception{
+        appNumber = Math.min(middleServerList.size()-1, appNumber);
+        forNumber = Math.min(frontServerList.size(), forNumber);
+        if (System.currentTimeMillis() - lastScaleInTime >= SCALE_In_THRESHOLD) {
+            // scale in app
+            for (int i = 0; i < appNumber; ++i){
+                int vmId = middleServerList.remove(middleServerList.size()-1);
+                System.out.println("endApp:"+vmId);
+                IServer curServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port).lookup("//localhost/no"+String.valueOf(vmId));
+                curServer.kill();
+            }
+
+            for (int i = 0; i < forNumber; ++i){
+                int vmId = frontServerList.remove(0);
+                System.out.println("endFor:"+vmId);
+                IServer curServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port).lookup("//localhost/no"+String.valueOf(vmId));
+                curServer.kill();
+            }
+            lastScaleInTime = System.currentTimeMillis();
+            return true;
+        }
+        return false;
+    }
 	public static void masterAction() {
 		/*SL.startVM();
     	SL.register_frontend();
@@ -209,7 +233,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         System.err.println("cloud_ip:"+cloud_ip+ ", cloud_port"+ cloud_port+", vmID:" + vmID);
 
 		SL = new ServerLib(cloud_ip, cloud_port);
-        LocateRegistry.getRegistry(cloud_ip, cloud_port).bind("//127.0.0.1/vmID" + String.valueOf(vmID), new Server());
+        LocateRegistry.getRegistry(cloud_ip, cloud_port).bind("//localhost/no" + String.valueOf(vmID), new Server());
 
         if (vmID == MASTER)	{
         	masterAction();   	      	
@@ -220,7 +244,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         	//Look up for master server
         	while (true) {
                 try {
-                    masterServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port).lookup("//localhost/vmID" + String.valueOf(MASTER));
+                    masterServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port).lookup("//localhost/no1");
                     break;
                 } catch (Exception e) {
                 	e.printStackTrace();
@@ -303,7 +327,10 @@ public class Server extends UnicastRemoteObject implements IServer {
         }
 		
 	}
-
+	@Override
+	public void kill() throws RemoteException{
+        kill = true;
+    
 	public synchronized void shutDown() throws RemoteException {
 		UnicastRemoteObject.unexportObject(this, true);	
 	}
