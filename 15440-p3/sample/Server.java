@@ -83,6 +83,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				// if queue is too long, drop head
 				if (requestQueue.size() > middleServerList.size()) {
 					while (requestQueue.size() > middleServerList.size() * 2) {
+						System.err.println("scale out");
 						SL.drop(requestQueue.poll());
 					}
 				}
