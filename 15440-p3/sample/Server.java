@@ -90,7 +90,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 			
 			
-			// measure current traffic
+			/* measure current traffic
 			int deltaFront = SL.getQueueLength() - frontServerList.size();
 			int deltaMid = requestQueue.size() - middleServerList.size();
 			
@@ -112,7 +112,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						middleServerList.add(SL.startVM());
 					}
 				}
-			}
+			}*/
 		}
 	}
 
