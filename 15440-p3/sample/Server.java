@@ -58,7 +58,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		/*System.err.println("WHile1");
 		while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();*/
-        /*while (!startF.get() && !startM.get()) {
+        while (!startF.get() && !startM.get()) {
         	if (startF.get() && startM.get()) {
         		break;
         	}
@@ -66,14 +66,14 @@ public class Server extends UnicastRemoteObject implements IServer {
         	SL.drop(SL.getNextRequest());
         	System.err.println("drop request");
         	}
-        }*/
-        while (!startF.get() && !startM.get()) {
+        }
+        /*while (!startF.get() && !startM.get()) {
             if (!startF.get() && !startM.get()) {
                 break;
             }
             SL.drop(SL.getNextRequest());
             System.err.println("drop request");
-        }
+        }*/
         System.err.println("start M and F");
         
         SL.unregister_frontend();
