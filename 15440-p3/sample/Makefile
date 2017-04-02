@@ -1,4 +1,4 @@
-all: Server.class ServerIntf.class
+all: Server.class IServer.class
 
 %.class: %.java
 	javac $<
