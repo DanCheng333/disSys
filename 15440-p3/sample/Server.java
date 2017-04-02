@@ -50,6 +50,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         while (startF.get() && startM.get()) {
         	SL.dropHead();
         }
+        System.err.println("start M and F");
         
         SL.unregister_frontend();
         /*System.err.println("WHile2");
