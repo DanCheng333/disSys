@@ -65,11 +65,13 @@ public class Server extends UnicastRemoteObject implements IServer {
             SL.startVM();
         }
         for (int i = 0; i < startForNum; ++i) {
+        	System.err.println("Start front outside of while loop");
             frontServerList.add(SL.startVM());
         }
 
         while( middleServerList.size() == 0){
         	if (SL.getQueueLength() > 0) {
+        		System.err.println("drop head middle is 0");
         		SL.dropHead();
         	}
         	break;
@@ -95,6 +97,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			// measure current traffic
 			int deltaFront = SL.getQueueLength() - frontServerList.size();
 			int deltaMid = requestQueue.size() - middleServerList.size();
+			System.err.println("middleServerList.size();"+middleServerList.size());
 			int vmSize = middleServerList.size() + frontServerList.size();
 			if (deltaFront > 0 || deltaMid > 0) {
 				// lackFront = deltaFront > deltaMid ? true : false;
@@ -172,6 +175,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		// Not MASTER
 		else {
 			// Look up for master server
+			System.err.println("Not master");
 			while (true) {
 				try {
 					masterServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port)
