@@ -144,7 +144,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
 				SL.processRequest(r);
 			} catch (Exception e) {
-				System.err.println("get request failed");
+				//System.err.println("get request failed");
 				//e.printStackTrace();
 				continue;
 			}
