@@ -96,7 +96,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 			try {
 				masterServer.addRequest(r);
-				masterServer.shutDownVM(vmID, Role.FRONT);
+				//masterServer.shutDownVM(vmID, Role.FRONT);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -109,7 +109,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			try {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
 				SL.processRequest(r);
-				masterServer.shutDownVM(vmID, Role.MIDDLE);
+				//masterServer.shutDownVM(vmID, Role.MIDDLE);
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
