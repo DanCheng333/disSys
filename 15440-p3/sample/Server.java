@@ -131,7 +131,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 			try {
 				masterServer.addRequest(r);
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				System.err.println("add request failed");
+				//e.printStackTrace();
 			}
 		}
 	}
@@ -143,7 +144,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
 				SL.processRequest(r);
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.err.println("get request failed");
+				//e.printStackTrace();
 				continue;
 			}
 
