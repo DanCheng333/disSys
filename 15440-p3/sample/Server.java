@@ -41,19 +41,20 @@ public class Server extends UnicastRemoteObject implements IServer {
         long time1 = System.currentTimeMillis();
         
         SL.dropHead();
+        SL.unregister_frontend();
         
         while(SL.getQueueLength() == 0 );
         long time2 = System.currentTimeMillis();
         long interval = time2 - time1;
-        System.out.println("time2-time1:" + interval);
+       
 
-        if (interval < 130) {
+        if (interval < 100) {
             startNum = 7;
             startForNum = 1;
-        } else if (interval < 200) {
+        } else if (interval < 300) {
             startNum = 6;
             startForNum = 1;
-        } else if (interval < 650) {
+        } else if (interval < 600) {
             startNum = 3;
             startForNum = 0;
         } else {
@@ -89,30 +90,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 				continue;
 			}
 			
-			
-			/* measure current traffic
-			int deltaFront = SL.getQueueLength() - frontServerList.size();
-			int deltaMid = requestQueue.size() - middleServerList.size();
-			
-			int vmSize = middleServerList.size() + frontServerList.size();
-			if (deltaFront > 0 || deltaMid > 0) {
-				// lackFront = deltaFront > deltaMid ? true : false;
-				// int tmp = deltaFront > deltaMid ? deltaFront : deltaMid;
-				for (int i = 0; i < deltaFront; i++) {
-
-					if (SL.getStatusVM(vmSize + i) == Cloud.CloudOps.VMStatus.NonExistent) {
-						System.err.println("Start front");
-						frontServerList.add(SL.startVM());
-					}
-				}
-				for (int i = 0; i < deltaMid; i++) {
-
-					if (SL.getStatusVM(vmSize + i) == Cloud.CloudOps.VMStatus.NonExistent) {
-						System.err.println("Start middle");
-						middleServerList.add(SL.startVM());
-					}
-				}
-			}*/
 		}
 	}
 
@@ -166,6 +143,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		SL = new ServerLib(cloud_ip, cloud_port);
 		LocateRegistry.getRegistry(cloud_ip, cloud_port).bind("//127.0.0.1/vmID" + String.valueOf(vmID), new Server());
 
+		//Master
 		if (vmID == MASTER) {
 			masterAction();
 		}
@@ -253,8 +231,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	}
 
-	public synchronized void shutDown() throws RemoteException {
-		UnicastRemoteObject.unexportObject(this, true);
-	}
+
 
 }
