@@ -84,9 +84,9 @@ public class Server extends UnicastRemoteObject implements IServer {
             frontServerList.add(SL.startVM());
         }
 
-        /*while( middleServerList.size() == 0){
+        while( middleServerList.size() == 0){
             SL.dropHead();
-        }*/
+        }
 
         System.out.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
         Cloud.FrontEndOps.Request r = null;
