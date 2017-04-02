@@ -127,7 +127,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		        }
 	        }
 	        else {
-	        	for (int i = 0; i < startNum; i++) {
+	        	for (int i = 0; i > startNum; i--) {
 		            int id = middleServerList.remove(middleServerList.size()-1);
 		            SL.endVM(id);
 		        }
