@@ -69,11 +69,8 @@ public class Server extends UnicastRemoteObject implements IServer {
             frontServerList.add(SL.startVM());
         }
 
-        while( middleServerList.size() == 0){
-        	
-        		SL.dropHead();
-        
-        	break;
+        while( middleServerList.size() == 0){    	
+        		SL.dropHead();   
         }
 
 
