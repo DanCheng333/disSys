@@ -88,7 +88,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         }
         return false;
     }
-	public static void masterAction() {
+	public static void masterAction() throws Exception {
 		/*SL.startVM();
     	SL.register_frontend();
     	
@@ -159,9 +159,29 @@ public class Server extends UnicastRemoteObject implements IServer {
                 if (queLen > middleServerList.size() * 1.5){
                     scaleOutFor(1);
                     int number = (int)(queLen/middleServerList.size()*4);
-                    scaleOutApp(number);
+                    scaleOutApp(number);             
+                }
+             // if queue is too long, drop head
+                if (requestQueue.size() > middleServerList.size()) {
+                    while (requestQueue.size() > middleServerList.size() * 1.5) {
+                        SL.drop(requestQueue.poll());
+                    }
+                } else {
+                    // consider scalein
+                    long lastTimeGetReq = System.currentTimeMillis();
+                    while ((r = SL.getNextRequest()) == null) {
+                    }
+                    long period = System.currentTimeMillis() - lastTimeGetReq;
 
-            }
+                    if (period > interval * 3){
+                        int scaleInAppNumber = (int) (period - interval)/40;
+                        int scaleInForNumber = scaleInAppNumber > 5 ? 1 : 0;
+                        if (scaleIn(scaleInAppNumber, scaleInForNumber)) {
+                            interval = period;
+                        }
+                    }
+                    requestQueue.add(r);
+                }
 	
           }
 	}
@@ -188,8 +208,8 @@ public class Server extends UnicastRemoteObject implements IServer {
                 if (SL.getQueueLength() == 0){
                     try {
 						masterServer.shutDownVM(vmID, Role.FRONT);
-						Thread.sleep(5000);
-					} catch (RemoteException | InterruptedException e) {
+					
+					} catch (RemoteException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -208,7 +228,7 @@ public class Server extends UnicastRemoteObject implements IServer {
                   SL.processRequest(r);
                   if (kill){
                       masterServer.shutDownVM(vmID, Role.MIDDLE);
-                      Thread.sleep(5000);
+                     
                   }
               } catch (Exception e){
 //                  e.printStackTrace();
