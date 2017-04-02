@@ -73,7 +73,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     				}
     			    }
     			}
-    			while( middleServerList.size() == 0){
+    			while( middleServerList.size() < 3){
     	            SL.dropHead();
     	        }
 
