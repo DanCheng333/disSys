@@ -44,10 +44,21 @@ public class Server extends UnicastRemoteObject implements IServer {
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
 		
+		startNum = 1;
+        startForNum = 1;
+        for (int i = 0; i < startNum; ++i) {
+        	System.err.println("Start front outside of while loop");
+            middleServerList.add(SL.startVM());
+        }
+        for (int i = 0; i < startForNum; ++i) {
+        	System.err.println("Start front outside of while loop");
+            frontServerList.add(SL.startVM());
+        }
+		
 		/*System.err.println("WHile1");
 		while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();*/
-        while (startF.get() && startM.get()) {
+        while (!startF.get() && !startM.get()) {
         	SL.drop(SL.getNextRequest());
         	System.err.println("drop request");
         }
@@ -73,20 +84,11 @@ public class Server extends UnicastRemoteObject implements IServer {
             startNum = 1;
             startForNum = 1;
         }*/
-        startNum = 1;
-        startForNum = 1;
-        for (int i = 0; i < startNum; ++i) {
-        	System.err.println("Start front outside of while loop");
-            middleServerList.add(SL.startVM());
-        }
-        for (int i = 0; i < startForNum; ++i) {
-        	System.err.println("Start front outside of while loop");
-            frontServerList.add(SL.startVM());
-        }
+        
 
-        while( middleServerList.size() == 0){    	
-        		SL.dropHead();   
-        }
+//        while( middleServerList.size() == 0){    	
+//        		SL.dropHead();   
+//        }
 
 
 		//System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
