@@ -46,7 +46,7 @@ public class Server extends UnicastRemoteObject implements IServer {
     	
     	while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();
-        //SL.dropHead();
+        SL.dropHead();
         while(SL.getQueueLength() == 0 );
         long time2 = System.currentTimeMillis();
         interval = time2 - time1;
@@ -94,7 +94,7 @@ public class Server extends UnicastRemoteObject implements IServer {
             try {
                 // if queue is too long, drop head
                 if (requestQueue.size() > middleServerList.size()) {
-                    while (requestQueue.size() > middleServerList.size() * 10) {
+                    while (requestQueue.size() > middleServerList.size() * 5) {
                         SL.drop(requestQueue.poll());
                     }
                 } 
@@ -194,18 +194,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	@Override
 	public Role getRole(Integer vmID) throws RemoteException {
-		if( middleServerList.contains(vmID) ) {
+		if( !frontServerList.contains(vmID) ) {
             System.out.println(" Middle, ID:"+ vmID);
             middleServerList.add(vmID);
             return Role.MIDDLE;
         }
-        else if ( frontServerList.contains(vmID) ){
+        else {
             System.out.println("Front,ID:"+ vmID);
             return Role.FRONT;
         }
-        else {
-        	return Role.NONE;
-        }
+
 	}
 
 
