@@ -1,319 +1,256 @@
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.concurrent.*;
-import java.util.*;
-class Content{
-    public boolean role;
-    public long interval;
-    public ArrayList<Integer> appServerList;
-    Content(boolean role){
-        this.role = role;
-    }
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-    Content(boolean role, long interval){
-        this.role = role;
-        this.interval = interval;
-    }
-}
-public class Server extends UnicastRemoteObject implements ServerIntf {
-
-    private static final int MASTER = 1;
-    private static final Boolean FORWARDER = true;
-    private static final Boolean PROCESSOR = false;
-    private static ServerIntf masterIntf;
-    private static List<Integer> forServerList;
-    private static List<Integer> appServerList;
-    private static ServerLib SL;
-    private static long interval = 1000;
+public class Server extends UnicastRemoteObject implements IServer {
+	public static final int MASTER = 1;
+	
+	private static long interval = 1000;
     private static int startNum = 1;
     private static int startForNum = 0;
-    private static int vmId;
-    private static int basePort;
-    private static String selfIP;
-
-    private static ConcurrentLinkedQueue <Cloud.FrontEndOps.Request> centralizedQueue;
+    
     private static long lastScaleOutAppTime;
     private static long lastScaleOutForTime;
     private static long lastScaleInTime;
-    private static final long SCALE_OUT_APP_THRESHOLD = 60000;
-    private static final long SCALE_OUT_FOR_THRESHOLD = 60000;
-    private static final long SCALE_In_THRESHOLD = 60000;
-    private static final long MAX_FORWARDER_NUM = 1;
-    private static final long MAX_APP_NUM = 12;
-
+	
+	public static String cloud_ip;
+	public static int cloud_port;
+	public static int vmID;
+	public static ServerLib SL;
+	
+	public static IServer masterServer;	
+	private static List<Integer> frontServerList;
+    private static List<Integer> middleServerList;
+	public static ConcurrentLinkedQueue <Cloud.FrontEndOps.Request> requestQueue;
+	
     private static boolean kill = false;
     private static boolean unregister = false;
+	public enum Role {
+	    FRONT, MIDDLE, NONE
+	}
+	
+	public Server() throws RemoteException {
+		
+	}
+	
+	
+	
+	public static void masterAction() {
+		SL.startVM();
+    	SL.register_frontend(); 	
+    	frontServerList = Collections.synchronizedList(new ArrayList<>());
+    	middleServerList = Collections.synchronizedList(new ArrayList<>());
+    	requestQueue = new ConcurrentLinkedQueue <Cloud.FrontEndOps.Request>();
+    	
+    	while(SL.getQueueLength() == 0 );
+        long time1 = System.currentTimeMillis();
+        SL.dropHead();
+        while(SL.getQueueLength() == 0 );
+        long time2 = System.currentTimeMillis();
+        interval = time2 - time1;
+        System.out.println("time2-time1:" + interval);
 
-    public Server() throws RemoteException {
-
-    }
-
-
-    public static void main (String args[] ) throws Exception {
-
-        if (args.length != 3) throw new Exception("Need 3 args: <cloud_ip> <cloud_port>");
-        selfIP = args[0];
-        basePort = Integer.parseInt(args[1]);
-        vmId = Integer.parseInt(args[2]);
-        System.out.println("---vmID----" + vmId);
-
-        SL = new ServerLib(selfIP, basePort);
-        LocateRegistry.getRegistry(selfIP, basePort).bind("//localhost/no" + String.valueOf(vmId), new Server());
-
-
-        if(vmId == MASTER) {
-            SL.startVM();
-            forServerList = Collections.synchronizedList(new ArrayList<>());
-            appServerList = Collections.synchronizedList(new ArrayList<>());
-            centralizedQueue = new ConcurrentLinkedQueue<>();
-
-            SL.register_frontend();
-            while(SL.getQueueLength() == 0 );
-            long time1 = System.currentTimeMillis();
-            SL.dropHead();
-            while(SL.getQueueLength() == 0 );
-            long time2 = System.currentTimeMillis();
-            interval = time2 - time1;
-            System.out.println("time2-time1:" + interval);
-
-            if (interval < 130) {
-                startNum = 7;
-                startForNum = 1;
-            } else if (interval < 200) {
-                startNum = 6;
-                startForNum = 1;
-            } else if (interval < 650) {
-                startNum = 3;
-                startForNum = 0;
-            } else {
-                startNum = 1;
-                startForNum = 0;
-            }
-
-            for (int i = 0; i < startNum; ++i) {
-                SL.startVM();
-            }
-
-            if (interval < 300) {
-                lastScaleInTime = 0 ;
-                lastScaleOutAppTime = System.currentTimeMillis();
-                lastScaleOutForTime = System.currentTimeMillis();
-            }else {
-                lastScaleInTime = System.currentTimeMillis();
-                lastScaleOutAppTime = 0;
-                lastScaleOutForTime = 0;
-            }
-
-            for (int i = 0; i < startForNum; ++i) {
-                forServerList.add(SL.startVM());
-            }
-
-            while( appServerList.size() == 0){
-                SL.dropHead();
-                Thread.sleep(50);
-            }
-
-            System.out.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
-            Cloud.FrontEndOps.Request r = null;
-            while (true) {
-                try {
-                    // consider scaleout
-                    int queLen = SL.getQueueLength();
-                    if (queLen > appServerList.size() * 1.5){
-                        scaleOutFor(1);
-                        int number = (int)(queLen/appServerList.size()*4);
-                        scaleOutApp(number);
-                    }
-
-                    // if queue is too long, drop head
-                    if (centralizedQueue.size() > appServerList.size()) {
-                        while (centralizedQueue.size() > appServerList.size() * 1.5) {
-                            SL.drop(centralizedQueue.poll());
-                        }
-                    } else {
-                        // consider scalein
-                        long lastTimeGetReq = System.currentTimeMillis();
-                        while ((r = SL.getNextRequest()) == null) {
-                        }
-                        long period = System.currentTimeMillis() - lastTimeGetReq;
-
-                        if (period > interval * 3){
-                            int scaleInAppNumber = (int) (period - interval)/40;
-                            int scaleInForNumber = scaleInAppNumber > 5 ? 1 : 0;
-                            if (scaleIn(scaleInAppNumber, scaleInForNumber)) {
-                                interval = period;
-                            }
-                        }
-                        centralizedQueue.add(r);
-                    }
-                }
-                catch (Exception e){
-                    continue;
-                }
-            }
+        if (interval < 130) {
+            startNum = 7;
+            startForNum = 1;
+        } else if (interval < 200) {
+            startNum = 6;
+            startForNum = 1;
+        } else if (interval < 650) {
+            startNum = 3;
+            startForNum = 0;
+        } else {
+            startNum = 1;
+            startForNum = 0;
         }
 
-        //non-master vm
+        for (int i = 0; i < startNum; ++i) {
+            SL.startVM();
+        }
+
+        if (interval < 300) {
+            lastScaleInTime = 0 ;
+            lastScaleOutAppTime = System.currentTimeMillis();
+            lastScaleOutForTime = System.currentTimeMillis();
+        }else {
+            lastScaleInTime = System.currentTimeMillis();
+            lastScaleOutAppTime = 0;
+            lastScaleOutForTime = 0;
+        }
+
+        for (int i = 0; i < startForNum; ++i) {
+            frontServerList.add(SL.startVM());
+        }
+
+        while( middleServerList.size() == 0){
+            SL.dropHead();
+        }
+
+        System.out.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
+        Cloud.FrontEndOps.Request r = null;
+        while (true) {
+            try {
+                // if queue is too long, drop head
+                if (requestQueue.size() > middleServerList.size()) {
+                    while (requestQueue.size() > middleServerList.size() * 1.5) {
+                        SL.drop(requestQueue.poll());
+                    }
+                } 
+            }
+            catch (Exception e){
+                continue;
+            }
+        }
+	}
+	
+	
+	public static void frontTierAction() {
+		System.out.println("==========FrontTier===========");
+        SL.register_frontend();
+        Cloud.FrontEndOps.Request r = null;
+        while (true) {
+            while ((r = SL.getNextRequest()) == null){}
+            try {
+				masterServer.addRequest(r);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+        }
+	}
+	
+	
+	public static void middleTierAction() {
+		  System.out.println("==========MiddleTier=========");
+          while(true) {
+              try {
+                  Cloud.FrontEndOps.Request r = masterServer.getRequest();
+                  SL.processRequest(r);
+              } catch (Exception e){
+                  e.printStackTrace();
+                  continue;
+              }
+
+          }
+	}
+	
+	
+    /**
+     * FrontTiers(include MASTER), MiddleTiers
+     * @param args
+     * @throws Exception
+     */
+	public static void main ( String args[] ) throws Exception {
+		if (args.length != 3) throw new Exception("Need 3 args: <cloud_ip> <cloud_port> <VM id>");
+		cloud_ip = args[0];
+        cloud_port = Integer.parseInt(args[1]);
+        vmID = Integer.parseInt(args[2]);
+        
+        System.err.println("cloud_ip:"+cloud_ip+ ", cloud_port"+ cloud_port+", vmID:" + vmID);
+
+		SL = new ServerLib(cloud_ip, cloud_port);
+        LocateRegistry.getRegistry(cloud_ip, cloud_port).bind("//127.0.0.1/vmID" + String.valueOf(vmID), new Server());
+
+        if (vmID == MASTER)	{
+        	masterAction();   	      	
+        }
+		
+        //Not MASTER
         else{
-            // lookup master (and cache)
-            while (true) {
+        	//Look up for master server
+        	while (true) {
                 try {
-                    masterIntf = (ServerIntf) LocateRegistry.getRegistry(selfIP, basePort).lookup("//localhost/no1");
+                    masterServer = (IServer) LocateRegistry.getRegistry(cloud_ip, cloud_port).lookup("//localhost/vmID" + String.valueOf(MASTER));
                     break;
                 } catch (Exception e) {
-                    continue;
+                	e.printStackTrace();
+                	continue;
                 }
             }
 
             // get role
-            Content reply = null;
+            Role reply = null;
             try {
-                reply = masterIntf.getRole(vmId);
+                reply = masterServer.getRole(vmID);
             } catch (Exception e){
                 return;
             }
-
-            // do work
-            // forwarder
-            if(reply.role == FORWARDER) {
-                System.out.println("==========Forwarder");
-                SL.register_frontend();
-                Cloud.FrontEndOps.Request r = null;
-                while (true) {
-                    while ((r = SL.getNextRequest()) == null){}
-                    masterIntf.addToCentralizedQueue(r);
-                    // if have to kill self
-                    if (kill){
-                        if (unregister == false) {
-                            SL.unregister_frontend();
-                            unregister = true;
-                        }
-                        if (SL.getQueueLength() == 0){
-                            masterIntf.killMe(vmId, FORWARDER);
-                            Thread.sleep(5000);
-                        }
-                    }
-                }
+            // front
+            if (reply == Role.FRONT) {
+            	frontTierAction();
             }
-            // processor
-            else{
-                System.out.println("==========App, interval:");
-                while(true) {
-                    try {
-                        Cloud.FrontEndOps.Request r = masterIntf.getFromCentralizedQueue();
-                        SL.processRequest(r);
-                        if (kill){
-                            masterIntf.killMe(vmId, PROCESSOR);
-                            Thread.sleep(5000);
-                        }
-                    } catch (Exception e){
-//                        e.printStackTrace();
-                        continue;
-                    }
-
-                }
+            // middle
+            else if(reply == Role.MIDDLE){
+            	middleTierAction();
             }
-        }
-    }
-
-    public void killMe(Integer vmId, boolean type) throws RemoteException{
-        if (type == FORWARDER){
-            System.out.println("kill forwarder:" + vmId);
-            forServerList.remove(vmId);
-            SL.endVM(vmId);
-        } else {
-            System.out.println("kill processor:" + vmId);
-            appServerList.remove(vmId);
-            SL.endVM(vmId);
-        }
-
-    }
-    public void killYourself() throws RemoteException{
-        kill = true;
-    }
-
-    public static boolean scaleIn(int appNumber, int forNumber) throws Exception{
-        appNumber = Math.min(appServerList.size()-1, appNumber);
-        forNumber = Math.min(forServerList.size(), forNumber);
-        if (System.currentTimeMillis() - lastScaleInTime >= SCALE_In_THRESHOLD) {
-            // scale in app
-            for (int i = 0; i < appNumber; ++i){
-                int vmId = appServerList.remove(appServerList.size()-1);
-                System.out.println("endApp:"+vmId);
-                ServerIntf curServer = (ServerIntf) LocateRegistry.getRegistry(selfIP, basePort).lookup("//localhost/no"+String.valueOf(vmId));
-                curServer.killYourself();
+            else {
+            	masterServer.shutDownVM(vmID, Role.NONE);
             }
+	}
+}
 
-            for (int i = 0; i < forNumber; ++i){
-                int vmId = forServerList.remove(0);
-                System.out.println("endFor:"+vmId);
-                ServerIntf curServer = (ServerIntf) LocateRegistry.getRegistry(selfIP, basePort).lookup("//localhost/no"+String.valueOf(vmId));
-                curServer.killYourself();
-            }
-            lastScaleInTime = System.currentTimeMillis();
-            return true;
+
+
+	@Override
+	public Role getRole(Integer vmID) throws RemoteException {
+		if( middleServerList.contains(vmID) ) {
+            System.out.println(" Middle, ID:"+ vmID);
+            middleServerList.add(vmID);
+            return Role.MIDDLE;
         }
-        return false;
-    }
-
-    public static void scaleOutApp(int number){
-        int originalNum = number;
-        number = Math.min(number, 7);
-        if (appServerList.size() < MAX_APP_NUM && System.currentTimeMillis() - lastScaleOutAppTime >= SCALE_OUT_APP_THRESHOLD) {
-            System.out.println("original number:" + originalNum);
-            System.out.println("scaleOutApp:" + number);
-            for (int i = 0; i < Math.min(number, MAX_APP_NUM - appServerList.size()); ++i) {
-                SL.startVM();
-            }
-            lastScaleOutAppTime = System.currentTimeMillis();
-        }
-    }
-
-
-    public static void scaleOutFor(int number){
-        if (forServerList.size() < MAX_FORWARDER_NUM && System.currentTimeMillis() - lastScaleOutForTime >= SCALE_OUT_FOR_THRESHOLD) {
-            System.out.println("scale out for");
-            forServerList.add(SL.startVM());
-            lastScaleOutForTime = System.currentTimeMillis();
-        }
-    }
-
-    public Content getRole (Integer vmID) throws RemoteException{
-
-        if( !forServerList.contains(vmID) ) {
-            System.out.println("vmID :" + vmID + " is app`");
-            appServerList.add(vmID);
-            return new Content(PROCESSOR);
+        else if ( frontServerList.contains(vmID) ){
+            System.out.println("Front,ID:"+ vmID);
+            return Role.FRONT;
         }
         else {
-            System.out.println("vmID :" + vmID + " is for");
-            return new Content(FORWARDER);
+        	return Role.NONE;
         }
-    }
+	}
 
-    public Cloud.FrontEndOps.Request getFromCentralizedQueue() throws RemoteException{
-        Cloud.FrontEndOps.Request r = null;
-        while (true){
-            r = centralizedQueue.poll();
-            if (r == null){
-                continue;
-            }else {
-                break;
-            }
+
+
+	@Override
+	public Cloud.FrontEndOps.Request getRequest() throws RemoteException {
+		Cloud.FrontEndOps.Request r = null;
+        while (r != null){
+            r = requestQueue.poll();
         }
         return r;
-    }
-
-
-    public void addToCentralizedQueue (Cloud.FrontEndOps.Request r) throws RemoteException{
-        centralizedQueue.add(r);
-    }
+	}
 
 
 
-    public synchronized void shutDown() throws RemoteException {
-        UnicastRemoteObject.unexportObject(this, true);
-    }
+	@Override
+	public void addRequest(Cloud.FrontEndOps.Request r) throws RemoteException {
+		 requestQueue.add(r);		
+	}
+
+
+
+	@Override
+	public void shutDownVM(Integer vmId, Role role) throws RemoteException {
+		if (role == Role.FRONT){
+            System.out.println("ShutDown frontTier vmID:" + vmId);
+            frontServerList.remove(vmId);
+            SL.endVM(vmId);
+        } else if (role == Role.MIDDLE){
+            System.out.println("kill processor:" + vmId);
+            middleServerList.remove(vmId);
+            SL.endVM(vmId);
+        }
+        else {
+        	SL.endVM(vmId);
+        }
+		
+	}
+
+	public synchronized void shutDown() throws RemoteException {
+		UnicastRemoteObject.unexportObject(this, true);	
+	}
 
 }
+
+
