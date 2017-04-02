@@ -194,11 +194,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 			// front
 			if (reply == Role.FRONT) {
+				System.err.println("FRONT");
 				frontTierAction();
 				
 			}
 			// middle
 			else if (reply == Role.MIDDLE) {
+				System.err.println("MIDDLE");
 				middleTierAction();
 				
 			} else {
