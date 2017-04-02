@@ -5,11 +5,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server extends UnicastRemoteObject implements IServer {
 	public static final int MASTER = 1;
 	private static int startNum = 1;
 	private static int startForNum = 0;
+	
+	private static AtomicBoolean startF;
+	private static AtomicBoolean startM;
+	
 
 	public static String cloud_ip;
 	public static int cloud_port;
@@ -26,7 +31,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	public Server() throws RemoteException {
-
+		startF = new AtomicBoolean(false);
+		startM = new AtomicBoolean(false);
 	}
 	
 	/*Before front server and middle server before start, => SL.drophead*/
@@ -41,8 +47,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 		/*System.err.println("WHile1");
 		while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();*/
+        while (startF.get() && startM.get()) {
+        	SL.dropHead();
+        }
         
-        SL.dropHead();
         SL.unregister_frontend();
         /*System.err.println("WHile2");
         while(SL.getQueueLength() == 0 );
@@ -102,9 +110,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 	}
 
-	public static void frontTierAction() {
+	public static void frontTierAction() throws RemoteException {
 		System.out.println("==========FrontTier===========");
-
+		masterServer.startF();
 		SL.register_frontend();
 		Cloud.FrontEndOps.Request r = null;
 		while (true) {
@@ -119,8 +127,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 	}
 
-	public static void middleTierAction() {
+	public static void middleTierAction() throws RemoteException {
 		System.out.println("==========MiddleTier=========");
+		masterServer.startM();
 		while (true) {
 			try {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
@@ -238,6 +247,18 @@ public class Server extends UnicastRemoteObject implements IServer {
 			SL.endVM(vmId);
 		}
 
+	}
+
+	@Override
+	public void startF() throws RemoteException {
+		startF.set(true);
+		
+	}
+
+	@Override
+	public void startM() throws RemoteException {
+		startM.set(true);
+		
 	}
 
 
