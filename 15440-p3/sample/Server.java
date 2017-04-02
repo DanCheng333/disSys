@@ -38,7 +38,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	/*Before front server and middle server before start, => SL.drophead*/
 
 	public static void masterAction() {
-		SL.startVM();
+		//SL.startVM();
 		SL.register_frontend();
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
