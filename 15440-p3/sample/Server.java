@@ -27,8 +27,6 @@ public class Server extends UnicastRemoteObject implements IServer {
     private static List<Integer> middleServerList;
 	public static ConcurrentLinkedQueue <Cloud.FrontEndOps.Request> requestQueue;
 	
-    private static boolean kill = false;
-    private static boolean unregister = false;
 	public enum Role {
 	    FRONT, MIDDLE, NONE
 	}
@@ -96,7 +94,7 @@ public class Server extends UnicastRemoteObject implements IServer {
             try {
                 // if queue is too long, drop head
                 if (requestQueue.size() > middleServerList.size()) {
-                    while (requestQueue.size() > middleServerList.size() * 1.5) {
+                    while (requestQueue.size() > middleServerList.size() * 10) {
                         SL.drop(requestQueue.poll());
                     }
                 } 
