@@ -75,15 +75,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         
         SL.unregister_frontend();
 
-        
 
-//        while( middleServerList.size() == 0){    	
-//        		SL.dropHead();   
-//        }
-
-
-		//System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
-		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
 			try {
 				// if queue is too long, drop head
@@ -92,7 +84,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						/*System.err.println("scale out");
 						SL.drop(requestQueue.poll());*/
-						for (int i = 0; i < Math.ceil(deltaSize/1.5); i++) {
+						for (int i = 0; i < Math.ceil(deltaSize/2); i++) {
 				        	System.err.println("Start front outside of while loop");
 				            middleServerList.add(SL.startVM());
 				        }
@@ -102,7 +94,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				continue;
 			}
 			
-			System.err.println("WHile1 Q len: " + SL.getQueueLength());
+			/*System.err.println("WHile1 Q len: " + SL.getQueueLength());
 			int qLen = SL.getQueueLength();
 	        long time1 = System.currentTimeMillis();
 	        System.err.println("WHile2");
@@ -133,7 +125,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		            int id = middleServerList.remove(middleServerList.size()-1);
 		            SL.endVM(id);
 		        }
-	        }
+	        }*/
 			
 		}
 	}
