@@ -36,17 +36,17 @@ public class Server extends UnicastRemoteObject implements IServer {
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
 		
-		System.err.println("WHile1");
+		/*System.err.println("WHile1");
 		while(SL.getQueueLength() == 0 );
-        long time1 = System.currentTimeMillis();
+        long time1 = System.currentTimeMillis();*/
         
         SL.dropHead();
         SL.unregister_frontend();
-        System.err.println("WHile2");
+        /*System.err.println("WHile2");
         while(SL.getQueueLength() == 0 );
         long time2 = System.currentTimeMillis();
         long interval = time2 - time1;
-        System.err.println("WHile");
+        System.err.println("WHile");*/
 
        /* if (interval < 100) {
             startNum = 7;
@@ -77,7 +77,7 @@ public class Server extends UnicastRemoteObject implements IServer {
         }
 
 
-		System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
+		//System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
 			/*try {
