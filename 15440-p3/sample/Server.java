@@ -102,11 +102,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 				continue;
 			}
 			
-			System.err.println("WHile1");
-			while(SL.getQueueLength() == 0 );
+			System.err.println("WHile1 Q len: " + SL.getQueueLength());
+			int qLen = SL.getQueueLength();
 	        long time1 = System.currentTimeMillis();
 	        System.err.println("WHile2");
-	        while(SL.getQueueLength() == 0 );
+	        while(SL.getQueueLength() < qLen + 1);
 	        long time2 = System.currentTimeMillis();
 	        long interval = time2 - time1;
 	        System.err.println("WHile");
@@ -123,11 +123,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 	        
 	        if (startNum > 0) {
 	        	for (int i = 0; i < startNum; i++) {
+	        		System.err.println("add vm interval");
 		            middleServerList.add(SL.startVM());
 		        }
 	        }
 	        else {
 	        	for (int i = 0; i > startNum; i--) {
+	        		System.err.println("rm vm interval");
 		            int id = middleServerList.remove(middleServerList.size()-1);
 		            SL.endVM(id);
 		        }
