@@ -59,12 +59,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 		while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();*/
         while (!startF.get() && !startM.get()) {
-        	if (startF.get() && startM.get()) {
-        		break;
-        	}
-        	else {
+
         	SL.drop(SL.getNextRequest());
         	System.err.println("drop request");
+        	if (startF.get() && startM.get()) {
+        		break;
         	}
         }
         /*while (!startF.get() && !startM.get()) {
