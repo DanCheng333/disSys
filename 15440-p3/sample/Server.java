@@ -38,7 +38,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
 
-		
+		// init drop
+					Cloud.FrontEndOps.Request r = SL.getNextRequest();
+					if (SL.getStatusVM(2) == Cloud.CloudOps.VMStatus.Booting) {
+						SL.drop(r);
+					} else {
+						requestQueue.add(r);
+					}
 
 		System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
@@ -54,13 +60,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				continue;
 			}
 			
-			// init drop
-			Cloud.FrontEndOps.Request r = SL.getNextRequest();
-			if (SL.getStatusVM(2) == Cloud.CloudOps.VMStatus.Booting) {
-				SL.drop(r);
-			} else {
-				requestQueue.add(r);
-			}
+			
 			// measure current traffic
 			int deltaFront = SL.getQueueLength() - frontServerList.size();
 			int deltaMid = requestQueue.size() - middleServerList.size();
@@ -96,7 +96,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 			try {
 				masterServer.addRequest(r);
-				//masterServer.shutDownVM(vmID, Role.FRONT);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
@@ -109,7 +108,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 			try {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
 				SL.processRequest(r);
-				//masterServer.shutDownVM(vmID, Role.MIDDLE);
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
@@ -170,6 +168,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				middleTierAction();
 				
 			} else {
+				System.err.println(" NONE server!!!");
 				masterServer.shutDownVM(vmID, Role.NONE);
 			}
 		}
@@ -178,7 +177,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	@Override
 	public Role getRole(Integer vmID) throws RemoteException {
 		if (!frontServerList.contains(vmID)) {
-			System.out.println(" Middle, ID:" + vmID);
+			System.err.println(" Middle, ID:" + vmID);
 			middleServerList.add(vmID);
 			return Role.MIDDLE;
 		} else {
