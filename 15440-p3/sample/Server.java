@@ -107,7 +107,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						/*System.err.println("scale out");
 						SL.drop(requestQueue.poll());*/
-						for (int i = 0; i < deltaSize/2; i++) {
+						for (int i = 0; i < deltaSize/2+2; i++) {
 				        	System.err.println("Start front outside of while loop");
 				            middleServerList.add(SL.startVM());
 				        }
