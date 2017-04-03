@@ -59,13 +59,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 		while(SL.getQueueLength() == 0 );
         long time1 = System.currentTimeMillis();*/
         while (!startF.get() && !startM.get()) {
-        	if (!startF.get() && !startM.get()) {
-        		break;
-        	}
-        	SL.drop(SL.getNextRequest());
-        	System.err.println("drop request");
+        	Cloud.FrontEndOps.Request r  = SL.getNextRequest();
+            if (!startF.get() && !startM.get()) {
+            	SL.drop(r);
+            }
+            
+            System.err.println("drop request");
         }
-        System.err.println("start M and F");
+        System.err.println("start M and F");;
         
         SL.unregister_frontend();
         /*System.err.println("WHile2");
@@ -104,7 +105,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						/*System.err.println("scale out");
 						SL.drop(requestQueue.poll());*/
-						for (int i = 0; i < deltaSize/2+2; i++) {
+						for (int i = 0; i < deltaSize/2; i++) {
 				        	System.err.println("Start front outside of while loop");
 				            middleServerList.add(SL.startVM());
 				        }
