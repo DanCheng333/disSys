@@ -55,27 +55,47 @@ public class Server extends UnicastRemoteObject implements IServer {
             frontServerList.add(SL.startVM());
         }
 		
-		
+		/*System.err.println("WHile1");
+		while(SL.getQueueLength() == 0 );
+        long time1 = System.currentTimeMillis();*/
         while (!startF.get() && !startM.get()) {
-
-        	SL.drop(SL.getNextRequest());
-        	//System.err.println("drop request");
-        	/*if (startF.get() || startM.get()) {
+        	if (!startF.get() && !startM.get()) {
         		break;
-        	}*/
+        	}
+        	SL.drop(SL.getNextRequest());
+        	System.err.println("drop request");
         }
-        /*while (!startF.get() && !startM.get()) {
-            if (!startF.get() && !startM.get()) {
-                break;
-            }
-            SL.drop(SL.getNextRequest());
-            System.err.println("drop request");
-        }*/
         System.err.println("start M and F");
         
         SL.unregister_frontend();
+        /*System.err.println("WHile2");
+        while(SL.getQueueLength() == 0 );
+        long time2 = System.currentTimeMillis();
+        long interval = time2 - time1;
+        System.err.println("WHile");*/
+
+       /* if (interval < 100) {
+            startNum = 7;
+            startForNum = 1;
+        } else if (interval < 300) {
+            startNum = 6;
+            startForNum = 1;
+        } else if (interval < 600) {
+            startNum = 3;
+            startForNum = 1;
+        } else {
+            startNum = 1;
+            startForNum = 1;
+        }*/
+        
+
+//        while( middleServerList.size() == 0){    	
+//        		SL.dropHead();   
+//        }
 
 
+		//System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
+		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
 			try {
 				// if queue is too long, drop head
@@ -84,7 +104,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						/*System.err.println("scale out");
 						SL.drop(requestQueue.poll());*/
-						for (int i = 0; i < deltaSize/2; i++) {
+						for (int i = 0; i < deltaSize/2+2; i++) {
 				        	System.err.println("Start front outside of while loop");
 				            middleServerList.add(SL.startVM());
 				        }
@@ -93,39 +113,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 			} catch (Exception e) {
 				continue;
 			}
-			
-			/*System.err.println("WHile1 Q len: " + SL.getQueueLength());
-			int qLen = SL.getQueueLength();
-	        long time1 = System.currentTimeMillis();
-	        System.err.println("WHile2");
-	        while(SL.getQueueLength() < qLen + 1);
-	        long time2 = System.currentTimeMillis();
-	        long interval = time2 - time1;
-	        System.err.println("WHile");
-
-	        if (interval < 100) {
-	            startNum = 3;
-	        } else if (interval < 300) {
-	            startNum = 2;
-	        } else if (interval < 600) {
-	            startNum = 1;
-	        } else {
-	            startNum = -2;
-	        }
-	        
-	        if (startNum > 0) {
-	        	for (int i = 0; i < startNum; i++) {
-	        		System.err.println("add vm interval");
-		            middleServerList.add(SL.startVM());
-		        }
-	        }
-	        else {
-	        	for (int i = 0; i > startNum; i--) {
-	        		System.err.println("rm vm interval");
-		            int id = middleServerList.remove(middleServerList.size()-1);
-		            SL.endVM(id);
-		        }
-	        }*/
 			
 		}
 	}
