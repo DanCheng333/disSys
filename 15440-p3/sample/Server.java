@@ -65,9 +65,8 @@ public class Server extends UnicastRemoteObject implements IServer {
             }
             else {
             	requestQueue.add(r);
-            }
-            
-            System.err.println("drop request");
+            }           
+            //System.err.println("drop request");
         }
         System.err.println("start M and F");;
         
