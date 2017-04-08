@@ -166,6 +166,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					}
 
 				}
+				lastInterval = 0;
 				scaleInCounter = 0;
 			}
 
