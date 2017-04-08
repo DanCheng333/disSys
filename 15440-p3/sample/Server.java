@@ -176,7 +176,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("Before scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
 				+ frontServerList.size());
 		long now = System.currentTimeMillis();
-		if (now - lastScaleIn > SCALEINPERIOD) {
+		if (now - lastScaleIn > 100) {
 			System.err.println("============Time to scale in================");
 			for (int i = 0; i < scaleInMidNumber; i++) {
 				if (middleServerList.size() > 1) {
