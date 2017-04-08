@@ -213,7 +213,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static boolean scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
 
 		long now = System.currentTimeMillis();
-		if (now - lastScaleOut > 500) {
+		//if (now - lastScaleOut > 500) {
 			System.err.println("============Time to scale Out==========");
 			for (int i = 0; i < scaleOutMidNumber; i++) {
 				middleServerList.add(SL.startVM());
@@ -224,8 +224,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 			lastScaleOut = now;
 			return true;
-		}
-		return false;
+		//}
+		//return false;
 	}
 
 	public static void shutdownVM(int id) throws RemoteException {
