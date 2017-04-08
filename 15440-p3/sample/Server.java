@@ -160,9 +160,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
 				scaleIn(scaleInMidNumber, scaleInFrontNumber);
+				interval1 = interval2;
 			}
 
-			interval1 = interval2;
+			
 
 		}
 
