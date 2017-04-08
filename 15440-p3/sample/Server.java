@@ -127,7 +127,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				if (requestQueue.size() > middleServerList.size() * 1.5
 						&& requestQueue.size() < middleServerList.size() * 2) {
 					System.err.println("fall in range 1.5");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 4);
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 5);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 0);
 				}
@@ -146,9 +146,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 			
 			if (interval2 > interval1 * 2) { // decrease
-																			// servers
-				System.err.println("fall in range 2");
-				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = middleServerList.size() / 3;
 				int scaleInFrontNumber = 1;
@@ -176,7 +173,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("Before scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
 				+ frontServerList.size());
 		long now = System.currentTimeMillis();
-		if (now - lastScaleIn > 100) {
+		if (now - lastScaleIn > 10) {
 			System.err.println("============Time to scale in================");
 			for (int i = 0; i < scaleInMidNumber; i++) {
 				if (middleServerList.size() > 1) {
@@ -206,9 +203,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 	 * @param scaleOutFrontNumber
 	 */
 	private static boolean scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
-		System.err.println("==========scaleOut============");
+		
 		long now = System.currentTimeMillis();
-		if (now - lastScaleOut > 7000) {
+		if (now - lastScaleOut > 5000) {
 			System.err.println("============Time to scale Out==========");
 			for (int i = 0; i < scaleOutMidNumber; i++) {
 				middleServerList.add(SL.startVM());
