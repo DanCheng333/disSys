@@ -130,7 +130,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				if (requestQueue.size() > middleServerList.size() * 1.5
 						&& requestQueue.size() < middleServerList.size() * 2) {
 					System.err.println("fall in range 1.5");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 8);
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 4);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 0);
 				}
