@@ -163,17 +163,37 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			
-			if (interval2 > interval1 * 6) { // decrease servers
+			if (interval2 > interval1 * 8) { // decrease servers
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = middleServerList.size() / 2;
+				int scaleInMidNumber = (int) (middleServerList.size() / 1.2);
 				int scaleInFrontNumber = 1;
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
 				scaleIn(scaleInMidNumber, scaleInFrontNumber);
 				interval1 = interval2;
 			}
-			if (interval2 > interval1 * 3 && interval2 < interval1 * 6) { // decrease servers
+			if (interval2 > interval1 * 6 && interval2 < interval1 * 8) { // decrease servers
+				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
+				System.err.println("decrease servers, scale in");
+				int scaleInMidNumber = (int) (middleServerList.size() / 1.4);
+				int scaleInFrontNumber = 1;
+				System.err
+						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+				scaleIn(scaleInMidNumber, scaleInFrontNumber);
+				interval1 = interval2;
+			}
+			if (interval2 > interval1 * 4 && interval2 < interval1 * 6) { // decrease servers
+				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
+				System.err.println("decrease servers, scale in");
+				int scaleInMidNumber = (int) (middleServerList.size() / 1.6);
+				int scaleInFrontNumber = 1;
+				System.err
+						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+				scaleIn(scaleInMidNumber, scaleInFrontNumber);
+				interval1 = interval2;
+			}
+			if (interval2 > interval1 * 2 && interval2 < interval1 * 4) { // decrease servers
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = middleServerList.size() / 3;
