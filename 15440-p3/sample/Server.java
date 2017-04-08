@@ -177,7 +177,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				if (deltaSize > 0) {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						for (int i = 0; i < deltaSize / 2 + 1; i++) {
-							System.err.println("Add middle tiers");
+							System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!!");
 							middleServerList.add(SL.startVM());
 						}
 					}
