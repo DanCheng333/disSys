@@ -5,7 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 
  * @author danc
- *
+ * Cache based on Interface Cloud.DatabaseOps
+ * 
  */
 public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
 	public ConcurrentHashMap<String, String> cacheMap;
