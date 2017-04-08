@@ -1,5 +1,6 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Lu on 3/21/16.
@@ -12,4 +13,6 @@ public interface IServer extends Remote {
     public void shutDownVM(Integer vmId, Server.Role role) throws RemoteException;
     public void startF() throws RemoteException;
     public void startM() throws RemoteException;
+	public ConcurrentHashMap<String, String> getCacheHashMap() throws RemoteException;
+	public void cacheAddKeyVal(String key, String val) throws RemoteException;
 }

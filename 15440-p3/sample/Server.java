@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Server extends UnicastRemoteObject implements IServer, Cloud.DatabaseOps {
+public class Server extends UnicastRemoteObject implements IServer {
 	public static final int MASTER = 1;
 	private static int startNum = 1;
 	private static int startForNum = 0;
@@ -27,10 +27,8 @@ public class Server extends UnicastRemoteObject implements IServer, Cloud.Databa
 	private static List<Integer> middleServerList;
 	public static ConcurrentLinkedQueue<Cloud.FrontEndOps.Request> requestQueue;
 	
-	//CACHE
-    private static ConcurrentHashMap<String, String> cache;
-    private static Cloud.DatabaseOps cacheIntf = null;
-    private static Cloud.DatabaseOps DB = null;
+	public static ConcurrentHashMap<String, String> cacheHashMap;
+    public static Cloud.DatabaseOps cache;
 
 	public enum Role {
 		FRONT, MIDDLE, NONE
@@ -49,7 +47,9 @@ public class Server extends UnicastRemoteObject implements IServer, Cloud.Databa
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
-		DB = SL.getDB();
+		
+		cacheHashMap = new ConcurrentHashMap<String,String>();
+        
 		
 		startNum = 1;
         startForNum = 1;
@@ -149,11 +149,14 @@ public class Server extends UnicastRemoteObject implements IServer, Cloud.Databa
 	public static void middleTierAction() throws RemoteException {
 		System.out.println("==========MiddleTier=========");
 		masterServer.startM();
-		cacheIntf = (Cloud.DatabaseOps) masterServer;
+		try {
+           cache = new Cache(masterServer, SL);
+            
+        } catch (RemoteException e) {}
 		while (true) {
 			try {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
-				SL.processRequest(r,cacheIntf);
+				SL.processRequest(r,cache);
 			} catch (Exception e) {
 				//System.err.println("get request failed");
 				//e.printStackTrace();
@@ -282,43 +285,15 @@ public class Server extends UnicastRemoteObject implements IServer, Cloud.Databa
 	}
 
 	@Override
-	public String get(String key) throws RemoteException {
-		String trimmedKey = key.trim();
-        if (cache.containsKey(trimmedKey)){
-            String value = cache.get(trimmedKey);
-            return value;
-        } else{
-            String value = DB.get(trimmedKey);
-            cache.put(trimmedKey, value);
-            return value;
-        }
-	}
-
+	public ConcurrentHashMap<String,String> getCacheHashMap() throws RemoteException {
+        return cacheHashMap;
+        
+    }
+    
 	@Override
-	public boolean set(String key, String value, String password) throws RemoteException {
-		//write through
-        System.out.println("CallSet:" + password);
-        boolean ret = DB.set(key, value, password);
-        // if success, insert in cache
-        if (ret){
-            cache.put(key, value);
-            return true;
-        }
-        return false;
-	}
-
-	@Override
-	public boolean transaction(String item, float price, int qty) throws RemoteException {
-		 boolean ret = DB.transaction(item, price, qty);
-	        if (ret) {
-//	             update: add change to cache
-	            String trimmedItem = item.trim();
-	            String qtyStr = trimmedItem + "_qty";
-	            cache.put(qtyStr, String.valueOf(Integer.parseInt(cache.get(qtyStr))-qty));
-	        }
-	        return ret;
-	}
-
+    public void cacheAddKeyVal(String key, String val) throws RemoteException {
+        cacheHashMap.put(key, val);
+    }
 
 
 }
