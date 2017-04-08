@@ -4,10 +4,11 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Server extends UnicastRemoteObject implements IServer {
+public class Server extends UnicastRemoteObject implements IServer, Cloud.DatabaseOps {
 	public static final int MASTER = 1;
 	private static int startNum = 1;
 	private static int startForNum = 0;
@@ -25,6 +26,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static List<Integer> frontServerList;
 	private static List<Integer> middleServerList;
 	public static ConcurrentLinkedQueue<Cloud.FrontEndOps.Request> requestQueue;
+	
+	//CACHE
+    private static ConcurrentHashMap<String, String> cache;
+    private static Cloud.DatabaseOps cacheIntf = null;
+    private static Cloud.DatabaseOps DB = null;
 
 	public enum Role {
 		FRONT, MIDDLE, NONE
@@ -43,6 +49,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
+		DB = SL.getDB();
 		
 		startNum = 1;
         startForNum = 1;
@@ -100,14 +107,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 		//System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
-			try {
-				// if queue is too long, drop head
+			try 
+			// interval (long time => middleServer.drop)scale in/scale out
+			// 
+			{
 				int deltaSize = requestQueue.size() - middleServerList.size();
 				if (deltaSize > 0) {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						/*System.err.println("scale out");
 						SL.drop(requestQueue.poll());*/
-						for (int i = 0; i < deltaSize/2+2; i++) {
+						for (int i = 0; i < deltaSize/2+1; i++) {
 				        	System.err.println("Start front outside of while loop");
 				            middleServerList.add(SL.startVM());
 				        }
@@ -140,10 +149,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public static void middleTierAction() throws RemoteException {
 		System.out.println("==========MiddleTier=========");
 		masterServer.startM();
+		cacheIntf = (Cloud.DatabaseOps) masterServer;
 		while (true) {
 			try {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
-				SL.processRequest(r);
+				SL.processRequest(r,cacheIntf);
 			} catch (Exception e) {
 				//System.err.println("get request failed");
 				//e.printStackTrace();
@@ -269,6 +279,44 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public void startM() throws RemoteException {
 		startM.set(true);
 		
+	}
+
+	@Override
+	public String get(String key) throws RemoteException {
+		String trimmedKey = key.trim();
+        if (cache.containsKey(trimmedKey)){
+            String value = cache.get(trimmedKey);
+            return value;
+        } else{
+            String value = DB.get(trimmedKey);
+            cache.put(trimmedKey, value);
+            return value;
+        }
+	}
+
+	@Override
+	public boolean set(String key, String value, String password) throws RemoteException {
+		//write through
+        System.out.println("CallSet:" + password);
+        boolean ret = DB.set(key, value, password);
+        // if success, insert in cache
+        if (ret){
+            cache.put(key, value);
+            return true;
+        }
+        return false;
+	}
+
+	@Override
+	public boolean transaction(String item, float price, int qty) throws RemoteException {
+		 boolean ret = DB.transaction(item, price, qty);
+	        if (ret) {
+//	             update: add change to cache
+	            String trimmedItem = item.trim();
+	            String qtyStr = trimmedItem + "_qty";
+	            cache.put(qtyStr, String.valueOf(Integer.parseInt(cache.get(qtyStr))-qty));
+	        }
+	        return ret;
 	}
 
 
