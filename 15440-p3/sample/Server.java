@@ -89,7 +89,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("start M and F");
 
 		long time1 = System.currentTimeMillis();
-		System.err.println("WHile2");
 		while (SL.getQueueLength() == 0)
 			;
 		long time2 = System.currentTimeMillis();
@@ -122,32 +121,30 @@ public class Server extends UnicastRemoteObject implements IServer {
 		SL.unregister_frontend();
 
 		while (true) {
-			System.err.println("WHile1");
 			long lastTimeGetReq = System.currentTimeMillis();
 			int requestLen = requestQueue.size();
 			while (requestLen == requestQueue.size()) {
 			}
 			
-			System.err.println("WHile2");
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			System.err.println("WHile, interval2 :" + interval2);
 			
 			if (interval1 > interval2 * 3) { //increase servers
 				System.err.println("interval1 > interval2 * 3,1:"+interval1 + ",2:"+interval2);
 				System.err.println("Increase servers");
-				int scaleInMidNumber = middleServerList.size()/2;
-				int scaleInFrontNumber = frontServerList.size()/2;
+				int scaleInMidNumber = 1;
+				int scaleInFrontNumber = 1;
 				System.err.println("scaleInMidNumber:"+scaleInMidNumber+", scaleInFrontNumber:"+scaleInFrontNumber);
-				//scaleIn(scaleInMidNumber, scaleInFrontNumber);
+				scaleIn(scaleInMidNumber, scaleInFrontNumber);
 
 			}
 			if (interval2 > interval1 * 3) { //decrease servers
 				System.err.println("interval2 > interval1 * 3,1:"+interval1 + ",2:"+interval2);
 				System.err.println("decrease servers");
-				int scaleOutMidNumber = middleServerList.size()/2;
-				int scaleOutFrontNumber = frontServerList.size()/2;
+				int scaleOutMidNumber = 1;
+				int scaleOutFrontNumber = 1;
 				System.err.println("scaleOutMidNumber:"+scaleOutMidNumber+", scaleOutFrontNumber:"+scaleOutFrontNumber);
-				//scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
+				scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
 			}
 			
 			interval1 = interval2;
