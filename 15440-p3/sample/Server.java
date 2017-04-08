@@ -15,8 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Server extends UnicastRemoteObject implements IServer {
 	public static final int MASTER = 1;
-	private static int startNum = 1;
-	private static int startForNum = 0;
+	private static int startMidNum = 1;
+	private static int startFrontNum = 0;
 
 	private static AtomicBoolean startF;
 	private static AtomicBoolean startM;
@@ -55,14 +55,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		cacheHashMap = new ConcurrentHashMap<String, String>();
 
-		startNum = 1;
-		startForNum = 1;
-		for (int i = 0; i < startNum; ++i) {
-			System.err.println("Start front outside of while loop");
+		startMidNum = 1;
+		startFrontNum = 1;
+		for (int i = 0; i < startMidNum; ++i) {
+			System.err.println("Add first Middle");
 			middleServerList.add(SL.startVM());
 		}
-		for (int i = 0; i < startForNum; ++i) {
-			System.err.println("Start front outside of while loop");
+		for (int i = 0; i < startFrontNum; ++i) {
+			System.err.println("Add first Front");
 			frontServerList.add(SL.startVM());
 		}
 
@@ -90,24 +90,24 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("WHile, interval :" + interval);
 
 		if (interval < 100) {
-			startNum = 7;
-			startForNum = 1;
+			startMidNum = 9;
+			startFrontNum = 1;
 		} else if (interval < 300) {
-			startNum = 6;
-			startForNum = 1;
+			startMidNum = 6;
+			startFrontNum = 1;
 		} else if (interval < 600) {
-			startNum = 3;
-			startForNum = 0;
+			startMidNum = 3;
+			startFrontNum = 0;
 		} else {
-			startNum = 1;
-			startForNum = 0;
+			startMidNum = 1;
+			startFrontNum = 0;
 		}
-		
-		for (int i = 0; i < startNum; ++i) {
+
+		for (int i = 0; i < startMidNum; ++i) {
 			System.err.println("Init:Add Middle");
 			middleServerList.add(SL.startVM());
 		}
-		for (int i = 0; i < startForNum; ++i) {
+		for (int i = 0; i < startFrontNum; ++i) {
 			System.err.println("Init: Add front");
 			frontServerList.add(SL.startVM());
 		}
@@ -118,33 +118,55 @@ public class Server extends UnicastRemoteObject implements IServer {
 		// SL.dropHead();
 		// }
 
-		// System.err.println("interval:" + interval + " start:" + startNum + "
-		// startFor:" + startForNum);
+		// System.err.println("interval:" + interval + " start:" + startMidNum +
+		// "
+		// startFor:" + startFrontNum);
 		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
-			/*
-			 * try { // consider scaleout int queLen = SL.getQueueLength(); if
-			 * (queLen > middleServerList.size() * 1.5){ scaleOutFor(1); int
-			 * number = (int)(queLen/middleServerList.size()*4);
-			 * scaleOutApp(number); }
-			 * 
-			 * // if queue is too long, drop head if (requestQueue.size() >
-			 * middleServerList.size()) { while (requestQueue.size() >
-			 * middleServerList.size() * 1.5) { SL.drop(requestQueue.poll()); }
-			 * } else { // consider scalein long lastTimeGetReq =
-			 * System.currentTimeMillis(); while ((r = SL.getNextRequest()) ==
-			 * null) { } long period = System.currentTimeMillis() -
-			 * lastTimeGetReq;
-			 * 
-			 * if (period > interval * 3){ int scaleInAppNumber = (int) (period
-			 * - interval)/40; int scaleInForNumber = scaleInAppNumber > 5 ? 1 :
-			 * 0; if (scaleIn(scaleInAppNumber, scaleInForNumber)) { interval =
-			 * period; } } requestQueue.add(r); } } catch (Exception e){
-			 * continue; }
-			 */
+			System.err.println("WHile1");
+			long lastTimeGetReq = System.currentTimeMillis();
+			int requestLen = requestQueue.size();
+			while (requestLen == requestQueue.size()) {
+			}
+			System.err.println("WHile2");
+			long period = System.currentTimeMillis() - lastTimeGetReq;
+			System.err.println("WHile, period :" + period);
+/*
+			try { // consider scaleout
+				int queLen = SL.getQueueLength();
+				if (queLen > middleServerList.size() * 1.5) {
+					scaleOutFor(1);
+					int number = (int) (queLen / middleServerList.size() * 4);
+					scaleOutApp(number);
+				}
+
+				// if queue is too long, drop head
+				if (requestQueue.size() > middleServerList.size()) {
+					while (requestQueue.size() > middleServerList.size() * 1.5) {
+						SL.drop(requestQueue.poll());
+					}
+				} else { // consider scalein
+					long lastTimeGetReq = System.currentTimeMillis();
+					int requestLen = requestQueue.size();
+					while ((requestLen == requestQueue.size()) {
+					}
+					long period = System.currentTimeMillis() - lastTimeGetReq;
+
+					if (period > interval * 3) {
+						int scaleInAppNumber = (int) (period - interval) / 40;
+						int scaleInForNumber = scaleInAppNumber > 5 ? 1 : 0;
+						if (scaleIn(scaleInAppNumber, scaleInForNumber)) {
+							interval = period;
+						}
+					}
+					requestQueue.add(r);
+				}
+			} catch (Exception e) {
+				continue;
+			}*/
+
 			try
 			// interval (long time => middleServer.drop)scale in/scale out
-			//
 			{
 				int deltaSize = requestQueue.size() - middleServerList.size();
 				if (deltaSize > 0) {
