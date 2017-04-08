@@ -31,6 +31,12 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static List<Integer> frontServerList;
 	private static List<Integer> middleServerList;
 	public static ConcurrentLinkedQueue<Cloud.FrontEndOps.Request> requestQueue;
+	
+	
+	public static long interval1;
+	public static long interval2;
+	public static int scaleInPeriodCounter;
+	public static int scaleOutPeriodCounter;
 
 	// Cache ops
 	public static ConcurrentHashMap<String, String> cacheHashMap;
@@ -87,16 +93,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 		while (SL.getQueueLength() == 0)
 			;
 		long time2 = System.currentTimeMillis();
-		long interval = time2 - time1;
-		System.err.println("WHile, interval :" + interval);
+		interval1 = time2 - time1;
+		System.err.println("WHile, interval :" + interval1);
 
-		if (interval < 100) {
+		if (interval1 < 100) {
 			startMidNum = 9;
 			startFrontNum = 1;
-		} else if (interval < 300) {
+		} else if (interval1 < 300) {
 			startMidNum = 6;
 			startFrontNum = 1;
-		} else if (interval < 600) {
+		} else if (interval1 < 600) {
 			startMidNum = 3;
 			startFrontNum = 0;
 		} else {
@@ -115,14 +121,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		SL.unregister_frontend();
 
-		// while( middleServerList.size() == 0){
-		// SL.dropHead();
-		// }
-
-		// System.err.println("interval:" + interval + " start:" + startMidNum +
-		// "
-		// startFor:" + startFrontNum);
-		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
 			System.err.println("WHile1");
 			long lastTimeGetReq = System.currentTimeMillis();
@@ -130,17 +128,18 @@ public class Server extends UnicastRemoteObject implements IServer {
 			while (requestLen == requestQueue.size()) {
 			}
 			System.err.println("WHile2");
-			long period = System.currentTimeMillis() - lastTimeGetReq;
-			System.err.println("WHile, period :" + period);
+			interval2 = System.currentTimeMillis() - lastTimeGetReq;
+			System.err.println("WHile, period :" + interval2);
 			
-			if (period > interval * 3) {
-				int scaleInMidNumber = (int) (period - interval) / 40;
-				int scaleInFrontNumber = scaleInMidNumber > 5 ? 1 : 0;
+			if (interval2 > interval1 * 3) {
+				int scaleInMidNumber = middleServerList.size()/2;
+				int scaleInFrontNumber = frontServerList.size()/2;
 				System.err.println("scaleInMidNumber:"+scaleInMidNumber+", scaleInFrontNumber:"+scaleInFrontNumber);
 				if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-					interval = period;
+					interval1 = interval2;
 				}
 			}
+			else 
 /*
 			try { // consider scaleout
 				int queLen = SL.getQueueLength();
