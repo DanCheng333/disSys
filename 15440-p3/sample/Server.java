@@ -123,29 +123,34 @@ public class Server extends UnicastRemoteObject implements IServer {
 			try {
 				if (requestQueue.size() > middleServerList.size() * 10
 						&& requestQueue.size() < middleServerList.size() * 8) {
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 18);
+					System.err.println("fall in range 10");
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 20);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 2);
 				}
 				if (requestQueue.size() > middleServerList.size() * 8) {
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 14);
+					System.err.println("fall in range 8");
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 16);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 2);
 				}
 				if (requestQueue.size() > middleServerList.size() * 6
 						&& requestQueue.size() < middleServerList.size() * 8) {
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 8);
+					System.err.println("fall in range 6");
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 10);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 1);
 				}
 				if (requestQueue.size() > middleServerList.size() * 4
 						&& requestQueue.size() < middleServerList.size() * 6) {
+					System.err.println("fall in range 4");
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 6);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 0);
 				}
-				if (requestQueue.size() > middleServerList.size() * 2
+				if (requestQueue.size() > middleServerList.size() * 1.5
 						&& requestQueue.size() < middleServerList.size() * 4) {
+					System.err.println("fall in range 2");
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 4);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 0);
@@ -164,6 +169,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			
 			if (interval2 > interval1 * 8) { // decrease servers
+				System.err.println("fall in range 8");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = (int) (middleServerList.size() / 1.2);
@@ -174,6 +180,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				interval1 = interval2;
 			}
 			if (interval2 > interval1 * 6 && interval2 < interval1 * 8) { // decrease servers
+				System.err.println("fall in range 6");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = (int) (middleServerList.size() / 1.4);
@@ -184,6 +191,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				interval1 = interval2;
 			}
 			if (interval2 > interval1 * 4 && interval2 < interval1 * 6) { // decrease servers
+				System.err.println("fall in range 4");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = (int) (middleServerList.size() / 1.6);
@@ -194,6 +202,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				interval1 = interval2;
 			}
 			if (interval2 > interval1 * 2 && interval2 < interval1 * 4) { // decrease servers
+				System.err.println("fall in range 2");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = middleServerList.size() / 3;
