@@ -80,24 +80,39 @@ public class Server extends UnicastRemoteObject implements IServer {
 			// System.err.println("drop request");
 		}
 		System.err.println("start M and F");
-		
+
 		long time1 = System.currentTimeMillis();
-		System.err.println("WHile2"); 
-		while(SL.getQueueLength() == 0 ); 
-		long time2 = System.currentTimeMillis(); 
+		System.err.println("WHile2");
+		while (SL.getQueueLength() == 0)
+			;
+		long time2 = System.currentTimeMillis();
 		long interval = time2 - time1;
 		System.err.println("WHile, interval :" + interval);
-		 
 
-		/*
-		 * if (interval < 100) { startNum = 7; startForNum = 1; } else if
-		 * (interval < 300) { startNum = 6; startForNum = 1; } else if (interval
-		 * < 600) { startNum = 3; startForNum = 1; } else { startNum = 1;
-		 * startForNum = 1; }
-		 */
+		if (interval < 100) {
+			startNum = 7;
+			startForNum = 1;
+		} else if (interval < 300) {
+			startNum = 6;
+			startForNum = 1;
+		} else if (interval < 600) {
+			startNum = 3;
+			startForNum = 0;
+		} else {
+			startNum = 1;
+			startForNum = 0;
+		}
+		
+		for (int i = 0; i < startNum; ++i) {
+			System.err.println("Init:Add Middle");
+			middleServerList.add(SL.startVM());
+		}
+		for (int i = 0; i < startForNum; ++i) {
+			System.err.println("Init: Add front");
+			frontServerList.add(SL.startVM());
+		}
 
 		SL.unregister_frontend();
-		
 
 		// while( middleServerList.size() == 0){
 		// SL.dropHead();
@@ -107,40 +122,26 @@ public class Server extends UnicastRemoteObject implements IServer {
 		// startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
-			/*try {
-                // consider scaleout
-                int queLen = SL.getQueueLength();
-                if (queLen > middleServerList.size() * 1.5){
-                    scaleOutFor(1);
-                    int number = (int)(queLen/middleServerList.size()*4);
-                    scaleOutApp(number);
-                }
-
-                // if queue is too long, drop head
-                if (requestQueue.size() > middleServerList.size()) {
-                    while (requestQueue.size() > middleServerList.size() * 1.5) {
-                        SL.drop(requestQueue.poll());
-                    }
-                } else {
-                    // consider scalein
-                    long lastTimeGetReq = System.currentTimeMillis();
-                    while ((r = SL.getNextRequest()) == null) {
-                    }
-                    long period = System.currentTimeMillis() - lastTimeGetReq;
-
-                    if (period > interval * 3){
-                        int scaleInAppNumber = (int) (period - interval)/40;
-                        int scaleInForNumber = scaleInAppNumber > 5 ? 1 : 0;
-                        if (scaleIn(scaleInAppNumber, scaleInForNumber)) {
-                            interval = period;
-                        }
-                    }
-                    requestQueue.add(r);
-                }
-            }
-            catch (Exception e){
-                continue;
-            }*/
+			/*
+			 * try { // consider scaleout int queLen = SL.getQueueLength(); if
+			 * (queLen > middleServerList.size() * 1.5){ scaleOutFor(1); int
+			 * number = (int)(queLen/middleServerList.size()*4);
+			 * scaleOutApp(number); }
+			 * 
+			 * // if queue is too long, drop head if (requestQueue.size() >
+			 * middleServerList.size()) { while (requestQueue.size() >
+			 * middleServerList.size() * 1.5) { SL.drop(requestQueue.poll()); }
+			 * } else { // consider scalein long lastTimeGetReq =
+			 * System.currentTimeMillis(); while ((r = SL.getNextRequest()) ==
+			 * null) { } long period = System.currentTimeMillis() -
+			 * lastTimeGetReq;
+			 * 
+			 * if (period > interval * 3){ int scaleInAppNumber = (int) (period
+			 * - interval)/40; int scaleInForNumber = scaleInAppNumber > 5 ? 1 :
+			 * 0; if (scaleIn(scaleInAppNumber, scaleInForNumber)) { interval =
+			 * period; } } requestQueue.add(r); } } catch (Exception e){
+			 * continue; }
+			 */
 			try
 			// interval (long time => middleServer.drop)scale in/scale out
 			//
@@ -149,7 +150,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				if (deltaSize > 0) {
 					while (requestQueue.size() > middleServerList.size() * 2) {
 						for (int i = 0; i < deltaSize / 2 + 1; i++) {
-							System.err.println("Start front outside of while loop");
+							System.err.println("Add middle tiers");
 							middleServerList.add(SL.startVM());
 						}
 					}
