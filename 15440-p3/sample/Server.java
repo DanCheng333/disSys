@@ -8,14 +8,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * 
+ * @author danc
+ *
+ */
 public class Server extends UnicastRemoteObject implements IServer {
 	public static final int MASTER = 1;
 	private static int startNum = 1;
 	private static int startForNum = 0;
-	
+
 	private static AtomicBoolean startF;
 	private static AtomicBoolean startM;
-	
 
 	public static String cloud_ip;
 	public static int cloud_port;
@@ -26,9 +30,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static List<Integer> frontServerList;
 	private static List<Integer> middleServerList;
 	public static ConcurrentLinkedQueue<Cloud.FrontEndOps.Request> requestQueue;
-	
+
+	// Cache ops
 	public static ConcurrentHashMap<String, String> cacheHashMap;
-    public static Cloud.DatabaseOps cache;
+	public static Cloud.DatabaseOps cache;
 
 	public enum Role {
 		FRONT, MIDDLE, NONE
@@ -38,94 +43,88 @@ public class Server extends UnicastRemoteObject implements IServer {
 		startF = new AtomicBoolean(false);
 		startM = new AtomicBoolean(false);
 	}
-	
-	/*Before front server and middle server before start, => SL.drophead*/
+
+	/* Before front server and middle server before start, => SL.drophead */
 
 	public static void masterAction() {
-		//SL.startVM();
+		// SL.startVM();
 		SL.register_frontend();
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
-		
-		cacheHashMap = new ConcurrentHashMap<String,String>();
-        
-		
+
+		cacheHashMap = new ConcurrentHashMap<String, String>();
+
 		startNum = 1;
-        startForNum = 1;
-        for (int i = 0; i < startNum; ++i) {
-        	System.err.println("Start front outside of while loop");
-            middleServerList.add(SL.startVM());
-        }
-        for (int i = 0; i < startForNum; ++i) {
-        	System.err.println("Start front outside of while loop");
-            frontServerList.add(SL.startVM());
-        }
-		
-		/*System.err.println("WHile1");
-		while(SL.getQueueLength() == 0 );
-        long time1 = System.currentTimeMillis();*/
-        while (!startF.get() && !startM.get()) {
-        	Cloud.FrontEndOps.Request r  = SL.getNextRequest();
-            if (!startF.get() && !startM.get()) {
-            	SL.drop(r);
-            }
-            else {
-            	requestQueue.add(r);
-            }           
-            //System.err.println("drop request");
-        }
-        System.err.println("start M and F");;
-        
-        SL.unregister_frontend();
-        /*System.err.println("WHile2");
-        while(SL.getQueueLength() == 0 );
-        long time2 = System.currentTimeMillis();
-        long interval = time2 - time1;
-        System.err.println("WHile");*/
+		startForNum = 1;
+		for (int i = 0; i < startNum; ++i) {
+			System.err.println("Start front outside of while loop");
+			middleServerList.add(SL.startVM());
+		}
+		for (int i = 0; i < startForNum; ++i) {
+			System.err.println("Start front outside of while loop");
+			frontServerList.add(SL.startVM());
+		}
 
-       /* if (interval < 100) {
-            startNum = 7;
-            startForNum = 1;
-        } else if (interval < 300) {
-            startNum = 6;
-            startForNum = 1;
-        } else if (interval < 600) {
-            startNum = 3;
-            startForNum = 1;
-        } else {
-            startNum = 1;
-            startForNum = 1;
-        }*/
-        
+		/*
+		 * System.err.println("WHile1"); while(SL.getQueueLength() == 0 ); long
+		 * time1 = System.currentTimeMillis();
+		 */
+		while (!startF.get() && !startM.get()) {
+			Cloud.FrontEndOps.Request r = SL.getNextRequest();
+			if (!startF.get() && !startM.get()) {
+				SL.drop(r);
+			} else {
+				requestQueue.add(r);
+			}
+			// System.err.println("drop request");
+		}
+		System.err.println("start M and F");
+		;
 
-//        while( middleServerList.size() == 0){    	
-//        		SL.dropHead();   
-//        }
+		SL.unregister_frontend();
+		/*
+		 * System.err.println("WHile2"); while(SL.getQueueLength() == 0 ); long
+		 * time2 = System.currentTimeMillis(); long interval = time2 - time1;
+		 * System.err.println("WHile");
+		 */
 
+		/*
+		 * if (interval < 100) { startNum = 7; startForNum = 1; } else if
+		 * (interval < 300) { startNum = 6; startForNum = 1; } else if (interval
+		 * < 600) { startNum = 3; startForNum = 1; } else { startNum = 1;
+		 * startForNum = 1; }
+		 */
 
-		//System.err.println("interval:" + interval + " start:" + startNum + " startFor:" + startForNum);
+		// while( middleServerList.size() == 0){
+		// SL.dropHead();
+		// }
+
+		// System.err.println("interval:" + interval + " start:" + startNum + "
+		// startFor:" + startForNum);
 		// Cloud.FrontEndOps.Request r = null;
 		while (true) {
-			try 
+			try
 			// interval (long time => middleServer.drop)scale in/scale out
-			// 
+			//
 			{
 				int deltaSize = requestQueue.size() - middleServerList.size();
 				if (deltaSize > 0) {
 					while (requestQueue.size() > middleServerList.size() * 2) {
-						/*System.err.println("scale out");
-						SL.drop(requestQueue.poll());*/
-						for (int i = 0; i < deltaSize/2+1; i++) {
-				        	System.err.println("Start front outside of while loop");
-				            middleServerList.add(SL.startVM());
-				        }
+						/*
+						 * System.err.println("scale out");
+						 * SL.drop(requestQueue.poll());
+						 */
+						for (int i = 0; i < deltaSize / 2 + 1; i++) {
+							System.err.println("Start front outside of while loop");
+							middleServerList.add(SL.startVM());
+						}
 					}
 				}
 			} catch (Exception e) {
 				continue;
 			}
-			
+
 		}
 	}
 
@@ -141,7 +140,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				masterServer.addRequest(r);
 			} catch (RemoteException e) {
 				System.err.println("add request failed");
-				//e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 	}
@@ -150,16 +149,17 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.out.println("==========MiddleTier=========");
 		masterServer.startM();
 		try {
-           cache = new Cache(masterServer, SL);
-            
-        } catch (RemoteException e) {}
+			cache = new Cache(masterServer, SL);
+
+		} catch (RemoteException e) {
+		}
 		while (true) {
 			try {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
-				SL.processRequest(r,cache);
+				SL.processRequest(r, cache);
 			} catch (Exception e) {
-				//System.err.println("get request failed");
-				//e.printStackTrace();
+				// System.err.println("get request failed");
+				// e.printStackTrace();
 				continue;
 			}
 
@@ -184,7 +184,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		SL = new ServerLib(cloud_ip, cloud_port);
 		LocateRegistry.getRegistry(cloud_ip, cloud_port).bind("//127.0.0.1/vmID" + String.valueOf(vmID), new Server());
 
-		//Master
+		// Master
 		if (vmID == MASTER) {
 			masterAction();
 		}
@@ -214,13 +214,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 			if (reply == Role.FRONT) {
 				System.err.println("FRONT");
 				frontTierAction();
-				
+
 			}
 			// middle
 			else if (reply == Role.MIDDLE) {
 				System.err.println("MIDDLE");
 				middleTierAction();
-				
+
 			} else {
 				System.err.println(" NONE server!!!");
 				masterServer.shutDownVM(vmID, Role.NONE);
@@ -232,7 +232,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public Role getRole(Integer vmID) throws RemoteException {
 		if (!frontServerList.contains(vmID)) {
 			System.err.println(" Middle, ID:" + vmID);
-			//middleServerList.add(vmID);
+			// middleServerList.add(vmID);
 			return Role.MIDDLE;
 		} else {
 			System.out.println("Front,ID:" + vmID);
@@ -275,25 +275,24 @@ public class Server extends UnicastRemoteObject implements IServer {
 	@Override
 	public void startF() throws RemoteException {
 		startF.set(true);
-		
+
 	}
 
 	@Override
 	public void startM() throws RemoteException {
 		startM.set(true);
-		
+
 	}
 
 	@Override
-	public ConcurrentHashMap<String,String> getCacheMap() throws RemoteException {
-        return cacheHashMap;
-        
-    }
-    
-	@Override
-    public void cacheAdd(String key, String val) throws RemoteException {
-        cacheHashMap.put(key, val);
-    }
+	public ConcurrentHashMap<String, String> getCacheMap() throws RemoteException {
+		return cacheHashMap;
 
+	}
+
+	@Override
+	public void cacheAdd(String key, String val) throws RemoteException {
+		cacheHashMap.put(key, val);
+	}
 
 }
