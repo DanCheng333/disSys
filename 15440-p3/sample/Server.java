@@ -152,10 +152,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 			 * 
 			 * }
 			 */
-			if (interval2 > interval1 * 2) { // decrease servers
+			if (interval2 > interval1 * 3) { // decrease servers
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = middleServerList.size()/2;
+				int scaleInMidNumber = middleServerList.size()/3;
 				int scaleInFrontNumber = 1;
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
