@@ -129,20 +129,22 @@ public class Server extends UnicastRemoteObject implements IServer {
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			System.err.println("WHile, interval2 :" + interval2);
 			
-			if (interval1 > interval2 * 3) { //increase servers
-				System.err.println("interval1 > interval2 * 3,1:"+interval1 + ",2:"+interval2);
+			if (interval1 > interval2) { //increase servers
+				System.err.println("interval1 > interval2, 1:"+interval1 + ", 2:"+interval2);
 				System.err.println("Increase servers");
-				int scaleInMidNumber = 1;
-				int scaleInFrontNumber = 1;
+				int offset = (int) ((int) interval1/interval2);
+				int scaleInMidNumber = offset;
+				int scaleInFrontNumber = offset;
 				System.err.println("scaleInMidNumber:"+scaleInMidNumber+", scaleInFrontNumber:"+scaleInFrontNumber);
 				scaleIn(scaleInMidNumber, scaleInFrontNumber);
 
 			}
-			if (interval2 > interval1 * 3) { //decrease servers
-				System.err.println("interval2 > interval1 * 3,1:"+interval1 + ",2:"+interval2);
+			if (interval2 > interval1) { //decrease servers
+				System.err.println("interval2 > interval1,1:"+interval1 + ",2:"+interval2);
 				System.err.println("decrease servers");
-				int scaleOutMidNumber = 1;
-				int scaleOutFrontNumber = 1;
+				int offset = (int) ((int) interval2/interval1);
+				int scaleOutMidNumber = offset;
+				int scaleOutFrontNumber = offset;
 				System.err.println("scaleOutMidNumber:"+scaleOutMidNumber+", scaleOutFrontNumber:"+scaleOutFrontNumber);
 				scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
 			}
