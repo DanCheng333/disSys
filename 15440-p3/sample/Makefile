@@ -1,4 +1,4 @@
-all: Server.class IServer.class
+all: Server.class IServer.class Cache.class
 
 %.class: %.java
 	javac $<
