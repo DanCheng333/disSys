@@ -205,16 +205,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	private static void scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) throws RemoteException {
 		System.err.println("==========scaleOut============");
-		int mSize = middleServerList.size()/scaleOutMidNumber;
-		int fSize = frontServerList.size()/scaleOutFrontNumber;
+		int mSize = 1;
+		int fSize = 1;
 		System.err.println("mSize:"+mSize+", fSize:"+fSize);
 
 		for (int i = 0; i < mSize; i++) {
 			if (middleServerList.size() > 1) {
-				System.err.println("mSize1:"+middleServerList.size());
 				int id = middleServerList.remove(middleServerList.size()-1);
 				SL.endVM(id);
-				System.err.println("mSize2:"+middleServerList.size());
 			}
 		}
 		for (int i = 0; i < fSize; i++) {
