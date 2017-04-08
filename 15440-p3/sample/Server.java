@@ -118,7 +118,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		lastScaleOut = System.currentTimeMillis();
 		lastScaleIn = System.currentTimeMillis();
 		scaleInCounter = 0;
-		scaleOutCounter =0;
+		scaleOutCounter = 0;
 
 		SL.unregister_frontend();
 
@@ -143,24 +143,28 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 
 			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
-			int intervalAvg = (int) ((interval2+lastInterval)/2);
-			lastInterval = interval2;
-			
-			
-			if (intervalAvg > interval1 * 2) { // decrease
-				scaleInCounter++;
-				if (scaleInCounter % 21 == 0) {
-					System.err.println("decrease servers, scale in, counter up");
-					int scaleInMidNumber = middleServerList.size() / 3;
-					int scaleInFrontNumber = 1;
-					System.err.println(
-							"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
-					if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-						interval1 = intervalAvg;
-						scaleInCounter = 0;
+			// int intervalAvg = (int) ((interval2+lastInterval)/2);
+			lastInterval += interval2;
+			scaleInCounter++;
+
+			if (scaleInCounter % 1001 == 0) {
+				int avg = (int) (lastInterval / scaleInCounter);
+				if (avg > interval1 * 2) { // decrease
+
+					if (scaleInCounter % 21 == 0) {
+						System.err.println("decrease servers, scale in, counter up");
+						int scaleInMidNumber = middleServerList.size() / 3;
+						int scaleInFrontNumber = 1;
+						System.err.println(
+								"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
+							interval1 = avg;
+
+						}
 					}
+
 				}
-				
+				scaleInCounter = 0;
 			}
 
 		}
@@ -179,26 +183,26 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("Before scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
 				+ frontServerList.size());
 		long now = System.currentTimeMillis();
-		//if (now - lastScaleIn > 10) {
-			System.err.println("============Time to scale in================");
-			for (int i = 0; i < scaleInMidNumber; i++) {
-				if (middleServerList.size() > 1) {
-					int id = middleServerList.remove(middleServerList.size() - 1);
-					shutdownVM(id);
-				}
+		// if (now - lastScaleIn > 10) {
+		System.err.println("============Time to scale in================");
+		for (int i = 0; i < scaleInMidNumber; i++) {
+			if (middleServerList.size() > 1) {
+				int id = middleServerList.remove(middleServerList.size() - 1);
+				shutdownVM(id);
 			}
-			for (int i = 0; i < scaleInFrontNumber; i++) {
-				if (frontServerList.size() > 1) {
-					int id = frontServerList.remove(frontServerList.size() - 1);
-					shutdownVM(id);
-				}
+		}
+		for (int i = 0; i < scaleInFrontNumber; i++) {
+			if (frontServerList.size() > 1) {
+				int id = frontServerList.remove(frontServerList.size() - 1);
+				shutdownVM(id);
 			}
-			System.err.println("After scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
-					+ frontServerList.size());
-			lastScaleIn = now;
-			return true;
-		//}
-		//return false;
+		}
+		System.err.println("After scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
+				+ frontServerList.size());
+		lastScaleIn = now;
+		return true;
+		// }
+		// return false;
 
 	}
 
@@ -209,7 +213,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	 * @param scaleOutFrontNumber
 	 */
 	private static boolean scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
-		
+
 		long now = System.currentTimeMillis();
 		if (now - lastScaleOut > 1000) {
 			System.err.println("============Time to scale Out==========");
