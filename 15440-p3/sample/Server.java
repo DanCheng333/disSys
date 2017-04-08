@@ -36,8 +36,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	public static long interval1;
 	public static long interval2;
+	public static long lastInterval;
 	public static long lastScaleIn;
 	public static long lastScaleOut;
+	public static int scaleInCounter;
+	public static int scaleOutCounter;
 
 	// Cache ops
 	public static ConcurrentHashMap<String, String> cacheHashMap;
@@ -94,6 +97,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			;
 		long time2 = System.currentTimeMillis();
 		interval1 = time2 - time1;
+		lastInterval = interval1;
 		System.err.println("WHile, interval1 :" + interval1);
 
 		if (interval1 < 100) {
@@ -113,17 +117,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 		scaleOut(startMidNum, startFrontNum);
 		lastScaleOut = System.currentTimeMillis();
 		lastScaleIn = System.currentTimeMillis();
+		scaleInCounter = 0;
+		scaleOutCounter =0;
 
 		SL.unregister_frontend();
 
 		while (true) {
 			try {
-				if (requestQueue.size() > middleServerList.size() * 2) {
-					System.err.println("fall in range 2");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 10);
-					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 0);
-				}
 				if (requestQueue.size() > middleServerList.size() * 1.5
 						&& requestQueue.size() < middleServerList.size() * 2) {
 					System.err.println("fall in range 1.5");
@@ -137,22 +137,27 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 
 			/* Request come in rate */
-			long lastTimeGetReq = System.currentTimeMillis();
+			long lastTimeGetRequest = System.currentTimeMillis();
 			int requestLen = requestQueue.size();
 			while (requestLen == requestQueue.size()) {
 			}
 
-			interval2 = System.currentTimeMillis() - lastTimeGetReq;
-
+			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
+			int intervalAvg = (int) ((interval2+lastInterval)/2);
+			lastInterval = interval2;
 			
-			if (interval2 > interval1 * 2) { // decrease
-				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = middleServerList.size() / 3;
-				int scaleInFrontNumber = 1;
-				System.err
-						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
-				if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-					interval1 = interval2;
+			
+			if (intervalAvg > interval1 * 2) { // decrease
+				scaleInCounter++;
+				if (scaleInCounter % 5 == 0) {
+					System.err.println("decrease servers, scale in, counter up");
+					int scaleInMidNumber = middleServerList.size() / 3;
+					int scaleInFrontNumber = 1;
+					System.err.println(
+							"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+					if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
+						interval1 = intervalAvg;
+					}
 				}
 				
 			}
@@ -173,7 +178,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("Before scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
 				+ frontServerList.size());
 		long now = System.currentTimeMillis();
-		if (now - lastScaleIn > 10) {
+		//if (now - lastScaleIn > 10) {
 			System.err.println("============Time to scale in================");
 			for (int i = 0; i < scaleInMidNumber; i++) {
 				if (middleServerList.size() > 1) {
@@ -191,8 +196,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 					+ frontServerList.size());
 			lastScaleIn = now;
 			return true;
-		}
-		return false;
+		//}
+		//return false;
 
 	}
 
@@ -205,7 +210,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static boolean scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
 		
 		long now = System.currentTimeMillis();
-		if (now - lastScaleOut > 5000) {
+		if (now - lastScaleOut > 100) {
 			System.err.println("============Time to scale Out==========");
 			for (int i = 0; i < scaleOutMidNumber; i++) {
 				middleServerList.add(SL.startVM());
