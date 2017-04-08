@@ -121,37 +121,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		while (true) {
 			try {
-				if (requestQueue.size() > middleServerList.size() * 10
-						&& requestQueue.size() < middleServerList.size() * 8) {
-					System.err.println("fall in range 10");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 20);
-					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 2);
-				}
-				if (requestQueue.size() > middleServerList.size() * 8) {
-					System.err.println("fall in range 8");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 16);
-					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 2);
-				}
-				if (requestQueue.size() > middleServerList.size() * 6
-						&& requestQueue.size() < middleServerList.size() * 8) {
-					System.err.println("fall in range 6");
+				if (requestQueue.size() > middleServerList.size() * 2) {
+					System.err.println("fall in range 2");
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 10);
-					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 1);
-				}
-				if (requestQueue.size() > middleServerList.size() * 4
-						&& requestQueue.size() < middleServerList.size() * 6) {
-					System.err.println("fall in range 4");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 6);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 0);
 				}
 				if (requestQueue.size() > middleServerList.size() * 1.5
-						&& requestQueue.size() < middleServerList.size() * 4) {
-					System.err.println("fall in range 2");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 4);
+						&& requestQueue.size() < middleServerList.size() * 2) {
+					System.err.println("fall in range 1.5");
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 8);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, 0);
 				}
