@@ -285,13 +285,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	@Override
-	public ConcurrentHashMap<String,String> getCacheHashMap() throws RemoteException {
+	public ConcurrentHashMap<String,String> getCacheMap() throws RemoteException {
         return cacheHashMap;
         
     }
     
 	@Override
-    public void cacheAddKeyVal(String key, String val) throws RemoteException {
+    public void cacheAdd(String key, String val) throws RemoteException {
         cacheHashMap.put(key, val);
     }
 

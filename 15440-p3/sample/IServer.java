@@ -13,6 +13,6 @@ public interface IServer extends Remote {
     public void shutDownVM(Integer vmId, Server.Role role) throws RemoteException;
     public void startF() throws RemoteException;
     public void startM() throws RemoteException;
-	public ConcurrentHashMap<String, String> getCacheHashMap() throws RemoteException;
-	public void cacheAddKeyVal(String key, String val) throws RemoteException;
+	public ConcurrentHashMap<String, String> getCacheMap() throws RemoteException;
+	public void cacheAdd(String key, String val) throws RemoteException;
 }

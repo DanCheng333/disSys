@@ -16,13 +16,13 @@ public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
     }
 
     public String get(String key) throws RemoteException {
-        this.ht = masterServer.getCacheHashMap();
+        this.ht = masterServer.getCacheMap();
         if (ht.containsKey(key)) {
             return ht.get(key);
         } else {
             Cloud.DatabaseOps db = SL.getDB();
             String val = db.get(key);
-            masterServer.cacheAddKeyVal(key, val);
+            masterServer.cacheAdd(key, val);
             return val;
         }
     }
@@ -32,13 +32,13 @@ public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
         Cloud.DatabaseOps db = SL.getDB();
         boolean success = db.set(key, val, auth);
         if (success) {
-            this.ht = masterServer.getCacheHashMap();
+            this.ht = masterServer.getCacheMap();
             if (ht.containsKey(key)) {
                 System.out.println("Cache set hit");
-                masterServer.cacheAddKeyVal(key, val);
+                masterServer.cacheAdd(key, val);
             } else {
                 System.out.println("Cache set miss, adding.");
-                masterServer.cacheAddKeyVal(key, val);
+                masterServer.cacheAdd(key, val);
             }
         }
         return success;
