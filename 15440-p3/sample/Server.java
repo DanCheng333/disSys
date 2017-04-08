@@ -177,6 +177,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				+ frontServerList.size());
 		long now = System.currentTimeMillis();
 		if (now - lastScaleIn > SCALEINPERIOD) {
+			System.err.println("============Time to scale in================");
 			for (int i = 0; i < scaleInMidNumber; i++) {
 				if (middleServerList.size() > 1) {
 					int id = middleServerList.remove(middleServerList.size() - 1);
@@ -208,6 +209,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		System.err.println("==========scaleOut============");
 		long now = System.currentTimeMillis();
 		if (now - lastScaleOut > SCALEOUTPERIOD) {
+			System.err.println("============Time to scale Out==========");
 			for (int i = 0; i < scaleOutMidNumber; i++) {
 				middleServerList.add(SL.startVM());
 
@@ -215,7 +217,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			for (int i = 0; i < scaleOutFrontNumber; i++) {
 				frontServerList.add(SL.startVM());
 			}
-			SCALEOUTPERIOD = (int) now;
+			lastScaleOut = now;
 			return true;
 		}
 		return false;
