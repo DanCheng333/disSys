@@ -94,7 +94,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			;
 		long time2 = System.currentTimeMillis();
 		interval1 = time2 - time1;
-		System.err.println("WHile, interval :" + interval1);
+		System.err.println("WHile, interval1 :" + interval1);
 
 		if (interval1 < 100) {
 			startMidNum = 9;
@@ -129,17 +129,18 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 			System.err.println("WHile2");
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
-			System.err.println("WHile, period :" + interval2);
+			System.err.println("WHile, interval2 :" + interval2);
 			
 			if (interval2 > interval1 * 3) {
 				int scaleInMidNumber = middleServerList.size()/2;
 				int scaleInFrontNumber = frontServerList.size()/2;
 				System.err.println("scaleInMidNumber:"+scaleInMidNumber+", scaleInFrontNumber:"+scaleInFrontNumber);
 				if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-					interval1 = interval2;
+					
 				}
 			}
-			else 
+			else {}
+			interval1 = interval2;
 /*
 			try { // consider scaleout
 				int queLen = SL.getQueueLength();
