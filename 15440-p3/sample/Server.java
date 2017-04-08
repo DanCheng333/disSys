@@ -151,7 +151,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				System.err.println("fall in range 8");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = (int) (middleServerList.size() / 3);
+				int scaleInMidNumber = (int) (middleServerList.size() / 4);
 				int scaleInFrontNumber = 1;
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
@@ -162,7 +162,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				System.err.println("fall in range 6");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = (int) (middleServerList.size() / 3.5);
+				int scaleInMidNumber = (int) (middleServerList.size() / 4.5);
 				int scaleInFrontNumber = 1;
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
@@ -173,7 +173,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				System.err.println("fall in range 4");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = (int) (middleServerList.size() / 3.8);
+				int scaleInMidNumber = (int) (middleServerList.size() / 4.8);
 				int scaleInFrontNumber = 1;
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
@@ -184,7 +184,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				System.err.println("fall in range 2");
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
-				int scaleInMidNumber = middleServerList.size() / 4;
+				int scaleInMidNumber = middleServerList.size() / 5;
 				int scaleInFrontNumber = 1;
 				System.err
 						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
