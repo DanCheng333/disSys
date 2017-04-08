@@ -202,6 +202,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	private static void scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) throws RemoteException {
+		System.err.println("==========scaleOut============");
 		for (int i = 0; i < scaleOutMidNumber; i++) {
 			 int id = middleServerList.remove(middleServerList.size()-1);
 			 shutdownVM(id);
@@ -214,6 +215,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	private static void scaleIn(int scaleInMidNumber, int scaleInFrontNumber) {
+		System.err.println("==========scaleIn============");
 		for (int i = 0; i < scaleInMidNumber; i++) {
 			 middleServerList.add(SL.startVM());
 
