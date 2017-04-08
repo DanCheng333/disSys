@@ -149,7 +149,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			
 			if (intervalAvg > interval1 * 2) { // decrease
 				scaleInCounter++;
-				if (scaleInCounter % 51 == 0) {
+				if (scaleInCounter % 21 == 0) {
 					System.err.println("decrease servers, scale in, counter up");
 					int scaleInMidNumber = middleServerList.size() / 3;
 					int scaleInFrontNumber = 1;
@@ -157,6 +157,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 							"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
 					if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
 						interval1 = intervalAvg;
+						scaleInCounter = 0;
 					}
 				}
 				
