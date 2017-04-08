@@ -120,23 +120,17 @@ public class Server extends UnicastRemoteObject implements IServer {
 		SL.unregister_frontend();
 
 		while (true) {
-			try
-			{
-				int deltaSize = requestQueue.size() - middleServerList.size();
-				if (deltaSize > 0) {
-					while (requestQueue.size() > middleServerList.size() * 2) {
-						for (int i = 0; i < deltaSize / 2 + 1; i++) {
-							System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!!");
-							scaleOut(1, 0);
-						}
-						//scaleOut(0, 1);
-					}
-					
+			try {
+				if (requestQueue.size() > middleServerList.size() * 2) {
+					int offset = (int)(requestQueue.size()/middleServerList.size()*4);
+					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : "+offset);
+					scaleOut(offset, 0);
 				}
+
 			} catch (Exception e) {
 				continue;
 			}
-			
+
 			/* Request come in rate */
 			long lastTimeGetReq = System.currentTimeMillis();
 			int requestLen = requestQueue.size();
@@ -146,36 +140,37 @@ public class Server extends UnicastRemoteObject implements IServer {
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			System.err.println("WHile, interval2 :" + interval2);
 
-			/*if (interval1 > interval2 * 5) { // increase servers
-				System.err.println("interval1 > interval2 * 3,1:" + interval1 + ",2:" + interval2);
-				System.err.println("Increase servers, scale out");
-				int scaleOutMidNumber = 1;
-				int scaleOutFrontNumber = 1;
-				System.err
-						.println("scaleOutMidNumber:" + scaleOutMidNumber + ", scaleOutFrontNumber:" + scaleOutFrontNumber);
-				scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
-
-			}*/
+			/*
+			 * if (interval1 > interval2 * 5) { // increase servers
+			 * System.err.println("interval1 > interval2 * 3,1:" + interval1 +
+			 * ",2:" + interval2);
+			 * System.err.println("Increase servers, scale out"); int
+			 * scaleOutMidNumber = 1; int scaleOutFrontNumber = 1; System.err
+			 * .println("scaleOutMidNumber:" + scaleOutMidNumber +
+			 * ", scaleOutFrontNumber:" + scaleOutFrontNumber);
+			 * scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
+			 * 
+			 * }
+			 */
 			if (interval2 > interval1 * 2) { // decrease servers
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers, scale in");
 				int scaleInMidNumber = 1;
 				int scaleInFrontNumber = 1;
-				System.err.println(
-						"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+				System.err
+						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
 				scaleIn(scaleInMidNumber, scaleInFrontNumber);
 			}
 
 			interval1 = interval2;
-		
-
-			
 
 		}
+
 	}
 
 	/**
 	 * ScaleIn decrease servers
+	 * 
 	 * @param scaleInMidNumber
 	 * @param scaleInFrontNumber
 	 * @throws RemoteException
@@ -204,6 +199,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	/**
 	 * Increase servers
+	 * 
 	 * @param scaleOutMidNumber
 	 * @param scaleOutFrontNumber
 	 */
