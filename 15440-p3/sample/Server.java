@@ -124,19 +124,19 @@ public class Server extends UnicastRemoteObject implements IServer {
 				if (requestQueue.size() > middleServerList.size() * 8) {
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 10);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 2);
+					scaleOut(offset, 4);
 				}
 				if (requestQueue.size() > middleServerList.size() * 6
 						&& requestQueue.size() < middleServerList.size() * 8) {
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 8);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 1);
+					scaleOut(offset, 2);
 				}
 				if (requestQueue.size() > middleServerList.size() * 4
 						&& requestQueue.size() < middleServerList.size() * 6) {
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 6);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
-					scaleOut(offset, 0);
+					scaleOut(offset, 1);
 				}
 				if (requestQueue.size() > middleServerList.size() * 2
 						&& requestQueue.size() < middleServerList.size() * 4) {
