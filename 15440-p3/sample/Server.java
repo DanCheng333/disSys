@@ -120,6 +120,24 @@ public class Server extends UnicastRemoteObject implements IServer {
 		SL.unregister_frontend();
 
 		while (true) {
+			try
+			{
+				int deltaSize = requestQueue.size() - middleServerList.size();
+				if (deltaSize > 0) {
+					while (requestQueue.size() > middleServerList.size() * 2) {
+						for (int i = 0; i < deltaSize / 2 + 1; i++) {
+							System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!!");
+							scaleOut(1, 0);
+						}
+						//scaleOut(0, 1);
+					}
+					
+				}
+			} catch (Exception e) {
+				continue;
+			}
+			
+			/* Request come in rate */
 			long lastTimeGetReq = System.currentTimeMillis();
 			int requestLen = requestQueue.size();
 			while (requestLen == requestQueue.size()) {
@@ -128,96 +146,74 @@ public class Server extends UnicastRemoteObject implements IServer {
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			System.err.println("WHile, interval2 :" + interval2);
 
-			if (interval1 > interval2 * 3) { // increase servers
+			/*if (interval1 > interval2 * 5) { // increase servers
 				System.err.println("interval1 > interval2 * 3,1:" + interval1 + ",2:" + interval2);
-				System.err.println("Increase servers");
-				int scaleInMidNumber = 1;
-				int scaleInFrontNumber = 1;
-				System.err
-						.println("scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
-				scaleIn(scaleInMidNumber, scaleInFrontNumber);
-
-			}
-			if (interval2 > interval1 * 2) { // decrease servers
-				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
-				System.err.println("decrease servers");
+				System.err.println("Increase servers, scale out");
 				int scaleOutMidNumber = 1;
 				int scaleOutFrontNumber = 1;
-				System.err.println(
-						"scaleOutMidNumber:" + scaleOutMidNumber + ", scaleOutFrontNumber:" + scaleOutFrontNumber);
+				System.err
+						.println("scaleOutMidNumber:" + scaleOutMidNumber + ", scaleOutFrontNumber:" + scaleOutFrontNumber);
 				scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
+
+			}*/
+			if (interval2 > interval1 * 2) { // decrease servers
+				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
+				System.err.println("decrease servers, scale in");
+				int scaleInMidNumber = 1;
+				int scaleInFrontNumber = 1;
+				System.err.println(
+						"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+				scaleIn(scaleInMidNumber, scaleInFrontNumber);
 			}
 
 			interval1 = interval2;
-			/*
-			 * try { // consider scaleout int queLen = SL.getQueueLength(); if
-			 * (queLen > middleServerList.size() * 1.5) { scaleOutFor(1); int
-			 * number = (int) (queLen / middleServerList.size() * 4);
-			 * scaleOutApp(number); }
-			 * 
-			 * // if queue is too long, drop head if (requestQueue.size() >
-			 * middleServerList.size()) { while (requestQueue.size() >
-			 * middleServerList.size() * 1.5) { SL.drop(requestQueue.poll()); }
-			 * } else { // consider scalein long lastTimeGetReq =
-			 * System.currentTimeMillis(); int requestLen = requestQueue.size();
-			 * while ((requestLen == requestQueue.size()) { } long period =
-			 * System.currentTimeMillis() - lastTimeGetReq;
-			 * 
-			 * if (period > interval * 3) { int scaleInAppNumber = (int) (period
-			 * - interval) / 40; int scaleInForNumber = scaleInAppNumber > 5 ? 1
-			 * : 0; if (scaleIn(scaleInAppNumber, scaleInForNumber)) { interval
-			 * = period; } } requestQueue.add(r); } } catch (Exception e) {
-			 * continue; }
-			 */
+		
 
-			try
-			// interval (long time => middleServer.drop)scale in/scale out
-			{
-				int deltaSize = requestQueue.size() - middleServerList.size();
-				if (deltaSize > 0) {
-					while (requestQueue.size() > middleServerList.size() * 2) {
-						for (int i = 0; i < deltaSize / 2 + 1; i++) {
-							System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!!");
-							middleServerList.add(SL.startVM());
-						}
-					}
-				}
-			} catch (Exception e) {
-				continue;
-			}
+			
 
 		}
 	}
 
-	private static void scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) throws RemoteException {
-		System.err.println("==========scaleOut============");
-		System.err.println("Before scaleOut===== mid size: " + middleServerList.size() + "===== front size: "
+	/**
+	 * ScaleIn decrease servers
+	 * @param scaleInMidNumber
+	 * @param scaleInFrontNumber
+	 * @throws RemoteException
+	 */
+	private static void scaleIn(int scaleInMidNumber, int scaleInFrontNumber) throws RemoteException {
+		System.err.println("==========scaleIn============");
+		System.err.println("Before scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
 				+ frontServerList.size());
 
-		for (int i = 0; i < scaleOutMidNumber; i++) {
+		for (int i = 0; i < scaleInMidNumber; i++) {
 			if (middleServerList.size() > 1) {
 				int id = middleServerList.remove(middleServerList.size() - 1);
 				shutdownVM(id);
 			}
 		}
-		for (int i = 0; i < scaleOutFrontNumber; i++) {
+		for (int i = 0; i < scaleInFrontNumber; i++) {
 			if (frontServerList.size() > 1) {
 				int id = frontServerList.remove(frontServerList.size() - 1);
 				shutdownVM(id);
 			}
 		}
-		System.err.println("After scaleOut===== mid size: " + middleServerList.size() + "===== front size: "
+		System.err.println("After scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
 				+ frontServerList.size());
 
 	}
 
-	private static void scaleIn(int scaleInMidNumber, int scaleInFrontNumber) {
-		System.err.println("==========scaleIn============");
-		for (int i = 0; i < scaleInMidNumber; i++) {
+	/**
+	 * Increase servers
+	 * @param scaleOutMidNumber
+	 * @param scaleOutFrontNumber
+	 */
+	private static void scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
+		System.err.println("==========scaleOut============");
+		for (int i = 0; i < scaleOutMidNumber; i++) {
 			middleServerList.add(SL.startVM());
 
 		}
-		for (int i = 0; i < scaleInFrontNumber; i++) {
+		for (int i = 0; i < scaleOutFrontNumber; i++) {
 			frontServerList.add(SL.startVM());
 		}
 	}
