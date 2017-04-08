@@ -1,3 +1,4 @@
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -131,6 +132,15 @@ public class Server extends UnicastRemoteObject implements IServer {
 			System.err.println("WHile2");
 			long period = System.currentTimeMillis() - lastTimeGetReq;
 			System.err.println("WHile, period :" + period);
+			
+			if (period > interval * 3) {
+				int scaleInMidNumber = (int) (period - interval) / 40;
+				int scaleInFrontNumber = scaleInMidNumber > 5 ? 1 : 0;
+				System.err.println("scaleInMidNumber:"+scaleInMidNumber+", scaleInFrontNumber:"+scaleInFrontNumber);
+				if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
+					interval = period;
+				}
+			}
 /*
 			try { // consider scaleout
 				int queLen = SL.getQueueLength();
@@ -183,6 +193,37 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		}
 	}
+
+	private static boolean scaleIn(int scaleInAppNumber, int scaleInForNumber) {
+		
+		return false;
+	}
+	
+	public void shutdownVM(int id) throws RemoteException {    
+        Role reply = null;
+		try {
+			reply = masterServer.getRole(id);
+		} catch (Exception e) {
+			return;
+		}
+		// front
+		if (reply == Role.FRONT) {
+			System.out.println("Shut down front id:"+id);
+			frontServerList.remove(id);
+            SL.endVM(id);
+
+		}
+		// middle
+		else if (reply == Role.MIDDLE) {
+			System.out.println("Shut down middle id:"+id);
+			middleServerList.remove(id);
+            SL.endVM(id);
+
+		} else {
+			System.err.println(" Shut down NONE server!!!");
+			masterServer.shutDownVM(vmID, Role.NONE);
+		}
+    }
 
 	public static void frontTierAction() throws RemoteException {
 		System.out.println("==========FrontTier===========");
