@@ -138,7 +138,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
-			System.err.println("WHile, interval2 :" + interval2);
+			//System.err.println("WHile, interval2 :" + interval2);
 
 			/*
 			 * if (interval1 > interval2 * 5) { // increase servers
