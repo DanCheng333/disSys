@@ -53,7 +53,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	/* Before front server and middle server before start, => SL.drophead */
 
-	public static void masterAction() {
+	public static void masterAction() throws RemoteException {
 		// SL.startVM();
 		SL.register_frontend();
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
@@ -127,19 +127,29 @@ public class Server extends UnicastRemoteObject implements IServer {
 			int requestLen = requestQueue.size();
 			while (requestLen == requestQueue.size()) {
 			}
+			
 			System.err.println("WHile2");
 			interval2 = System.currentTimeMillis() - lastTimeGetReq;
 			System.err.println("WHile, interval2 :" + interval2);
 			
-			if (interval2 > interval1 * 3) {
+			if (interval1 > interval2 * 3) { //increase servers
+				System.err.println("interval1 > interval2 * 3,1:"+interval1 + ",2:"+interval2);
+				System.err.println("Increase servers");
 				int scaleInMidNumber = middleServerList.size()/2;
 				int scaleInFrontNumber = frontServerList.size()/2;
 				System.err.println("scaleInMidNumber:"+scaleInMidNumber+", scaleInFrontNumber:"+scaleInFrontNumber);
-				if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-					
-				}
+				//scaleIn(scaleInMidNumber, scaleInFrontNumber);
+
 			}
-			else {}
+			if (interval2 > interval1 * 3) { //decrease servers
+				System.err.println("interval2 > interval1 * 3,1:"+interval1 + ",2:"+interval2);
+				System.err.println("decrease servers");
+				int scaleOutMidNumber = middleServerList.size()/2;
+				int scaleOutFrontNumber = frontServerList.size()/2;
+				System.err.println("scaleOutMidNumber:"+scaleOutMidNumber+", scaleOutFrontNumber:"+scaleOutFrontNumber);
+				//scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
+			}
+			
 			interval1 = interval2;
 /*
 			try { // consider scaleout
@@ -194,12 +204,29 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 	}
 
-	private static boolean scaleIn(int scaleInAppNumber, int scaleInForNumber) {
+	private static void scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) throws RemoteException {
+		for (int i = 0; i < scaleOutMidNumber; i++) {
+			 int id = middleServerList.remove(middleServerList.size()-1);
+			 shutdownVM(id);
+		}
+		for (int i = 0; i < scaleOutFrontNumber; i++) {
+			 int id = frontServerList.remove(frontServerList.size()-1);
+			 shutdownVM(id);
+		}
 		
-		return false;
+	}
+
+	private static void scaleIn(int scaleInMidNumber, int scaleInFrontNumber) {
+		for (int i = 0; i < scaleInMidNumber; i++) {
+			 middleServerList.add(SL.startVM());
+
+		}
+		for (int i = 0; i < scaleInFrontNumber; i++) {
+			frontServerList.add(SL.startVM());
+		}
 	}
 	
-	public void shutdownVM(int id) throws RemoteException {    
+	public static void shutdownVM(int id) throws RemoteException {    
         Role reply = null;
 		try {
 			reply = masterServer.getRole(id);
@@ -209,14 +236,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 		// front
 		if (reply == Role.FRONT) {
 			System.out.println("Shut down front id:"+id);
-			frontServerList.remove(id);
+			//frontServerList.remove(id);
             SL.endVM(id);
 
 		}
 		// middle
 		else if (reply == Role.MIDDLE) {
 			System.out.println("Shut down middle id:"+id);
-			middleServerList.remove(id);
+			//middleServerList.remove(id);
             SL.endVM(id);
 
 		} else {
