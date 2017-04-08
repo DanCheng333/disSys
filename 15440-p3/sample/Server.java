@@ -138,7 +138,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				scaleIn(scaleInMidNumber, scaleInFrontNumber);
 
 			}
-			if (interval2 > interval1 * 3) { // decrease servers
+			if (interval2 > interval1 * 2) { // decrease servers
 				System.err.println("interval2 > interval1 * 3,1:" + interval1 + ",2:" + interval2);
 				System.err.println("decrease servers");
 				int scaleOutMidNumber = 1;
