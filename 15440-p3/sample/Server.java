@@ -234,14 +234,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 		// front
 		if (reply == Role.FRONT) {
-			System.out.println("Shut down front id:"+id);
+			System.err.println("Shut down front id:"+id);
 			//frontServerList.remove(id);
             SL.endVM(id);
 
 		}
 		// middle
 		else if (reply == Role.MIDDLE) {
-			System.out.println("Shut down middle id:"+id);
+			System.err.println("Shut down middle id:"+id);
 			//middleServerList.remove(id);
             SL.endVM(id);
 
