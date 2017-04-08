@@ -130,7 +130,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					int front = 0;
 					if (scaleOutCounter % 1001 == 0) {
 						front = 1;
-						scaleOutCounter=0;
+						scaleOutCounter = 0;
 					}
 					System.err.println("fall in range 1.5");
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 5);
@@ -156,17 +156,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 			if (scaleInCounter % 1001 == 0) {
 				int avg = (int) (lastInterval / scaleInCounter);
 				if (avg > interval1 * 2) { // decrease
+					System.err.println("decrease servers, scale in, counter up");
+					int scaleInMidNumber = middleServerList.size() / 3;
+					int scaleInFrontNumber = 1;
+					System.err.println(
+							"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+					if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
+						interval1 = avg;
 
-					if (scaleInCounter % 21 == 0) {
-						System.err.println("decrease servers, scale in, counter up");
-						int scaleInMidNumber = middleServerList.size() / 3;
-						int scaleInFrontNumber = 1;
-						System.err.println(
-								"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
-						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-							interval1 = avg;
-
-						}
 					}
 
 				}
