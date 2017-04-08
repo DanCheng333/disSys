@@ -205,13 +205,23 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	private static void scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) throws RemoteException {
 		System.err.println("==========scaleOut============");
-		for (int i = 0; i < scaleOutMidNumber; i++) {
-			 int id = middleServerList.remove(middleServerList.size()-1);
-			 shutdownVM(id);
+		int mSize = middleServerList.size()/scaleOutMidNumber;
+		int fSize = frontServerList.size()/scaleOutFrontNumber;
+		System.err.println("mSize:"+mSize+", fSize:"+fSize);
+
+		for (int i = 0; i < mSize; i++) {
+			if (middleServerList.size() > 1) {
+				System.err.println("mSize1:"+middleServerList.size());
+				int id = middleServerList.remove(middleServerList.size()-1);
+				SL.endVM(id);
+				System.err.println("mSize2:"+middleServerList.size());
+			}
 		}
-		for (int i = 0; i < scaleOutFrontNumber; i++) {
-			 int id = frontServerList.remove(frontServerList.size()-1);
-			 shutdownVM(id);
+		for (int i = 0; i < fSize; i++) {
+			if (frontServerList.size() > 1) {
+				int id = frontServerList.remove(frontServerList.size()-1);
+				SL.endVM(id);
+			}
 		}
 		
 	}
@@ -227,31 +237,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 	}
 	
-	public static void shutdownVM(int id) throws RemoteException {    
-        Role reply = null;
-		try {
-			reply = masterServer.getRole(id);
-		} catch (Exception e) {
-			return;
-		}
-		// front
-		if (reply == Role.FRONT) {
-			System.err.println("Shut down front id:"+id);
-			//frontServerList.remove(id);
-            SL.endVM(id);
-
-		}
-		// middle
-		else if (reply == Role.MIDDLE) {
-			System.err.println("Shut down middle id:"+id);
-			//middleServerList.remove(id);
-            SL.endVM(id);
-
-		} else {
-			System.err.println(" Shut down NONE server!!!");
-			masterServer.shutDownVM(vmID, Role.NONE);
-		}
-    }
+	
 
 	public static void frontTierAction() throws RemoteException {
 		System.out.println("==========FrontTier===========");
