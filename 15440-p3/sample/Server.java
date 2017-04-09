@@ -117,21 +117,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 		while (true) {
 			try {
 				/* Scale out if the requestQ is larger than the middle Server */
-				// Benchmark 2
-				if (requestQueue.size() > middleServerList.size() * 2) {
-					scaleOutCounter++;
-					int front = 0;
-					if (scaleOutCounter % 1001 == 0) {
-						front = 1;
-						scaleOutCounter = 0;
-					}
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 12);
-					scaleOut(offset, front);
-
-				}
+				
 				// Benchmark 1
-				if (requestQueue.size() > middleServerList.size() * 1.5
-						&& requestQueue.size() < middleServerList.size() * 2) {
+				if (SL.getQueueLength() > middleServerList.size() * 1.5) {
 					scaleOutCounter++;
 					int front = 0;
 					if (scaleOutCounter % 1001 == 0) {
