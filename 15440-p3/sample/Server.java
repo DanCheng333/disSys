@@ -68,6 +68,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		long time1 = System.currentTimeMillis();
 		while (SL.getQueueLength() == 0)
 			;
+		System.err.println("OUT........:");
 		long time2 = System.currentTimeMillis();
 		interval1 = time2 - time1;
 		// Benchmark and init servers based on the come in rate
