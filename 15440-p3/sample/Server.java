@@ -136,8 +136,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 5);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, front);
-					
-					
+
 				}
 
 			} catch (Exception e) {
@@ -154,22 +153,29 @@ public class Server extends UnicastRemoteObject implements IServer {
 			// int intervalAvg = (int) ((interval2+lastInterval)/2);
 			lastInterval += interval2;
 			scaleInCounter++;
-
-			if (scaleInCounter % 101 == 0) {
-				int avg = (int) (lastInterval / scaleInCounter);
-				if (avg > interval1 * 2) { // decrease
-					System.err.println("decrease servers, scale in, counter up");
-					int scaleInMidNumber = middleServerList.size() / 3;
-					int scaleInFrontNumber = 1;
-					System.err.println(
-							"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
-					if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
-						interval1 = avg;
-					}
-
+			
+			// not gonna finish intime....
+			if (requestQueue.size() > middleServerList.size()) {
+				while (requestQueue.size() > middleServerList.size() * 1.5) {
+					SL.drop(requestQueue.poll());
 				}
-				lastInterval = 0;
-				scaleInCounter = 0;
+			} else {
+				if (scaleInCounter % 51 == 0) {
+					int avg = (int) (lastInterval / scaleInCounter);
+					if (avg > interval1 * 2) { // decrease
+						System.err.println("decrease servers, scale in, counter up");
+						int scaleInMidNumber = middleServerList.size() / 3;
+						int scaleInFrontNumber = 1;
+						System.err.println(
+								"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
+						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
+							interval1 = avg;
+						}
+
+					}
+					lastInterval = 0;
+					scaleInCounter = 0;
+				}
 			}
 
 		}
@@ -216,19 +222,19 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static boolean scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
 
 		long now = System.currentTimeMillis();
-		//if (now - lastScaleOut > 500) {
-			System.err.println("============Time to scale Out==========");
-			for (int i = 0; i < scaleOutMidNumber; i++) {
-				middleServerList.add(SL.startVM());
+		// if (now - lastScaleOut > 500) {
+		System.err.println("============Time to scale Out==========");
+		for (int i = 0; i < scaleOutMidNumber; i++) {
+			middleServerList.add(SL.startVM());
 
-			}
-			for (int i = 0; i < scaleOutFrontNumber; i++) {
-				frontServerList.add(SL.startVM());
-			}
-			lastScaleOut = now;
-			return true;
-		//}
-		//return false;
+		}
+		for (int i = 0; i < scaleOutFrontNumber; i++) {
+			frontServerList.add(SL.startVM());
+		}
+		lastScaleOut = now;
+		return true;
+		// }
+		// return false;
 	}
 
 	public static void shutdownVM(int id) throws RemoteException {
