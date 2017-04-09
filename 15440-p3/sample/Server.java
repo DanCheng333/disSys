@@ -64,26 +64,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 		intervalAccu = 0;
 
 		// Start with 1 front and 1 middle server
-		startMidNum = 1;
-		startFrontNum = 1;
-		for (int i = 0; i < startMidNum; ++i) {
-			middleServerList.add(SL.startVM());
-		}
-		for (int i = 0; i < startFrontNum; ++i) {
-			frontServerList.add(SL.startVM());
-		}
-
-		// Before front server and middle server
-		// Drop every requests in the SL
-		while (!startF.get() && !startM.get()) {
-			Cloud.FrontEndOps.Request r = SL.getNextRequest();
-			if (!startF.get() && !startM.get()) {
-				SL.drop(r);
-			} else {
-				requestQueue.add(r);
-			}
-		}
-
 		// Get the interval of the first two come in requests
 		long time1 = System.currentTimeMillis();
 		while (SL.getQueueLength() == 0)
@@ -99,10 +79,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 			startFrontNum = 1;
 		} else if (interval1 < 600) {
 			startMidNum = 3;
-			startFrontNum = 0;
+			startFrontNum = 1;
 		} else {
 			startMidNum = 1;
-			startFrontNum = 0;
+			startFrontNum = 1;
 		}
 		scaleOut(startMidNum, startFrontNum);
 
@@ -111,15 +91,26 @@ public class Server extends UnicastRemoteObject implements IServer {
 		scaleInCounter = 0;
 		scaleOutCounter = 0;
 
+		// Before front server and middle server
+		// Drop every requests in the SL
+		while (!startF.get() && !startM.get()) {
+			Cloud.FrontEndOps.Request r = SL.getNextRequest();
+			if (!startF.get() && !startM.get()) {
+				SL.drop(r);
+			} else {
+				requestQueue.add(r);
+			}
+		}
+
 		// Master stop receiving request
 		SL.unregister_frontend();
 
 		while (true) {
 			try {
 				/* Scale out if the requestQ is larger than the middle Server */
-				
+
 				// Benchmark 1
-				int qlength =SL.getQueueLength();
+				int qlength = SL.getQueueLength();
 				if (qlength > middleServerList.size() * 1.5) {
 					scaleOutCounter++;
 					int front = 0;
@@ -127,7 +118,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						front = 1;
 						scaleOutCounter = 0;
 					}
-					int offset = (int) (((qlength - middleServerList.size())/1.5) +1);
+					int offset = (int) (((qlength - middleServerList.size()) / 1.5) + 1);
 					scaleOut(Math.min(7, offset), front);
 
 				}
@@ -150,7 +141,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			if (requestQueue.size() > middleServerList.size()) {
 				while (requestQueue.size() > middleServerList.size() * 1.8) {
 					SL.drop(requestQueue.poll());
-					scaleOut(1,0);
+					scaleOut(1, 0);
 				}
 			} else {
 				// Scale in, interval over 101 requests are very slow
