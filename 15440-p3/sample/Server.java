@@ -93,13 +93,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 				}
 			} else {
-				// Scale in, interval over 10 requests are smaller than before
-				if (scaleInCounter % 5 == 0) {
+				// Scale in, interval over 101 requests are very slow
+				if (scaleInCounter % 20 == 0) {
 					int avg = (int) (intervalInAccu / scaleInCounter);
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
-						if (now - lastScaleIn > SCALEINPERIOD) {
-							int scaleInMidNumber = middleServerList.size() / 4;
+						if (now - lastScaleIn > 5000) {
+							int scaleInMidNumber = middleServerList.size() / 5;
 							int scaleInFrontNumber = 1;
 							scaleIn(scaleInMidNumber, scaleInFrontNumber);
 							interval1 = (avg + interval1) / 2;
@@ -110,25 +110,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					intervalInAccu = 0;
 					scaleInCounter = 0;
 				}
-				// Scale Out, interval over 30 requests are bigger than before
-				if (scaleOutCounter % 30 == 0) {
-					int avg = (int) (intervalOutAccu / scaleOutCounter);
-					if (avg < interval1 * 3) { // Increase
-						long now = System.currentTimeMillis();
-						if (now - lastScaleOut > SCALEOUTPERIOD) {
-							int scaleOutMidNumber = middleServerList.size() / 5;
-							int scaleOutFrontNumber = 1;
-							scaleOut(Math.min(1, scaleOutMidNumber), scaleOutFrontNumber);
-							interval1 = (avg + interval1) / 2;
-							lastScaleOut = now;
-
-						}
-					}
-					intervalOutAccu = 0;
-					scaleOutCounter = 0;
-				}
 			}
-
 		}
 
 	}
