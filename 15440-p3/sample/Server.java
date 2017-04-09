@@ -152,7 +152,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					SL.drop(requestQueue.poll());
 					//scaleOut(1,0);
 				}
-			} else {
+			} //else {
 				// Scale in, interval over 101 requests are very slow
 				if (scaleInCounter % 20 == 0) {
 					int avg = (int) (intervalAccu / scaleInCounter);
@@ -170,7 +170,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					intervalAccu = 0;
 					scaleInCounter = 0;
 				}
-			}
+			//}
 
 		}
 
