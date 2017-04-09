@@ -404,12 +404,19 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	@Override
+	/**
+	 * Front server is started, mark true
+	 */
 	public void startF() throws RemoteException {
 		startF.set(true);
 
 	}
 
+	
 	@Override
+	/**
+	 * Middle server is started, mark true
+	 */
 	public void startM() throws RemoteException {
 		startM.set(true);
 
