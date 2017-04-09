@@ -33,6 +33,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	private static List<Integer> middleServerList;
 	public static ConcurrentLinkedQueue<Cloud.FrontEndOps.Request> requestQueue;
 
+	// Interval rate
 	public static long interval1;
 	public static long interval2;
 	public static long intervalInAccu;
@@ -57,6 +58,81 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	public static void masterAction() throws RemoteException {
 		// Initialize
+		initMaster();
+
+		while (true) {
+			try {
+				/* Scale out if the requestQ is larger than the middle Server */
+				if (requestQueue.size() > middleServerList.size() * 1.5) {
+					int offset = (int) (((requestQueue.size() - middleServerList.size()) / 2) + 1);
+					scaleOut(offset, 0);
+
+				}
+
+			} catch (Exception e) {
+				continue;
+			}
+
+			/* Calculate request come in rate */
+			long lastTimeGetRequest = System.currentTimeMillis();
+			int requestLen = requestQueue.size();
+			while (requestLen == requestQueue.size()) {
+			}
+
+			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
+			intervalInAccu += interval2;
+			intervalOutAccu += interval2;
+			scaleInCounter++;
+			scaleOutCounter++;
+
+			// Not going to finish in time.... drop and avoid erroneous sales
+			if (requestQueue.size() > middleServerList.size()) {
+				while (requestQueue.size() > middleServerList.size() * 1.8) {
+					SL.drop(requestQueue.poll());
+
+				}
+			} else {
+				// Scale in, interval over 20 requests are smaller than before
+				if (scaleInCounter % 20 == 0) {
+					int avg = (int) (intervalInAccu / scaleInCounter);
+					if (avg > interval1 * 3) { // decrease
+						long now = System.currentTimeMillis();
+						if (now - lastScaleIn > SCALEINPERIOD) {
+							int scaleInMidNumber = middleServerList.size() / 5;
+							int scaleInFrontNumber = 1;
+							scaleIn(scaleInMidNumber, scaleInFrontNumber);
+							interval1 = (avg + interval1) / 2;
+							lastScaleIn = now;
+
+						}
+					}
+					intervalInAccu = 0;
+					scaleInCounter = 0;
+				}
+				// Scale Out, interval over 20 requests are bigger than before
+				if (scaleOutCounter % 20 == 0) {
+					int avg = (int) (intervalOutAccu / scaleOutCounter);
+					if (avg < interval1 * 3) { // Increase
+						long now = System.currentTimeMillis();
+						if (now - lastScaleOut > SCALEOUTPERIOD) {
+							int scaleOutMidNumber = middleServerList.size() / 5;
+							int scaleOutFrontNumber = 1;
+							scaleOut(Math.min(5, scaleOutMidNumber), scaleOutFrontNumber);
+							interval1 = (avg + interval1) / 2;
+							lastScaleOut = now;
+
+						}
+					}
+					intervalOutAccu = 0;
+					scaleOutCounter = 0;
+				}
+			}
+
+		}
+
+	}
+
+	private static void initMaster() {
 		SL.register_frontend();
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
@@ -115,83 +191,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		// Master stop receiving request
 		SL.unregister_frontend();
-
-		while (true) {
-			try {
-				/* Scale out if the requestQ is larger than the middle Server */
-
-				// Benchmark 1
-				int qlength = SL.getQueueLength();
-				if (requestQueue.size() > middleServerList.size() * 1.5) {
-					int offset = (int) (((requestQueue.size() - middleServerList.size()) / 2) + 1);
-					scaleOut(offset, 0);
-
-				}
-
-			} catch (Exception e) {
-				continue;
-			}
-
-			/* Calculate request come in rate */
-			long lastTimeGetRequest = System.currentTimeMillis();
-			int requestLen = requestQueue.size();
-			while (requestLen == requestQueue.size()) {
-			}
-
-			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
-			intervalInAccu += interval2;
-			intervalOutAccu += interval2;
-			scaleInCounter++;		
-			scaleOutCounter++;
-			
-			// Not going to finish in time.... drop and avoid erroneous sales
-			if (requestQueue.size() > middleServerList.size()) {
-				while (requestQueue.size() > middleServerList.size() * 1.8) {
-					SL.drop(requestQueue.poll());
-	
-				
-
-					}
-			} else {
-				// Scale in, interval over 20 requests are very slow
-				if (scaleInCounter % 20 == 0) {
-				int avg = (int) (intervalInAccu / scaleInCounter);
-					if (avg > interval1 * 3) { // decrease
-						long now = System.currentTimeMillis();
-						if (now - lastScaleIn > 5000) {
-							int scaleInMidNumber = middleServerList.size() / 5;
-							int scaleInFrontNumber = 1;
-							scaleIn(scaleInMidNumber, scaleInFrontNumber);
-							interval1 = (avg+interval1)/2;
-							lastScaleIn = now;
-
-						}
-					}
-					intervalInAccu = 0;
-					scaleInCounter = 0;
-				}
-				// Scale Out, interval over 20 requests are very slow
-				if (scaleOutCounter % 20 == 0) {
-				int avg = (int) (intervalOutAccu / scaleOutCounter);
-					if (avg < interval1 * 3) { // Increase
-						long now = System.currentTimeMillis();
-						if (now - lastScaleOut > 5000) {
-							int scaleOutMidNumber = middleServerList.size() / 5;
-							int scaleOutFrontNumber = 1;
-							scaleOut(Math.min(5,scaleOutMidNumber), scaleOutFrontNumber);
-							interval1 = (avg+interval1)/2;
-							lastScaleOut = now;
-
-						}
-					}
-					intervalOutAccu = 0;
-					scaleOutCounter = 0;
-				}
-			}
-			
-
-		}
-
+		
 	}
 
 	/**
@@ -228,10 +228,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 	 * @param scaleOutFrontNumber
 	 */
 	private static boolean scaleOut(int scaleOutMidNumber, int scaleOutFrontNumber) {
-
 		long now = System.currentTimeMillis();
-		// if (now - lastScaleOut > 500) {
-		System.err.println("============Time to scale Out==========");
+		System.err.println("============scale Out==========");
 		for (int i = 0; i < scaleOutMidNumber; i++) {
 			middleServerList.add(SL.startVM());
 
@@ -264,7 +262,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		} else {
 			System.err.println(" Shut down NONE server!!!");
-			masterServer.shutDownVM(vmID, Role.NONE);
+			shutdownVM(id);
 		}
 	}
 
@@ -280,7 +278,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				masterServer.addRequest(r);
 			} catch (RemoteException e) {
 				System.err.println("add request failed");
-				// e.printStackTrace();
+
 			}
 		}
 	}
@@ -298,8 +296,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				Cloud.FrontEndOps.Request r = masterServer.getRequest();
 				SL.processRequest(r, cache);
 			} catch (Exception e) {
-				// System.err.println("get request failed");
-				// e.printStackTrace();
+
 				continue;
 			}
 
@@ -363,7 +360,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 			} else {
 				System.err.println(" NONE server!!!");
-				masterServer.shutDownVM(vmID, Role.NONE);
+				shutdownVM(vmID);
 			}
 		}
 	}
@@ -372,7 +369,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public Role getRole(Integer vmID) throws RemoteException {
 		if (!frontServerList.contains(vmID)) {
 			System.err.println(" Middle, ID:" + vmID);
-			// middleServerList.add(vmID);
 			return Role.MIDDLE;
 		} else {
 			System.out.println("Front,ID:" + vmID);
@@ -395,22 +391,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 		requestQueue.add(r);
 	}
 
-	@Override
-	public void shutDownVM(Integer vmId, Role role) throws RemoteException {
-		if (role == Role.FRONT) {
-			System.out.println("ShutDown frontTier vmID:" + vmId);
-			frontServerList.remove(vmId);
-
-			SL.endVM(vmId);
-		} else if (role == Role.MIDDLE) {
-			System.out.println("kill processor:" + vmId);
-			middleServerList.remove(vmId);
-			SL.endVM(vmId);
-		} else {
-			SL.endVM(vmId);
-		}
-
-	}
 
 	@Override
 	/**

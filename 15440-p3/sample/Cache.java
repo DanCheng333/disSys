@@ -23,7 +23,7 @@ public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
 	 */
 	public String get(String key) throws RemoteException {
 		this.cacheMap = masterServer.getCacheMap();
-		// If in the map return
+		// check in the map 
 		if (cacheMap.containsKey(key)) {
 			return cacheMap.get(key);
 		}
@@ -45,10 +45,8 @@ public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
 		if (isSet) {
 			this.cacheMap = masterServer.getCacheMap();
 			if (cacheMap.containsKey(key)) {
-				System.out.println("Cache isSet, in map!");
 				masterServer.cacheAdd(key, val);
 			} else {
-				System.out.println("Cache not set or not in map!");
 				masterServer.cacheAdd(key, val);
 			}
 		}
