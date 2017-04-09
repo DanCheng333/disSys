@@ -165,7 +165,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			} 
 			else {
 				//Scale in, interval over 101 requests are very slow
-				if (scaleInCounter % 201 == 0) {
+				if (scaleInCounter % 301 == 0) {
 					int avg = (int) (intervalAccu / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
 						//System.err.println("decrease servers, scale in, counter up");
