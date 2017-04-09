@@ -124,6 +124,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		while (true) {
 			try {
+				/*Scale out if the requestQ is larger than the middle Server*/
+				
+				
+				// Benchmark 2
 				if (requestQueue.size() > middleServerList.size() * 2) {
 					scaleOutCounter++;
 					int front = 0;
@@ -137,7 +141,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 					scaleOut(offset, front);
 
 				}
-				if (requestQueue.size() > middleServerList.size() * 1.5
+				// Benchmark 1
+				if (requestQueue.size() > middleServerList.size() * 1.2
 						&& requestQueue.size() < middleServerList.size() * 2) {
 					scaleOutCounter++;
 					int front = 0;
@@ -156,23 +161,24 @@ public class Server extends UnicastRemoteObject implements IServer {
 				continue;
 			}
 
-			/* Request come in rate */
+			/* Calculate request come in rate */
 			long lastTimeGetRequest = System.currentTimeMillis();
 			int requestLen = requestQueue.size();
 			while (requestLen == requestQueue.size()) {
 			}
 
 			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
-			// int intervalAvg = (int) ((interval2+lastInterval)/2);
 			lastInterval += interval2;
 			scaleInCounter++;
 			
-			// not going to finish intime.... delete erroneous sales
+			// Not going to finish intime.... drop erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
-				while (requestQueue.size() > middleServerList.size() * 1.5) {
+				while (requestQueue.size() > middleServerList.size() * 1.2) {
 					SL.drop(requestQueue.poll());
 				}
-			} else {
+			} 
+			else {
+				//Scale in, interval over 51 requests are very slow
 				if (scaleInCounter % 51 == 0) {
 					int avg = (int) (lastInterval / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
