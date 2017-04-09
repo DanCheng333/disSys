@@ -68,9 +68,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 		startMidNum = 1;
 		startFrontNum = 1;
 		for (int i = 0; i < startMidNum; ++i) {
+			System.err.println("Add first Middle");
 			middleServerList.add(SL.startVM());
 		}
 		for (int i = 0; i < startFrontNum; ++i) {
+			System.err.println("Add first Front");
 			frontServerList.add(SL.startVM());
 		}
 		
@@ -125,7 +127,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 						front = 1;
 						scaleOutCounter = 0;
 					}
+					System.err.println("fall in range 1.5");
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 10);
+					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, front);
 
 				}
@@ -138,7 +142,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 						front = 1;
 						scaleOutCounter = 0;
 					}
+					System.err.println("fall in range 1.5");
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 6);
+					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, front);
 
 				}
@@ -168,6 +174,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				if (scaleInCounter % 101 == 0) {
 					int avg = (int) (intervalAccu / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
+						System.err.println("decrease servers, scale in, counter up");
 						int scaleInMidNumber = middleServerList.size() / 3;
 						int scaleInFrontNumber = 1;
 						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
