@@ -177,8 +177,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 						System.err.println("decrease servers, scale in, counter up");
 						int scaleInMidNumber = middleServerList.size() / 3;
 						int scaleInFrontNumber = 1;
-						System.err.println(
-								"scaleInMidNumber:" + scaleInMidNumber + ", scaleInFrontNumber:" + scaleInFrontNumber);
 						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
 							interval1 = avg;
 						}
