@@ -162,7 +162,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 							int scaleInMidNumber = middleServerList.size() / 5;
 							int scaleInFrontNumber = 1;
 							scaleIn(scaleInMidNumber, scaleInFrontNumber);
-							interval1 = avg;
+							interval1 = (avg+interval1)/2;
 							lastScaleIn = now;
 
 						}
