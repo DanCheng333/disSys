@@ -35,7 +35,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	public static long interval1;
 	public static long interval2;
-	public static long lastInterval;
+	public static long intervalAccu;
 	public static long lastScaleIn;
 	public static long lastScaleOut;
 	public static int scaleInCounter;
@@ -62,6 +62,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
 		cacheHashMap = new ConcurrentHashMap<String, String>();
+		intervalAccu = 0;
 		
 		//Start with 1 front and 1 middle server
 		startMidNum = 1;
@@ -91,7 +92,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 		while (SL.getQueueLength() == 0);
 		long time2 = System.currentTimeMillis();
 		interval1 = time2 - time1;
-		lastInterval = interval1;
 		//Benchmark and init servers based on the come in rate
 		if (interval1 < 100) {
 			startMidNum = 9;
@@ -160,7 +160,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 
 			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
-			lastInterval += interval2;
+			intervalAccu += interval2;
 			scaleInCounter++;
 			
 			// Not going to finish in time.... drop and avoid erroneous sales
@@ -170,9 +170,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 				}
 			} 
 			else {
-				//Scale in, interval over 51 requests are very slow
+				//Scale in, interval over 101 requests are very slow
 				if (scaleInCounter % 101 == 0) {
-					int avg = (int) (lastInterval / scaleInCounter);
+					int avg = (int) (intervalAccu / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
 						System.err.println("decrease servers, scale in, counter up");
 						int scaleInMidNumber = middleServerList.size() / 3;
@@ -182,7 +182,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						}
 
 					}
-					lastInterval = 0;
+					intervalAccu = 0;
 					scaleInCounter = 0;
 				}
 			}
