@@ -124,6 +124,19 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		while (true) {
 			try {
+				if (requestQueue.size() > middleServerList.size() * 2) {
+					scaleOutCounter++;
+					int front = 0;
+					if (scaleOutCounter % 1001 == 0) {
+						front = 1;
+						scaleOutCounter = 0;
+					}
+					System.err.println("fall in range 1.5");
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 10);
+					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
+					scaleOut(offset, front);
+
+				}
 				if (requestQueue.size() > middleServerList.size() * 1.5
 						&& requestQueue.size() < middleServerList.size() * 2) {
 					scaleOutCounter++;
@@ -154,7 +167,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			lastInterval += interval2;
 			scaleInCounter++;
 			
-			// not gonna finish intime....
+			// not going to finish intime.... delete erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
 				while (requestQueue.size() > middleServerList.size() * 1.5) {
 					SL.drop(requestQueue.poll());
