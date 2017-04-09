@@ -143,7 +143,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						scaleOutCounter = 0;
 					}
 					System.err.println("fall in range 1.5");
-					int offset = (int) (requestQueue.size() / middleServerList.size() * 5);
+					int offset = (int) (requestQueue.size() / middleServerList.size() * 6);
 					System.err.println("!!!!!!!!Add middle tiers!!!!!!!!!! offset : " + offset);
 					scaleOut(offset, front);
 
@@ -171,7 +171,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			} 
 			else {
 				//Scale in, interval over 51 requests are very slow
-				if (scaleInCounter % 51 == 0) {
+				if (scaleInCounter % 101 == 0) {
 					int avg = (int) (lastInterval / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
 						System.err.println("decrease servers, scale in, counter up");
