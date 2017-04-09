@@ -1,4 +1,3 @@
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -55,17 +54,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 		startM = new AtomicBoolean(false);
 	}
 
-	/* Before front server and middle server before start, => SL.drophead */
 
 	public static void masterAction() throws RemoteException {
-		// SL.startVM();
+		//Initialize
 		SL.register_frontend();
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
-
 		cacheHashMap = new ConcurrentHashMap<String, String>();
-
+		
+		//Start with 1 front and 1 middle server
 		startMidNum = 1;
 		startFrontNum = 1;
 		for (int i = 0; i < startMidNum; ++i) {
@@ -76,11 +74,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 			System.err.println("Add first Front");
 			frontServerList.add(SL.startVM());
 		}
-
-		/*
-		 * System.err.println("WHile1"); while(SL.getQueueLength() == 0 ); long
-		 * time1 = System.currentTimeMillis();
-		 */
+		
+		// Before front server and middle server
+		// Drop every requests in the SL
 		while (!startF.get() && !startM.get()) {
 			Cloud.FrontEndOps.Request r = SL.getNextRequest();
 			if (!startF.get() && !startM.get()) {
@@ -88,18 +84,15 @@ public class Server extends UnicastRemoteObject implements IServer {
 			} else {
 				requestQueue.add(r);
 			}
-			// System.err.println("drop request");
 		}
-		System.err.println("start M and F");
 
+		// Get the interval of the first two come in requests
 		long time1 = System.currentTimeMillis();
-		while (SL.getQueueLength() == 0)
-			;
+		while (SL.getQueueLength() == 0);
 		long time2 = System.currentTimeMillis();
 		interval1 = time2 - time1;
 		lastInterval = interval1;
-		System.err.println("WHile, interval1 :" + interval1);
-
+		//Benchmark and init servers based on the come in rate
 		if (interval1 < 100) {
 			startMidNum = 9;
 			startFrontNum = 1;
@@ -113,20 +106,19 @@ public class Server extends UnicastRemoteObject implements IServer {
 			startMidNum = 1;
 			startFrontNum = 0;
 		}
-
 		scaleOut(startMidNum, startFrontNum);
+		
 		lastScaleOut = System.currentTimeMillis();
 		lastScaleIn = System.currentTimeMillis();
 		scaleInCounter = 0;
 		scaleOutCounter = 0;
-
+		
+		//Master stop receiving request
 		SL.unregister_frontend();
 
 		while (true) {
 			try {
-				/*Scale out if the requestQ is larger than the middle Server*/
-				
-				
+				/*Scale out if the requestQ is larger than the middle Server*/			
 				// Benchmark 2
 				if (requestQueue.size() > middleServerList.size() * 2) {
 					scaleOutCounter++;
@@ -171,7 +163,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			lastInterval += interval2;
 			scaleInCounter++;
 			
-			// Not going to finish intime.... drop erroneous sales
+			// Not going to finish in time.... drop and avoid erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
 				while (requestQueue.size() > middleServerList.size() * 1.5) {
 					SL.drop(requestQueue.poll());
@@ -210,8 +202,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 	 */
 	private static boolean scaleIn(int scaleInMidNumber, int scaleInFrontNumber) throws RemoteException {
 		System.err.println("==========scaleIn============");
-		System.err.println("Before scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
-				+ frontServerList.size());
 		long now = System.currentTimeMillis();
 		for (int i = 0; i < scaleInMidNumber; i++) {
 			if (middleServerList.size() > 1) {
@@ -225,8 +215,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 				shutdownVM(id);
 			}
 		}
-		System.err.println("After scaleIn===== mid size: " + middleServerList.size() + "===== front size: "
-				+ frontServerList.size());
 		lastScaleIn = now;
 		return true;
 
