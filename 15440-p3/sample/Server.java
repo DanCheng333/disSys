@@ -171,7 +171,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						//System.err.println("decrease servers, scale in, counter up");
 				long now = System.currentTimeMillis();
 				if (now - lastScaleIn > 5000) {
-						int scaleInMidNumber = Math.min(7,middleServerList.size() / 5);
+						int scaleInMidNumber = Math.min(5,middleServerList.size() / 5);
 						int scaleInFrontNumber = 1;
 						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
 							interval1 = interval2;
