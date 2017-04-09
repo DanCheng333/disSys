@@ -127,7 +127,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						front = 1;
 						scaleOutCounter = 0;
 					}
-					int offset = (int) ((qlength - middleServerList.size()) * 4);
+					int offset = (int) (((qlength - middleServerList.size())/2) +1);
 					scaleOut(Math.min(7, offset), front);
 
 				}
