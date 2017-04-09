@@ -148,7 +148,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 			// Not going to finish in time.... drop and avoid erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
-				while (requestQueue.size() > middleServerList.size() * 1.8) {
+				while (requestQueue.size() > middleServerList.size() * 2) {
 					SL.drop(requestQueue.poll());
 					//scaleOut(1,0);
 				}
