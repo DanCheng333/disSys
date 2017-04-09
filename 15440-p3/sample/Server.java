@@ -150,6 +150,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			if (requestQueue.size() > middleServerList.size()) {
 				while (requestQueue.size() > middleServerList.size() * 1.8) {
 					SL.drop(requestQueue.poll());
+					scaleOut(1,0);
 				}
 			} else {
 				// Scale in, interval over 101 requests are very slow
