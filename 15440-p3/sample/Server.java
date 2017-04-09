@@ -142,7 +142,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 				}
 				// Benchmark 1
-				if (requestQueue.size() > middleServerList.size() * 1.2
+				if (requestQueue.size() > middleServerList.size() * 1.5
 						&& requestQueue.size() < middleServerList.size() * 2) {
 					scaleOutCounter++;
 					int front = 0;
@@ -173,7 +173,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			
 			// Not going to finish intime.... drop erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
-				while (requestQueue.size() > middleServerList.size() * 1.2) {
+				while (requestQueue.size() > middleServerList.size() * 1.5) {
 					SL.drop(requestQueue.poll());
 				}
 			} 
