@@ -171,7 +171,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					scaleInCounter = 0;
 				}
 				// Scale Out, interval over 20 requests are very slow
-				if (scaleOutCounter % 30 == 0) {
+				if (scaleOutCounter % 20 == 0) {
 				int avg = (int) (intervalOutAccu / scaleOutCounter);
 					if (avg < interval1 * 3) { // Increase
 						long now = System.currentTimeMillis();
