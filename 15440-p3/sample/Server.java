@@ -60,6 +60,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		// Initialize
 		initMaster();
 
+		/* Scale in / Scale Out */
 		while (true) {
 			try {
 				/* Scale out if the requestQ is larger than the middle Server */
@@ -191,7 +192,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		// Master stop receiving request
 		SL.unregister_frontend();
-		
+
 	}
 
 	/**
@@ -390,7 +391,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 	public void addRequest(Cloud.FrontEndOps.Request r) throws RemoteException {
 		requestQueue.add(r);
 	}
-
 
 	@Override
 	/**

@@ -4,8 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
- * @author danc
- * Cache based on Interface Cloud.DatabaseOps
+ * @author danc Cache based on Interface Cloud.DatabaseOps
  * 
  */
 public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
@@ -23,7 +22,7 @@ public class Cache extends UnicastRemoteObject implements Cloud.DatabaseOps {
 	 */
 	public String get(String key) throws RemoteException {
 		this.cacheMap = masterServer.getCacheMap();
-		// check in the map 
+		// check in the map
 		if (cacheMap.containsKey(key)) {
 			return cacheMap.get(key);
 		}
