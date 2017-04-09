@@ -99,7 +99,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
 						if (now - lastScaleIn > SCALEINPERIOD) {
-							int scaleInMidNumber = 1;
+							int scaleInMidNumber = Math.min(2, middleServerList.size() / 5);
 							int scaleInFrontNumber = 1;
 							scaleIn(scaleInMidNumber, scaleInFrontNumber);
 							interval1 = (avg + interval1) / 2;
