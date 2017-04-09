@@ -178,7 +178,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						if (now - lastScaleOut > 5000) {
 							int scaleOutMidNumber = middleServerList.size() / 5;
 							int scaleOutFrontNumber = 1;
-							scaleOut(Math.min(3,scaleOutMidNumber), scaleOutFrontNumber);
+							scaleOut(Math.min(5,scaleOutMidNumber), scaleOutFrontNumber);
 							interval1 = (avg+interval1)/2;
 							lastScaleOut = now;
 
