@@ -68,11 +68,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 		startMidNum = 1;
 		startFrontNum = 1;
 		for (int i = 0; i < startMidNum; ++i) {
-			System.err.println("Add first Middle");
 			middleServerList.add(SL.startVM());
 		}
 		for (int i = 0; i < startFrontNum; ++i) {
-			System.err.println("Add first Front");
 			frontServerList.add(SL.startVM());
 		}
 		
@@ -142,6 +140,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					}
 					int offset = (int) (requestQueue.size() / middleServerList.size() * 6);
 					scaleOut(offset, front);
+
 				}
 
 			} catch (Exception e) {
@@ -166,7 +165,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			} 
 			else {
 				//Scale in, interval over 101 requests are very slow
-				if (scaleInCounter % 71 == 0) {
+				if (scaleInCounter % 101 == 0) {
 					int avg = (int) (intervalAccu / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
 						int scaleInMidNumber = middleServerList.size() / 3;
