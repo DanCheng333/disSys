@@ -120,14 +120,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 				
 				// Benchmark 1
 				int qlength =SL.getQueueLength();
-				if (qlength > middleServerList.size() * 1.2) {
+				if (qlength > middleServerList.size() * 1.5) {
 					scaleOutCounter++;
 					int front = 0;
 					if (scaleOutCounter % 1001 == 0) {
 						front = 1;
 						scaleOutCounter = 0;
 					}
-					int offset = (int) (qlength / middleServerList.size() * 8);
+					int offset = (int) ((qlength - middleServerList.size()) * 4);
 					scaleOut(Math.min(7, offset), front);
 
 				}
@@ -159,8 +159,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
 						if (now - lastScaleIn > 5000) {
-							int off = middleServerList.size() / 5;
-							int scaleInMidNumber = Math.min(middleServerList.size()-1,off);
+							int scaleInMidNumber = middleServerList.size() / 5;
 							int scaleInFrontNumber = 1;
 							scaleIn(scaleInMidNumber, scaleInFrontNumber);
 							interval1 = avg;
