@@ -152,7 +152,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 			frontServerList.add(SL.startVM());
 		}
 
-		// Before front server and middle server
+		// Before front server and middle server start
 		// Drop every requests in the SL
 		while (!startF.get() && !startM.get()) {
 			Cloud.FrontEndOps.Request r = SL.getNextRequest();
@@ -305,7 +305,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	/**
-	 * FrontTiers(include MASTER), MiddleTiers
+	 * Master, FrontTiers, MiddleTiers
 	 * 
 	 * @param args
 	 * @throws Exception
