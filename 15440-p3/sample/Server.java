@@ -68,11 +68,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 		startMidNum = 1;
 		startFrontNum = 1;
 		for (int i = 0; i < startMidNum; ++i) {
-			//System.err.println("Add first Middle");
 			middleServerList.add(SL.startVM());
 		}
 		for (int i = 0; i < startFrontNum; ++i) {
-			//System.err.println("Add first Front");
 			frontServerList.add(SL.startVM());
 		}
 		
@@ -171,7 +169,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 					int avg = (int) (intervalAccu / scaleInCounter);
 					if (avg > interval1 * 2) { // decrease
 						System.err.println("decrease servers, scale in, counter up");
-						int scaleInMidNumber = middleServerList.size() / 3;
+						int scaleInMidNumber = middleServerList.size() / 4;
 						int scaleInFrontNumber = 1;
 						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
 							interval1 = avg;
