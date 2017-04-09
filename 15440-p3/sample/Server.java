@@ -54,17 +54,16 @@ public class Server extends UnicastRemoteObject implements IServer {
 		startM = new AtomicBoolean(false);
 	}
 
-
 	public static void masterAction() throws RemoteException {
-		//Initialize
+		// Initialize
 		SL.register_frontend();
 		frontServerList = Collections.synchronizedList(new ArrayList<>());
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
 		cacheHashMap = new ConcurrentHashMap<String, String>();
 		intervalAccu = 0;
-		
-		//Start with 1 front and 1 middle server
+
+		// Start with 1 front and 1 middle server
 		startMidNum = 1;
 		startFrontNum = 1;
 		for (int i = 0; i < startMidNum; ++i) {
@@ -73,7 +72,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		for (int i = 0; i < startFrontNum; ++i) {
 			frontServerList.add(SL.startVM());
 		}
-		
+
 		// Before front server and middle server
 		// Drop every requests in the SL
 		while (!startF.get() && !startM.get()) {
@@ -87,10 +86,11 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 		// Get the interval of the first two come in requests
 		long time1 = System.currentTimeMillis();
-		while (SL.getQueueLength() == 0);
+		while (SL.getQueueLength() == 0)
+			;
 		long time2 = System.currentTimeMillis();
 		interval1 = time2 - time1;
-		//Benchmark and init servers based on the come in rate
+		// Benchmark and init servers based on the come in rate
 		if (interval1 < 100) {
 			startMidNum = 9;
 			startFrontNum = 1;
@@ -105,18 +105,18 @@ public class Server extends UnicastRemoteObject implements IServer {
 			startFrontNum = 0;
 		}
 		scaleOut(startMidNum, startFrontNum);
-		
+
 		lastScaleOut = System.currentTimeMillis();
 		lastScaleIn = System.currentTimeMillis();
 		scaleInCounter = 0;
 		scaleOutCounter = 0;
-		
-		//Master stop receiving request
+
+		// Master stop receiving request
 		SL.unregister_frontend();
 
 		while (true) {
 			try {
-				/*Scale out if the requestQ is larger than the middle Server*/			
+				/* Scale out if the requestQ is larger than the middle Server */
 				// Benchmark 2
 				if (requestQueue.size() > middleServerList.size() * 2) {
 					scaleOutCounter++;
@@ -156,22 +156,22 @@ public class Server extends UnicastRemoteObject implements IServer {
 			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
 			intervalAccu += interval2;
 			scaleInCounter++;
-			
+
 			// Not going to finish in time.... drop and avoid erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
 				while (requestQueue.size() > middleServerList.size() * 1.5) {
 					SL.drop(requestQueue.poll());
 				}
-			} 
-			else {
-				//Scale in, interval over 101 requests are very slow
-				//if (scaleInCounter % 201 == 0) {
-					//int avg = (int) (intervalAccu / scaleInCounter);
-					//if (avg > interval1 * 2) { // decrease
-						//System.err.println("decrease servers, scale in, counter up");
-				long now = System.currentTimeMillis();
-				if (now - lastScaleIn > 5000) {
-						int scaleInMidNumber = Math.min(5,middleServerList.size() / 5);
+			} else {
+				// Scale in, interval over 101 requests are very slow
+				// if (scaleInCounter % 201 == 0) {
+				// int avg = (int) (intervalAccu / scaleInCounter);
+				// if (avg > interval1 * 2) { // decrease
+				// System.err.println("decrease servers, scale in, counter up");
+				if (interval2 > interval1 * 3) {
+					long now = System.currentTimeMillis();
+					if (now - lastScaleIn > 5000) {
+						int scaleInMidNumber = Math.min(5, middleServerList.size() / 5);
 						int scaleInFrontNumber = 1;
 						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
 							interval1 = interval2;
@@ -179,9 +179,10 @@ public class Server extends UnicastRemoteObject implements IServer {
 						}
 
 					}
-					//intervalAccu = 0;
-					//scaleInCounter = 0;
-				//}
+				}
+				// intervalAccu = 0;
+				// scaleInCounter = 0;
+				// }
 			}
 
 		}
@@ -415,7 +416,6 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	}
 
-	
 	@Override
 	/**
 	 * Middle server is started, mark true
