@@ -35,7 +35,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 	public static long interval1;
 	public static long interval2;
-	public static long intervalAccu;
+	public static long intervalInAccu;
+	public static long intervalOutAccu;
 	public static long lastScaleIn;
 	public static long lastScaleOut;
 	public static int scaleInCounter;
@@ -61,7 +62,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 		middleServerList = Collections.synchronizedList(new ArrayList<>());
 		requestQueue = new ConcurrentLinkedQueue<Cloud.FrontEndOps.Request>();
 		cacheHashMap = new ConcurrentHashMap<String, String>();
-		intervalAccu = 0;
+		intervalInAccu = 0;
+		intervalOutAccu = 0;
 
 		// Start with 1 front and 1 middle server
 		startMidNum = 1;
@@ -120,15 +122,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 				// Benchmark 1
 				int qlength = SL.getQueueLength();
-				if (qlength > middleServerList.size() * 1.5) {
-					scaleOutCounter++;
-					int front = 0;
-					if (scaleOutCounter % 1001 == 0) {
-						front = 1;
-						scaleOutCounter = 0;
-					}
-					int offset = (int) (((qlength - middleServerList.size()) / 2) + 1);
-					scaleOut(offset, front);
+				if (requestQueue.size() > middleServerList.size() * 1.5) {
+					int offset = (int) (((requestQueue.size() - middleServerList.size()) / 2) + 1);
+					scaleOut(offset, 0);
 
 				}
 
@@ -143,18 +139,23 @@ public class Server extends UnicastRemoteObject implements IServer {
 			}
 
 			interval2 = System.currentTimeMillis() - lastTimeGetRequest;
-			intervalAccu += interval2;
-			scaleInCounter++;
-
+			intervalInAccu += interval2;
+			intervalOutAccu += interval2;
+			scaleInCounter++;		
+			scaleOutCounter++;
+			
 			// Not going to finish in time.... drop and avoid erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
 				while (requestQueue.size() > middleServerList.size() * 1.8) {
 					SL.drop(requestQueue.poll());
-				}
+	
+				
+
+					}
 			} else {
 				// Scale in, interval over 101 requests are very slow
 				if (scaleInCounter % 20 == 0) {
-				int avg = (int) (intervalAccu / scaleInCounter);
+				int avg = (int) (intervalInAccu / scaleInCounter);
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
 						if (now - lastScaleIn > 5000) {
@@ -166,10 +167,28 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 						}
 					}
-					intervalAccu = 0;
+					intervalInAccu = 0;
 					scaleInCounter = 0;
 				}
+				// Scale in, interval over 101 requests are very slow
+				if (scaleOutCounter % 20 == 0) {
+				int avg = (int) (intervalOutAccu / scaleOutCounter);
+					if (avg < interval1 * 3) { // decrease
+						long now = System.currentTimeMillis();
+						if (now - lastScaleOut > 5000) {
+							int scaleOutMidNumber = middleServerList.size() / 5;
+							int scaleOutFrontNumber = 1;
+							scaleOut(scaleOutMidNumber, scaleOutFrontNumber);
+							interval1 = (avg+interval1)/2;
+							lastScaleOut = now;
+
+						}
+					}
+					intervalOutAccu = 0;
+					scaleOutCounter = 0;
+				}
 			}
+			
 
 		}
 
