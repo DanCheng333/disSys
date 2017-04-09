@@ -169,11 +169,13 @@ public class Server extends UnicastRemoteObject implements IServer {
 					//int avg = (int) (intervalAccu / scaleInCounter);
 					//if (avg > interval1 * 2) { // decrease
 						//System.err.println("decrease servers, scale in, counter up");
-				if (lastScaleIn - System.currentTimeMillis() > 6000) {
+				long now = System.currentTimeMillis();
+				if (now - lastScaleIn > 6000) {
 						int scaleInMidNumber = middleServerList.size() / 5;
 						int scaleInFrontNumber = 1;
 						if (scaleIn(scaleInMidNumber, scaleInFrontNumber)) {
 							interval1 = interval2;
+							lastScaleIn = now;
 						}
 
 					}
