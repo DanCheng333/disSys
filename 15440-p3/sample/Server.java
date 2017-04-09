@@ -213,7 +213,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 	}
 
 	/**
-	 * Increase servers
+	 * Scale Out Increase servers
 	 * 
 	 * @param scaleOutMidNumber
 	 * @param scaleOutFrontNumber
@@ -232,8 +232,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 		}
 		lastScaleOut = now;
 		return true;
-		// }
-		// return false;
+
 	}
 
 	public static void shutdownVM(int id) throws RemoteException {
@@ -246,14 +245,12 @@ public class Server extends UnicastRemoteObject implements IServer {
 		// front
 		if (reply == Role.FRONT) {
 			System.err.println("Shut down front id:" + id);
-			// frontServerList.remove(id);
 			SL.endVM(id);
 
 		}
 		// middle
 		else if (reply == Role.MIDDLE) {
 			System.err.println("Shut down middle id:" + id);
-			// middleServerList.remove(id);
 			SL.endVM(id);
 
 		} else {
