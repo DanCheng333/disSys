@@ -148,14 +148,14 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 			// Not going to finish in time.... drop and avoid erroneous sales
 			if (requestQueue.size() > middleServerList.size()) {
-				while (requestQueue.size() > middleServerList.size() * 1.9) {
+				while (requestQueue.size() > middleServerList.size() * 1.8) {
 					SL.drop(requestQueue.poll());
-					// scaleOut(1,0);
 				}
 			} else {
 				// Scale in, interval over 101 requests are very slow
-				if (scaleInCounter % 20 == 0) {
-					int avg = (int) (intervalAccu / scaleInCounter);
+				//if (scaleInCounter % 20 == 0) {
+				//	int avg = (int) (intervalAccu / scaleInCounter);
+				int avg = (int) interval2;
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
 						if (now - lastScaleIn > 5000) {
@@ -167,9 +167,9 @@ public class Server extends UnicastRemoteObject implements IServer {
 
 						}
 					}
-					intervalAccu = 0;
-					scaleInCounter = 0;
-				}
+				//	intervalAccu = 0;
+				//	scaleInCounter = 0;
+				//}
 			}
 
 		}
