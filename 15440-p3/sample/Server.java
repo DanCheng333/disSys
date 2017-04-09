@@ -94,7 +94,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				}
 			} else {
 				// Scale in, interval over 20 requests are smaller than before
-				if (scaleInCounter % 20 == 0) {
+				if (scaleInCounter % 100 == 0) {
 					int avg = (int) (intervalInAccu / scaleInCounter);
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
