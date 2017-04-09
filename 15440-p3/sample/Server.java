@@ -119,7 +119,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 				/* Scale out if the requestQ is larger than the middle Server */
 				
 				// Benchmark 1
-				if (SL.getQueueLength() > middleServerList.size() * 1.5) {
+				if (SL.getQueueLength() > middleServerList.size() * 1.2) {
 					scaleOutCounter++;
 					int front = 0;
 					if (scaleOutCounter % 1001 == 0) {
@@ -127,7 +127,7 @@ public class Server extends UnicastRemoteObject implements IServer {
 						scaleOutCounter = 0;
 					}
 					int offset = (int) (SL.getQueueLength() / middleServerList.size() * 8);
-					scaleOut(offset, front);
+					scaleOut(Math.min(7, offset), front);
 
 				}
 
@@ -157,7 +157,8 @@ public class Server extends UnicastRemoteObject implements IServer {
 					if (avg > interval1 * 3) { // decrease
 						long now = System.currentTimeMillis();
 						if (now - lastScaleIn > 5000) {
-							int scaleInMidNumber = Math.min(5, middleServerList.size() / 5);
+							int off = middleServerList.size() / 5;
+							int scaleInMidNumber = Math.min(middleServerList.size()-1,off);
 							int scaleInFrontNumber = 1;
 							scaleIn(scaleInMidNumber, scaleInFrontNumber);
 							interval1 = avg;
