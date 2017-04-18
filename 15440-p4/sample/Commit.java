@@ -30,7 +30,7 @@ public class Commit {
 				String userID = comb[0];
 				approvalMap.put(userID, userIDState.NONE);
 				String fileName = comb[1];
-				System.err.println("UserID:"+s+", fileName:"+fileName);
+				System.err.println("UserID:"+userID+", fileName:"+fileName);
 				if (!sourcesMap.containsKey(userID)) {
 					ArrayList<String> l = new ArrayList<String>();
 					l.add(fileName);

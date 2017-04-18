@@ -28,9 +28,10 @@ public class Server implements ProjectLib.CommitServing  {
 		// main loop
 		while (true) {
 			ProjectLib.Message msg = PL.getMessage();
-			System.err.println( "Server: Got message from " + msg.addr );
+			System.err.println( "!!!!!!!Server: Got message from " + msg.addr );
 			MyMessage myMsg = MsgSerializer.deserialize(msg.body);
 			if (myMsg.msgType.equals(MsgType.RSPAPPROVAL)) {
+				System.err.println("Respond received for approval");
 				Commit m = commitMap.get(myMsg.getCommitID());
 				m.handleUserResponse(myMsg,PL);
 			}
