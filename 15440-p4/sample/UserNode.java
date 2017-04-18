@@ -88,7 +88,7 @@ public class UserNode implements ProjectLib.MessageHandling {
 			System.err.println("Not committed");
 			for (String s:myMsg.userFilenames) {
 				if (!filesInUse.remove(s)) {
-					System.err.println("should be in use...");
+					System.err.println("files not in use but try to remove...");
 				}
 			}
 		}
