@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -21,9 +22,11 @@ public class UserNode implements ProjectLib.MessageHandling {
 			myMsg = MsgSerializer.deserialize(msg.body);
 			switch (myMsg.msgType) {
 			case ASKAPPROVAL:
+				System.err.println("======= ASK FOR APPROVAL ========");
 				handleAskApproval(myMsg);
 				break;
 			case COMMIT:
+				System.err.println("========= COMMIT RESPONSE =======");
 				handleCommitResponse(myMsg);
 				break;
 			}
@@ -45,9 +48,14 @@ public class UserNode implements ProjectLib.MessageHandling {
 				System.err.println("file already commited or in use.....!!!");
 				canUse = false;
 			}
+			else {
+				filesInUse.add(s);
+			}
 		}
 		if (canUse) {
+			System.err.println(" NO FILE IN USE ..");
 			isApprove = PL.askUser(myMsg.img, myMsg.sources);
+			System.err.println("User response ======> " + isApprove);
 		}
 		myMsg.setMsgType(MsgType.RSPAPPROVAL);
 		myMsg.setIsApprove(isApprove);
@@ -66,7 +74,24 @@ public class UserNode implements ProjectLib.MessageHandling {
 	}
 
 	private void handleCommitResponse(MyMessage myMsg) {
-		System.err.println("handle Commit~~~");
+		if (myMsg.getIsCommit()) { //Commit collage, delete files
+			System.err.println("Is committed!!!delete files");
+			for (String s:myMsg.userFilenames) {
+				if (!filesDeleted.contains(s)) {
+					filesDeleted.add(s);
+					File file = new File(s);
+					file.delete();
+				}
+			}
+		}
+		else { //not commited, abort, files no longer in use
+			System.err.println("Not committed");
+			for (String s:myMsg.userFilenames) {
+				if (!filesInUse.remove(s)) {
+					System.err.println("should be in use...");
+				}
+			}
+		}
 		
 	}
 
