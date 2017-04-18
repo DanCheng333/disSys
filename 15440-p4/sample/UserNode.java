@@ -54,7 +54,10 @@ public class UserNode implements ProjectLib.MessageHandling {
 		}
 		if (canUse) {
 			System.err.println(" NO FILE IN USE ..");
-			isApprove = PL.askUser(myMsg.img, (String[]) myMsg.userFilenames.toArray());
+			String[] fNames = new String[myMsg.userFilenames.size()];
+			fNames = myMsg.userFilenames.toArray(fNames);
+
+			isApprove = PL.askUser(myMsg.img, fNames);
 			System.err.println("User response ======> " + isApprove);
 		}
 		myMsg.setMsgType(MsgType.RSPAPPROVAL);
