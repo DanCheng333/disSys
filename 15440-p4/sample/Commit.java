@@ -84,7 +84,7 @@ public class Commit {
 		if (allUsersApprove()) {   //if all users approve the commit
 			try
 			{
-				System.err.println("Commit collage, Write to files.....");
+				System.err.println("Commit collage, Write to files.....commitFilename:"+this.commitFilename);
 				FileOutputStream fos = new FileOutputStream(this.commitFilename);
 				fos.write(this.img);
 				fos.close();

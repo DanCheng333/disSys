@@ -82,6 +82,7 @@ public class UserNode implements ProjectLib.MessageHandling {
 			for (String s:myMsg.userFilenames) {
 				if (!filesDeleted.contains(s)) {
 					filesDeleted.add(s);
+					System.err.println("====files deleted:"+s+" =====");
 					File file = new File(s);
 					file.delete();
 				}
