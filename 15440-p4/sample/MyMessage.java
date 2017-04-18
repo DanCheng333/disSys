@@ -26,6 +26,9 @@ public class MyMessage implements Serializable{
 	public void setMsgType(MsgType t) {
 		this.msgType = t;
 	}
+	public void setUserID(String id) {
+		this.userID = id;
+	}
 	
 	public void setIsApprove(boolean b) {
 		this.isApprove = b;
