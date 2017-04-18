@@ -80,7 +80,20 @@ public class Commit {
 		
 		
 		myMsg.setMsgType(MsgType.COMMIT);
-		
+		if (notAllUsersApprove()) {
+			//Send commit response back to user
+			myMsg.setIsCommit(false);
+			try {
+				ProjectLib.Message sendMsg =
+						new ProjectLib.Message(myMsg.userID,MsgSerializer.serialize(myMsg));
+				pL.sendMessage(sendMsg);
+				System.err.println("Tell user is NOT committed, id:"+ myMsg.userID);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
 		if (allUsersApprove()) {   //if all users approve the commit
 			try
 			{
@@ -107,20 +120,7 @@ public class Commit {
 				e.printStackTrace();
 			}
 		}
-		if (notAllUsersApprove()) {
-			//Send commit response back to user
-			myMsg.setIsCommit(false);
-			try {
-				ProjectLib.Message sendMsg =
-						new ProjectLib.Message(myMsg.userID,MsgSerializer.serialize(myMsg));
-				pL.sendMessage(sendMsg);
-				System.err.println("Tell user is NOT committed, id:"+ myMsg.userID);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-		}
+		
 		
 	}
 	private boolean notAllUsersApprove() {
@@ -130,7 +130,7 @@ public class Commit {
 				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 	private boolean allUsersApprove() {
 		for (Entry<String, userIDState> s : this.approvalMap.entrySet()) {
