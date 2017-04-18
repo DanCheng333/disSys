@@ -62,7 +62,7 @@ public class UserNode implements ProjectLib.MessageHandling {
 		
 		try {
 			ProjectLib.Message sendMsg =
-					new ProjectLib.Message(myMsg.userID,MsgSerializer.serialize(myMsg));
+					new ProjectLib.Message("Server",MsgSerializer.serialize(myMsg));
 			PL.sendMessage(sendMsg);
 			System.err.println("sending approval response... approve?=>"+
 			isApprove+"  ID:" + myMsg.userID);
