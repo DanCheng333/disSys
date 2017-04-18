@@ -11,4 +11,4 @@ setPath:
 	setenv CLASSPATH ../sample:../lib
 
 testSimple:
-	java Project4 15440 scripts/1-simple-commits.txt
+	java Project4 15440 ../test/scripts/1-simple-commits.txt
