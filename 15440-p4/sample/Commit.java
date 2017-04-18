@@ -79,6 +79,7 @@ public class Commit {
 			myMsg.setIsCommit(false);
 			try {
 				for (String id : sourcesMap.keySet()) {
+					myMsg.setUserFilenames(sourcesMap.get(id));
 					ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 					pL.sendMessage(sendMsg);
 					System.err.println("Tell user is NOT committed, id:" + myMsg.userID);
@@ -99,6 +100,7 @@ public class Commit {
 				myMsg.setIsCommit(true);
 				try {
 					for (String id : sourcesMap.keySet()) {
+						myMsg.setUserFilenames(sourcesMap.get(id));
 						ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 						pL.sendMessage(sendMsg);
 						System.err.println("Tell user is committed, id:" + myMsg.userID);
