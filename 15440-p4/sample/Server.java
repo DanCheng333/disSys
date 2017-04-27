@@ -36,7 +36,7 @@ public class Server implements ProjectLib.CommitServing  {
 				System.err.println("Respond received for approval");		
 				m.handleUserVote(myMsg,PL);
 			}
-			else if (myMsg.msgType.equals(MsgType.RSPAPPROVAL)) {
+			else if (myMsg.msgType.equals(MsgType.ACK)) {
 				System.err.println("Receive ack from user:"+myMsg.userID);
 				m.handleACK(myMsg);
 			}
