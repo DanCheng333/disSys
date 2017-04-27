@@ -114,14 +114,15 @@ public class StateRestore {
 			f.read(img);
 			f.close();
 			String[] sourcesArr = sources.split(",");
-			userNum = sourcesArr.length;
+			commit = new Commit(commitCounter,collageName,img,sourcesArr,false);
+			Server.commitMap.put(commitCounter, commit);
+			userNum = commit.sourcesMap.size();
 			ackNum = 0;
 			approveNum = 0;
 			disapproveNum = 0;
 			allApprove = false;
 			System.err.println( "Num of Users : " + userNum);
-			commit = new Commit(commitCounter,collageName,img,sourcesArr,false);
-			Server.commitMap.put(commitCounter, commit);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
