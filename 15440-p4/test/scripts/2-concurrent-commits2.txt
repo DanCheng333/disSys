@@ -1,0 +1,12 @@
+# This script performs concurrent commits.
+
+setDelay * * 100 # Small message delay by default.
+setDelay a * 1000 # All messages from node 'a' are delayed by 1000 ms.
+start Server a b c d
+
+wait 1000 # Wait for Nodes to come up
+
+commit composites/1.jpg a:3.jpg a:4.jpg b:5.jpg b:6.jpg
+commit composites/2.jpg c:7.jpg d:8.jpg d:carnegie2.jpg
+wait 1500 # Wait 1500 ms for the commits to finish.
+
