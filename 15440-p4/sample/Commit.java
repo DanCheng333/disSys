@@ -128,21 +128,21 @@ public class Commit {
 
 				System.err.println("Asking for approval...");
 				System.err.println("Msg sent to userID:" + userID);
-				long t1 = System.currentTimeMillis();
-				while (true) {
-					long t2 = System.currentTimeMillis();
-					if (approvalMap.get(userID).equals(userIDState.APPROVE)
-							|| approvalMap.get(userID).equals(userIDState.NOTAPPROVE)) {
-						System.err.println("*****Time out fn=> Get vote from:" + userID);
-						break;
-					}
-					if (t2 > t1 + 6000) {
-						System.err.println("*****Timeout vote response:" + userID);
-						this.approvalMap.put(userID, userIDState.TIMEOUT);
-						distributeResponse(false, msg);
-						break;
-					}
-				}
+//				long t1 = System.currentTimeMillis();
+//				while (true) {
+//					long t2 = System.currentTimeMillis();
+//					if (approvalMap.get(userID).equals(userIDState.APPROVE)
+//							|| approvalMap.get(userID).equals(userIDState.NOTAPPROVE)) {
+//						System.err.println("*****Time out fn=> Get vote from:" + userID);
+//						break;
+//					}
+//					if (t2 > t1 + 6000) {
+//						System.err.println("*****Timeout vote response:" + userID);
+//						this.approvalMap.put(userID, userIDState.TIMEOUT);
+//						distributeResponse(false, msg);
+//						break;
+//					}
+//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
