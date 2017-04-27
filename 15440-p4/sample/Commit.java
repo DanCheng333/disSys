@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Map.Entry;
@@ -48,6 +49,19 @@ public class Commit {
 		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private void write2Log(String s) {
+		try {
+			logWriter.write(s);
+			logWriter.newLine();
+			logWriter.flush();
+			Server.PL.fsync();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -102,13 +116,14 @@ public class Commit {
 			try {
 				ProjectLib.Message sendMsg = new ProjectLib.Message(userID, MsgSerializer.serialize(msg));
 				pL.sendMessage(sendMsg);
+				
 				System.err.println("Asking for approval...");
 				System.err.println("Msg sent to userID:" + userID);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-
+		write2Log("ASK_FOR_APPROVAL");
 	}
 	
 	/**
@@ -122,12 +137,15 @@ public class Commit {
 	public void handleUserVote(MyMessage myMsg, ProjectLib pL) {
 		if (myMsg.getIsApprove()) {
 			this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
+			write2Log("APPROVE:"+myMsg.userID);
 		} else {
 			this.approvalMap.put(myMsg.userID, userIDState.NOTAPPROVE);
+			write2Log("DISAPPROVE:"+myMsg.userID);
 		}
 
 		myMsg.setMsgType(MsgType.COMMIT);
 		if (notAllUsersApprove()) {
+			
 			// Send commit response back to user
 			myMsg.setIsCommit(false);
 			try {
@@ -141,7 +159,7 @@ public class Commit {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
+			write2Log("DISAPPROVE_ABORT");
 		}
 		if (allUsersApprove()) { // if all users approve the commit
 			try {
@@ -167,13 +185,16 @@ public class Commit {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			write2Log("ALL_APPROVE");
 		}
 
 	}
 
 	public void handleACK(MyMessage myMsg) {
 		ackMap.put(myMsg.userID, true);
+		write2Log("ACK:"+myMsg.userID);
 		if (allUserACK()) {
+			write2Log("ALL_ACK");
 			System.err.println(" ====== END All userNode ack ====");
 		}
 	}
