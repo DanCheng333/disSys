@@ -2,12 +2,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class StateRestore {
 	static String collageName;
@@ -61,8 +60,7 @@ public class StateRestore {
 							sourcesStr = content[1];
 							System.err.println( "sources " + sourcesStr+" ,line num: " + lineNum);
 							restoreCommit(commitCounter);
-							FileOutputStream fos = new FileOutputStream(new File(logFileName));
-							commit.logWriter = new BufferedWriter(new OutputStreamWriter(fos));
+							commit.logWriter = new BufferedWriter(new FileWriter(logFileName, true));
 							
 						}
 						if (lastType.equals(LogType.APPROVE.toString())) {
@@ -117,7 +115,8 @@ public class StateRestore {
 				}
 				//abort
 				else {
-					
+					System.err.println( "****abort****");
+					commit.distributeResponse(false, msg);
 				}
 			}
 		}
