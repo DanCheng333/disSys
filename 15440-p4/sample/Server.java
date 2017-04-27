@@ -40,6 +40,10 @@ public class Server implements ProjectLib.CommitServing  {
 			for (int i : commitMap.keySet()) {
 				System.err.println("Contains commit id"+i);
 			}
+			if (m == null) {
+				System.err.println("-----commit is null");
+				System.err.println("length of commitMap"+commitMap.size());
+			}
 			if (myMsg.msgType.equals(MsgType.RSPAPPROVAL)) {
 				System.err.println("Respond received for approval");		
 				m.handleUserVote(myMsg);
