@@ -23,7 +23,6 @@ public class Commit {
 	String logFileName;
 	BufferedWriter logWriter;
 	String sourcesStr;
-	String idStr;
 
 	public Commit(int id, String filename, byte[] img, String[] sources) {
 		this.commitID = id;
@@ -42,9 +41,7 @@ public class Commit {
 			logWriter = new BufferedWriter(new OutputStreamWriter(fos));
 			logWriter.write("COLLAGE_NAME:"+this.commitFilename);
 			logWriter.newLine();
-			logWriter.write("USERID:"+this.idStr);
-			logWriter.newLine();
-			logWriter.write("SOURCES:"+this.sourcesStr);
+			logWriter.write("ID_SOURCES:"+this.sourcesStr);
 			logWriter.newLine();
 			logWriter.flush();
 			Server.PL.fsync();
@@ -58,13 +55,12 @@ public class Commit {
 
 	/**
 	 * Initialize sourceMap, approvalMap and ackMap
-	 * and string for id and sources
 	 * @param src
 	 */
 	private void add2SourceMap(String[] src) {
-		StringBuilder sourcesSB = new StringBuilder();
-		StringBuilder idSB = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		for (String s : src) {
+			sb.append(s+",");
 			try {
 				String[] comb = s.split(":");
 				String userID = comb[0];
@@ -73,10 +69,6 @@ public class Commit {
 				ackMap.put(userID, false);
 				
 				String fileName = comb[1];
-				
-				sourcesSB.append(fileName+",");
-				idSB.append(userID+",");
-				
 				System.err.println("UserID:" + userID + ", fileName:" + fileName);
 				if (!sourcesMap.containsKey(userID)) {
 					ArrayList<String> l = new ArrayList<String>();
@@ -95,10 +87,8 @@ public class Commit {
 
 		}
 		//delete the last ","
-		sourcesSB.deleteCharAt(sourcesSB.length()-1);
-		idSB.deleteCharAt(idSB.length()-1);
-		this.sourcesStr = sourcesSB.toString();
-		this.idStr = idSB.toString();
+		sb.deleteCharAt(sb.length()-1);
+		this.sourcesStr = sb.toString();
 	}
 
 	/**
