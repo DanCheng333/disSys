@@ -40,9 +40,9 @@ public class Commit {
 			logFileName = commitID+".LOG";
 			FileOutputStream fos = new FileOutputStream(new File(logFileName));
 			logWriter = new BufferedWriter(new OutputStreamWriter(fos));
-			logWriter.write("COLLAGE_NAME:"+this.commitFilename);
+			logWriter.write(LogType.COLLAGE_NAME.toString()+"=>"+this.commitFilename);
 			logWriter.newLine();
-			logWriter.write("ID_SOURCES:"+this.sourcesStr);
+			logWriter.write(LogType.ID_SOURCES.toString()+"=>"+this.sourcesStr);
 			logWriter.newLine();
 			logWriter.flush();
 			Server.PL.fsync();
@@ -123,7 +123,7 @@ public class Commit {
 				e.printStackTrace();
 			}
 		}
-		write2Log("ASK_FOR_APPROVAL");
+		//write2Log("ASK_FOR_APPROVAL");
 	}
 	
 	/**
@@ -137,10 +137,10 @@ public class Commit {
 	public void handleUserVote(MyMessage myMsg, ProjectLib pL) {
 		if (myMsg.getIsApprove()) {
 			this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
-			write2Log("APPROVE:"+myMsg.userID);
+			write2Log(LogType.APPROVE.toString()+"=>"+myMsg.userID);
 		} else {
 			this.approvalMap.put(myMsg.userID, userIDState.NOTAPPROVE);
-			write2Log("DISAPPROVE:"+myMsg.userID);
+			write2Log(LogType.DISAPPROVE.toString()+"=>"+myMsg.userID);
 		}
 
 		myMsg.setMsgType(MsgType.COMMIT);
@@ -159,7 +159,7 @@ public class Commit {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			write2Log("DISAPPROVE_ABORT");
+			write2Log(LogType.DISAPPROVE_ABORT.toString()+"=>");
 		}
 		if (allUsersApprove()) { // if all users approve the commit
 			try {
@@ -185,16 +185,16 @@ public class Commit {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			write2Log("ALL_APPROVE");
+			write2Log(LogType.ALL_APPROVE_COMMIT.toString()+"=>");
 		}
 
 	}
 
 	public void handleACK(MyMessage myMsg) {
 		ackMap.put(myMsg.userID, true);
-		write2Log("ACK:"+myMsg.userID);
+		write2Log(LogType.ACK.toString()+"=>"+myMsg.userID);
 		if (allUserACK()) {
-			write2Log("ALL_ACK");
+			write2Log(LogType.ALL_ACK.toString()+"=>");
 			System.err.println(" ====== END All userNode ack ====");
 		}
 	}
