@@ -17,6 +17,7 @@ public class StateRestore {
 			String logFileName = Integer.toString(commitCounter)+".LOG";
 			File logFile = new File(logFileName);
 			if (!logFile.exists()) { //Recover all states
+				System.err.println( ">>>>>>>>> END OF RECOVER >>>>>>");
 				return;
 			}
 			else {
