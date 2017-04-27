@@ -201,6 +201,19 @@ public class Commit {
 						ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 						Server.PL.sendMessage(sendMsg);
 						System.err.println("Tell user is committed, id:" + myMsg.userID);
+						long t1 = System.currentTimeMillis();
+						while (true) {
+							long t2 = System.currentTimeMillis();
+							if (ackMap.get(id)) {
+								System.err.println("Time out fn=> Get ack form user:"+id);
+								break;
+							}
+							if (t2 > t1+6000) {
+								System.err.println("Timeout resend ack to user:"+id);
+								t1 = t2;
+								Server.PL.sendMessage(sendMsg);
+							}
+						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -220,6 +233,19 @@ public class Commit {
 					ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 					Server.PL.sendMessage(sendMsg);
 					System.err.println("Tell user is NOT committed, id:" + myMsg.userID);
+					long t1 = System.currentTimeMillis();
+					while (true) {
+						long t2 = System.currentTimeMillis();
+						if (ackMap.get(id)) {
+							System.err.println("Time out fn=> Get ack form user:"+id);
+							break;
+						}
+						if (t2 > t1+6000) {
+							System.err.println("Timeout resend ack to user:"+id);
+							t1 = t2;
+							Server.PL.sendMessage(sendMsg);
+						}
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
