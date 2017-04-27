@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.PatternSyntaxException;
 
+import ProjectLib.Message;
+
 enum userIDState {
 	APPROVE, NOTAPPROVE, NONE, TIMEOUT
 }
@@ -130,7 +132,7 @@ public class Commit {
 
 				System.err.println("Asking for approval...");
 				System.err.println("Msg sent to userID:" + userID);
-				Thread t = new Thread(new VoteTimeOutCheck (userID,msg));
+				Thread t = new Thread(new VoteTimeOutCheck(userID, msg));
 				t.start();
 
 			} catch (Exception e) {
@@ -171,6 +173,7 @@ public class Commit {
 
 	public void distributeResponse(boolean b, MyMessage myMsg) {
 		myMsg.setMsgType(MsgType.COMMIT);
+		myMsg.setIsCommit(b);
 		if (b) {
 			try {
 				File f = new File(this.commitFilename);
@@ -183,7 +186,7 @@ public class Commit {
 					fos.close();
 				}
 				// Send commit response back to user
-				myMsg.setIsCommit(true);
+				
 				try {
 					for (String id : sourcesMap.keySet()) {
 						myMsg.setUserFilenames(sourcesMap.get(id));
@@ -191,6 +194,9 @@ public class Commit {
 						ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 						Server.PL.sendMessage(sendMsg);
 						System.err.println("Tell user is committed, id:" + myMsg.userID);
+						//Set time out for ack
+						Thread t = new Thread(new AckTimeOutCheck(id, sendMsg));
+						t.start();
 
 					}
 				} catch (Exception e) {
@@ -203,7 +209,6 @@ public class Commit {
 			write2Log(LogType.ALL_APPROVE_COMMIT.toString() + "=>");
 
 		} else {
-			myMsg.setIsCommit(false);
 			try {
 				for (String id : sourcesMap.keySet()) {
 					myMsg.setUserFilenames(sourcesMap.get(id));
@@ -211,19 +216,10 @@ public class Commit {
 					ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 					Server.PL.sendMessage(sendMsg);
 					System.err.println("Tell user is NOT committed, id:" + myMsg.userID);
-					long t1 = System.currentTimeMillis();
-					while (true) {
-						long t2 = System.currentTimeMillis();
-						if (ackMap.get(id)) {
-							System.err.println("Time out fn=> Get ack form user:" + id);
-							break;
-						}
-						if (t2 > t1 + 6000) {
-							System.err.println("Timeout resend ack to user:" + id);
-							t1 = t2;
-							Server.PL.sendMessage(sendMsg);
-						}
-					}
+					//Set time out for ack
+					Thread t = new Thread(new AckTimeOutCheck(id, sendMsg));
+					t.start();
+					
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -274,7 +270,7 @@ public class Commit {
 	}
 
 	/**
-	 * Time out thread.. have to run in a different thread
+	 * Vote Time out thread
 	 */
 	public class VoteTimeOutCheck implements Runnable {
 
@@ -294,8 +290,8 @@ public class Commit {
 				e.printStackTrace();
 			}
 
-			if (approvalMap.get(userID).equals(userIDState.NONE)) { 
-				//No vote response from user, timeout, abort commit
+			if (approvalMap.get(userID).equals(userIDState.NONE)) {
+				// No vote response from user, timeout, abort commit
 				System.err.println("-----Thread-----No vote response from user:" + userID);
 				approvalMap.put(userID, userIDState.TIMEOUT);
 				distributeResponse(false, msg);
@@ -303,6 +299,42 @@ public class Commit {
 			} else {
 				return;
 			}
+		}
+	}
+
+	/**
+	 * ACK Time out thread
+	 */
+	public class AckTimeOutCheck implements Runnable {
+
+		String userID;
+		ProjectLib.Message msg;
+
+		AckTimeOutCheck(String id, ProjectLib.Message sendMsg) {
+			this.userID = id;
+			this.msg = sendMsg;
+		}
+
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(TIMEOUT);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				if (!ackMap.get(userID)) {
+					// No ack response from user, timeout, resend ack
+					System.err.println("-----Thread-----No ack response from user:" + userID);
+					Server.PL.sendMessage(msg);
+
+				} else {
+					System.err.println("receive ack userid:"+userID);
+					break;
+				}
+			}
+			return;
 		}
 	}
 
