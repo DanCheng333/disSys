@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.PatternSyntaxException;
 
-import ProjectLib.Message;
-
 enum userIDState {
 	APPROVE, NOTAPPROVE, NONE, TIMEOUT
 }
