@@ -91,6 +91,9 @@ public class UserNode implements ProjectLib.MessageHandling {
 					File file = new File(s);
 					file.delete();
 				}
+				else {
+					System.err.println("====file not exist====");
+				}
 			}
 		}
 		else { //not commited, abort, files no longer in use

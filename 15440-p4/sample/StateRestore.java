@@ -59,7 +59,7 @@ public class StateRestore {
 						}
 						if (lastType.equals(LogType.ID_SOURCES.toString())) {
 							sourcesStr = content[1];
-							System.err.println( "sources " + sources+" ,line num: " + lineNum);
+							System.err.println( "sources " + sourcesStr+" ,line num: " + lineNum);
 							restoreCommit(commitCounter);
 							FileOutputStream fos = new FileOutputStream(new File(logFileName));
 							commit.logWriter = new BufferedWriter(new OutputStreamWriter(fos));
