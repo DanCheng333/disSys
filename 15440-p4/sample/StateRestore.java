@@ -95,8 +95,7 @@ public class StateRestore {
 				//need to resend ack
 				else if (lastType.equals(LogType.ALL_APPROVE_COMMIT.toString())|| 
 						lastType.equals(LogType.DISAPPROVE_ABORT.toString()) 
-						|| lastType.equals(LogType.ACK.toString())
-						|| lastType.equals(LogType.APPROVE.toString())) {
+						|| lastType.equals(LogType.ACK.toString())) {
 					System.err.println( "approveNum:"+approveNum);
 					System.err.println( "disapproveNum:"+disapproveNum);
 					System.err.println( "allApprove:"+allApprove);
