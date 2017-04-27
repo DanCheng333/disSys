@@ -27,6 +27,8 @@ public class Server implements ProjectLib.CommitServing  {
 		Server srv = new Server();
 		PL = new ProjectLib( Integer.parseInt(args[0]), srv );
 		
+		StateRestore.recover();
+		
 		// main loop
 		while (true) {
 			ProjectLib.Message msg = PL.getMessage();
