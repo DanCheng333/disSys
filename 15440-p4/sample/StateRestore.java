@@ -87,7 +87,9 @@ public class StateRestore {
 						lastType.equals(LogType.DISAPPROVE_ABORT.toString()) 
 						|| lastType.equals(LogType.ACK.toString())
 						|| lastType.equals(LogType.APPROVE.toString())) {
-					System.err.println( "not all_ackjakdjfkajlkdsfjakls;falkdjsfklajdkfs");
+					System.err.println( "approveNum:"+approveNum);
+					System.err.println( "disapproveNum:"+disapproveNum);
+					System.err.println( "allApprove:"+allApprove);
 					if (approveNum == userNum &&
 							disapproveNum == 0 &&
 							allApprove) { //logic check
