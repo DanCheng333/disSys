@@ -144,7 +144,7 @@ public class Commit {
 	 * @param myMsg
 	 * @param pL
 	 */
-	public void handleUserVote(MyMessage myMsg, ProjectLib pL) {
+	public void handleUserVote(MyMessage myMsg) {
 		if (myMsg.getIsApprove()) {
 			this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
 			write2Log(LogType.APPROVE.toString()+"=>"+myMsg.userID);
@@ -153,25 +153,20 @@ public class Commit {
 			write2Log(LogType.DISAPPROVE.toString()+"=>"+myMsg.userID);
 		}
 
-		myMsg.setMsgType(MsgType.COMMIT);
+		
+		
 		if (notAllUsersApprove()) {
-			
-			// Send commit response back to user
-			myMsg.setIsCommit(false);
-			try {
-				for (String id : sourcesMap.keySet()) {
-					myMsg.setUserFilenames(sourcesMap.get(id));
-					myMsg.setUserID(id);
-					ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
-					pL.sendMessage(sendMsg);
-					System.err.println("Tell user is NOT committed, id:" + myMsg.userID);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			write2Log(LogType.DISAPPROVE_ABORT.toString()+"=>");
+			distributeResponse(false,myMsg);
 		}
 		if (allUsersApprove()) { // if all users approve the commit
+			distributeResponse(true,myMsg);
+		}
+
+	}
+
+	public void distributeResponse(boolean b, MyMessage myMsg) {
+		myMsg.setMsgType(MsgType.COMMIT);
+		if (b){
 			try {
 				System.err.println("Commit collage, Write to files.....commitFilename:" + this.commitFilename);
 				FileOutputStream fos = new FileOutputStream(this.commitFilename);
@@ -185,7 +180,7 @@ public class Commit {
 						myMsg.setUserFilenames(sourcesMap.get(id));
 						myMsg.setUserID(id);
 						ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
-						pL.sendMessage(sendMsg);
+						Server.PL.sendMessage(sendMsg);
 						System.err.println("Tell user is committed, id:" + myMsg.userID);
 					}
 				} catch (Exception e) {
@@ -196,8 +191,23 @@ public class Commit {
 				e.printStackTrace();
 			}
 			write2Log(LogType.ALL_APPROVE_COMMIT.toString()+"=>");
+			
 		}
-
+		else {
+			myMsg.setIsCommit(false);
+			try {
+				for (String id : sourcesMap.keySet()) {
+					myMsg.setUserFilenames(sourcesMap.get(id));
+					myMsg.setUserID(id);
+					ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
+					Server.PL.sendMessage(sendMsg);
+					System.err.println("Tell user is NOT committed, id:" + myMsg.userID);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			write2Log(LogType.DISAPPROVE_ABORT.toString()+"=>");
+		}
 	}
 
 	public void handleACK(MyMessage myMsg) {

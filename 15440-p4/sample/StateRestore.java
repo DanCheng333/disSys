@@ -9,7 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class StateRestore {
 	static String collageName;
-	static String sources;
+	static String sourcesStr;
+	static String[] sources;
+	static byte[] img;
 	static int collageLen;
 	static int userNum;
 	static int approveNum;
@@ -54,7 +56,7 @@ public class StateRestore {
 							System.err.println( "Collage len"+ collageLen + " ,line num: " + lineNum);
 						}
 						if (lastType.equals(LogType.ID_SOURCES.toString())) {
-							sources = content[1];
+							sourcesStr = content[1];
 							System.err.println( "sources " + sources+" ,line num: " + lineNum);
 							restoreCommit(commitCounter);			
 						}
@@ -76,7 +78,12 @@ public class StateRestore {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				
 				System.err.println( "last type in this commit file" + lastType);
+				MyMessage msg = new MyMessage(MsgType.COMMIT, commitCounter, "userID",
+						collageName,img, sources);
+				
 				
 				if (lastType.equals(LogType.ALL_ACK.toString())) { //finish
 					System.err.println( "nothing crash in this commitID:"+commitCounter);
@@ -94,6 +101,13 @@ public class StateRestore {
 							disapproveNum == 0 &&
 							allApprove) { //logic check
 						System.err.println( "****All approve. should resend ack****");
+						
+
+						commit.distributeResponse(true, msg);
+					}
+					else {
+						System.err.println( "****abort****");
+						commit.distributeResponse(false, msg);
 					}
 				}
 				//abort
@@ -110,11 +124,11 @@ public class StateRestore {
 		FileInputStream f;
 		try {
 			f = new FileInputStream("collageCommit"+commitCounter);
-			byte[] img = new byte[collageLen];
+			img = new byte[collageLen];
 			f.read(img);
 			f.close();
-			String[] sourcesArr = sources.split(",");
-			commit = new Commit(commitCounter,collageName,img,sourcesArr,false);
+			String[] sources = sourcesStr.split(",");
+			commit = new Commit(commitCounter,collageName,img,sources,false);
 			Server.commitMap.put(commitCounter, commit);
 			userNum = commit.sourcesMap.size();
 			ackNum = 0;
