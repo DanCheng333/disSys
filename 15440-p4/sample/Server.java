@@ -9,18 +9,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Server implements ProjectLib.CommitServing  {
-	public AtomicInteger commitCounter = new AtomicInteger(0);
+	public static AtomicInteger commitCounter = new AtomicInteger(0);
 	public static ConcurrentHashMap<Integer,Commit> commitMap = new ConcurrentHashMap<Integer,Commit>();
     public static ProjectLib PL;
     
 	public void startCommit( String filename, byte[] img, String[] sources ) {
 		System.err.println( ">>>>>>>> startCommit, commitfileName => "+filename);
 		int newCC = commitCounter.incrementAndGet();
-		Commit m = new Commit(newCC,filename,img,sources);
+		Commit m = new Commit(newCC,filename,img,sources,true);
 		System.err.println( ">>>Commit ID"+newCC);
 		m.askForApproval(PL);
 		commitMap.put(newCC, m);
 	}
+
 	
 	public static void main ( String args[] ) throws Exception {
 		if (args.length != 1) throw new Exception("Need 1 arg: <port>");

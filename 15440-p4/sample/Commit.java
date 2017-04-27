@@ -25,23 +25,32 @@ public class Commit {
 	BufferedWriter logWriter;
 	String sourcesStr;
 
-	public Commit(int id, String filename, byte[] img, String[] sources) {
+	public Commit(int id, String filename, byte[] img, String[] sources, Boolean notRestore) {
 		System.err.println( ">>>init commit id:"+id);
 		this.commitID = id;
 		this.img = img;
 		this.commitFilename = filename;
 		this.sources = sources;
 		add2SourceMap(sources);
-		initLog();
+		if (notRestore) {
+			initLog();
+		}
 	}
 	
 	private void initLog() {
 		try
 		{
+			//save byte[] img to a backup file
+			FileOutputStream f = new FileOutputStream("collageCommit"+commitID);
+			f.write(img);
+			f.close();
+			//Init writing log files
 			logFileName = commitID+".LOG";
 			FileOutputStream fos = new FileOutputStream(new File(logFileName));
 			logWriter = new BufferedWriter(new OutputStreamWriter(fos));
 			logWriter.write(LogType.COLLAGE_NAME.toString()+"=>"+this.commitFilename);
+			logWriter.newLine();
+			logWriter.write(LogType.COLLAGE_LEN.toString()+"=>"+this.img.length);
 			logWriter.newLine();
 			logWriter.write(LogType.ID_SOURCES.toString()+"=>"+this.sourcesStr);
 			logWriter.newLine();
