@@ -44,16 +44,17 @@ public class UserNode implements ProjectLib.MessageHandling {
 		boolean isApprove = false;
 		boolean canUse = true;
 		for (String s:filenames) {
+			//file are locked
 			if (filesDeleted.contains(s) || filesInUse.contains(s)) {
 				System.err.println("file already commited or in use.....!!!");
 				canUse = false;
 			}
-			else {
+			else { //lock file
 				filesInUse.add(s);
 			}
 		}
 		if (canUse) {
-			System.err.println(" NO FILE IN USE ..");
+			System.err.println(" NO FILE IN USE .. ");
 			String[] fNames = new String[myMsg.userFilenames.size()];
 			fNames = myMsg.userFilenames.toArray(fNames);
 			for (String s: fNames) {
@@ -62,6 +63,8 @@ public class UserNode implements ProjectLib.MessageHandling {
 			isApprove = PL.askUser(myMsg.img, fNames);
 			System.err.println("User response ======> " + isApprove);
 		}
+		
+		//Send vote back to server
 		myMsg.setMsgType(MsgType.RSPAPPROVAL);
 		myMsg.setIsApprove(isApprove);
 		
@@ -98,7 +101,17 @@ public class UserNode implements ProjectLib.MessageHandling {
 				}
 			}
 		}
-		
+		//Send ack back to server
+		myMsg.setMsgType(MsgType.ACK);
+		try {
+			ProjectLib.Message sendMsg =
+					new ProjectLib.Message("Server",MsgSerializer.serialize(myMsg));
+			PL.sendMessage(sendMsg);
+			System.err.println("sending ack response...");
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main ( String args[] ) throws Exception {

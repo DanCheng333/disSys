@@ -31,10 +31,14 @@ public class Server implements ProjectLib.CommitServing  {
 			ProjectLib.Message msg = PL.getMessage();
 			System.err.println( "!!!!!!!Server: Got message from " + msg.addr );
 			MyMessage myMsg = MsgSerializer.deserialize(msg.body);
+			Commit m = commitMap.get(myMsg.getCommitID());
 			if (myMsg.msgType.equals(MsgType.RSPAPPROVAL)) {
-				System.err.println("Respond received for approval");
-				Commit m = commitMap.get(myMsg.getCommitID());
-				m.handleUserResponse(myMsg,PL);
+				System.err.println("Respond received for approval");		
+				m.handleUserVote(myMsg,PL);
+			}
+			else if (myMsg.msgType.equals(MsgType.RSPAPPROVAL)) {
+				System.err.println("Receive ack from user:"+myMsg.userID);
+				m.handleACK(myMsg);
 			}
 			else {
 				System.err.println( "Wrong!Should be respond approval type, type: "+myMsg.msgType.toString());

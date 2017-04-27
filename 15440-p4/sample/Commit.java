@@ -11,6 +11,7 @@ enum userIDState {
 public class Commit {
 	public ConcurrentHashMap<String, ArrayList<String>> sourcesMap = new ConcurrentHashMap<String, ArrayList<String>>();
 	public ConcurrentHashMap<String, userIDState> approvalMap = new ConcurrentHashMap<String, userIDState>();
+	public ConcurrentHashMap<String, Boolean> ackMap = new ConcurrentHashMap<String, Boolean>();
 	int commitID;
 	byte[] img;
 	String commitFilename;
@@ -23,13 +24,20 @@ public class Commit {
 		this.sources = sources;
 		add2SourceMap(sources);
 	}
-
+	
+	/**
+	 * Initialize sourceMap, approvalMap and ackMap
+	 * @param src
+	 */
 	private void add2SourceMap(String[] src) {
 		for (String s : src) {
 			try {
 				String[] comb = s.split(":");
 				String userID = comb[0];
+				
 				approvalMap.put(userID, userIDState.NONE);
+				ackMap.put(userID, false);
+				
 				String fileName = comb[1];
 				System.err.println("UserID:" + userID + ", fileName:" + fileName);
 				if (!sourcesMap.containsKey(userID)) {
@@ -50,6 +58,10 @@ public class Commit {
 		}
 	}
 
+	/**
+	 * Ask userNode to vote
+	 * @param pL
+	 */
 	public void askForApproval(ProjectLib pL) {
 		for (String userID : sourcesMap.keySet()) {
 			MyMessage msg = new MyMessage(MsgType.ASKAPPROVAL, commitID, userID, commitFilename, img, sources);
@@ -65,8 +77,16 @@ public class Commit {
 		}
 
 	}
-
-	public void handleUserResponse(MyMessage myMsg, ProjectLib pL) {
+	
+	/**
+	 * Handle Vote
+	 * all YES => Commit
+	 * one No, or timeout => Abort
+	 * Distribute decisions to users
+	 * @param myMsg
+	 * @param pL
+	 */
+	public void handleUserVote(MyMessage myMsg, ProjectLib pL) {
 		if (myMsg.getIsApprove()) {
 			this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
 		} else {
@@ -118,6 +138,24 @@ public class Commit {
 
 	}
 
+	public void handleACK(MyMessage myMsg) {
+		ackMap.put(myMsg.userID, true);
+		if (allUserACK()) {
+			System.err.println(" ====== END All userNode ack ====");
+		}
+	}
+	
+	private boolean allUserACK() {
+		for (Entry<String, Boolean> s : this.ackMap.entrySet()) {
+			if (!s.getValue()) {
+				System.err.println("Not all ack yet...");
+				return false;
+			}
+		}
+		System.err.println(" All ack! ");
+		return true;
+	}
+
 	private boolean notAllUsersApprove() {
 		for (Entry<String, userIDState> s : this.approvalMap.entrySet()) {
 			if (s.getValue().equals(userIDState.NOTAPPROVE)) {
@@ -138,5 +176,6 @@ public class Commit {
 		System.err.println(" All approved! ");
 		return true;
 	}
+
 
 }
