@@ -37,6 +37,9 @@ public class Server implements ProjectLib.CommitServing  {
 			MyMessage myMsg = MsgSerializer.deserialize(msg.body);
 			System.err.println( "Commit ID : " +myMsg.getCommitID());
 			Commit m = commitMap.get(myMsg.getCommitID());
+			for (int i : commitMap.keySet()) {
+				System.err.println("Contains commit id"+i);
+			}
 			if (myMsg.msgType.equals(MsgType.RSPAPPROVAL)) {
 				System.err.println("Respond received for approval");		
 				m.handleUserVote(myMsg);
