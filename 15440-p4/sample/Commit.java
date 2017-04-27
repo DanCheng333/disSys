@@ -26,7 +26,7 @@ public class Commit {
 	String sourcesStr;
 
 	public Commit(int id, String filename, byte[] img, String[] sources, Boolean notRestore) {
-		System.err.println( ">>>init commit id:"+id);
+		System.err.println( "=========init commit id:"+id + "=========");
 		this.commitID = id;
 		this.img = img;
 		this.commitFilename = filename;
