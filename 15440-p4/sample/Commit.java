@@ -1,4 +1,7 @@
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +19,11 @@ public class Commit {
 	byte[] img;
 	String commitFilename;
 	String[] sources;
+	//For logging
+	String logFileName;
+	BufferedWriter logWriter;
+	String sourcesStr;
+	String idStr;
 
 	public Commit(int id, String filename, byte[] img, String[] sources) {
 		this.commitID = id;
@@ -23,13 +31,39 @@ public class Commit {
 		this.commitFilename = filename;
 		this.sources = sources;
 		add2SourceMap(sources);
+		initLog();
 	}
 	
+	private void initLog() {
+		try
+		{
+			logFileName = commitID+".LOG";
+			FileOutputStream fos = new FileOutputStream(new File(logFileName));
+			logWriter = new BufferedWriter(new OutputStreamWriter(fos));
+			logWriter.write("COLLAGE_NAME:"+this.commitFilename);
+			logWriter.newLine();
+			logWriter.write("USERID:"+this.idStr);
+			logWriter.newLine();
+			logWriter.write("SOURCES:"+this.sourcesStr);
+			logWriter.newLine();
+			logWriter.flush();
+			Server.PL.fsync();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+
 	/**
 	 * Initialize sourceMap, approvalMap and ackMap
+	 * and string for id and sources
 	 * @param src
 	 */
 	private void add2SourceMap(String[] src) {
+		StringBuilder sourcesSB = new StringBuilder();
+		StringBuilder idSB = new StringBuilder();
 		for (String s : src) {
 			try {
 				String[] comb = s.split(":");
@@ -39,6 +73,10 @@ public class Commit {
 				ackMap.put(userID, false);
 				
 				String fileName = comb[1];
+				
+				sourcesSB.append(fileName+",");
+				idSB.append(userID+",");
+				
 				System.err.println("UserID:" + userID + ", fileName:" + fileName);
 				if (!sourcesMap.containsKey(userID)) {
 					ArrayList<String> l = new ArrayList<String>();
@@ -56,6 +94,11 @@ public class Commit {
 			}
 
 		}
+		//delete the last ","
+		sourcesSB.deleteCharAt(sourcesSB.length()-1);
+		idSB.deleteCharAt(idSB.length()-1);
+		this.sourcesStr = sourcesSB.toString();
+		this.idStr = idSB.toString();
 	}
 
 	/**
