@@ -6,7 +6,7 @@ start Server a b c d
 
 wait 1000 # Wait for Nodes to come up
 
-commit composites/1.jpg a:3.jpg a:4.jpg b:5.jpg b:6.jpg
-commit composites/2.jpg c:7.jpg d:8.jpg d:carnegie2.jpg
+commit composites/1.jpg a:3.jpg a:4.jpg b:1.jpg b:2.jpg
+commit composites/2.jpg c:1.jpg d:2.jpg d:1.jpg
 wait 1500 # Wait 1500 ms for the commits to finish.
 
