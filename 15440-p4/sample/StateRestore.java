@@ -5,11 +5,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StateRestore {
 	static String collageName;
 	static String sources;
 	static int collageLen;
+	static int userNum;
+	static int approveNum;
+	static int disapproveNum;
+	static int ackNum;
+	static boolean allApprove;
+	static Commit commit;
 	
 	public static void recover() {
 		System.err.println( ">>>>>>>>>	RECOVER >>>>>>>> ");
@@ -18,6 +25,8 @@ public class StateRestore {
 			File logFile = new File(logFileName);
 			if (!logFile.exists()) { //Recover all states
 				System.err.println( ">>>>>>>>> END OF RECOVER >>>>>>");
+				System.err.println( "");
+				System.err.println( "");
 				return;
 			}
 			else {
@@ -50,10 +59,16 @@ public class StateRestore {
 							restoreCommit(commitCounter);			
 						}
 						if (lastType.equals(LogType.APPROVE.toString())) {
-							
+							approveNum++;
 						}
 						if (lastType.equals(LogType.DISAPPROVE.toString())) {
-							
+							disapproveNum++;
+						}
+						if (lastType.equals(LogType.ALL_APPROVE_COMMIT.toString())) {
+							allApprove = true;
+						}
+						if (lastType.equals(LogType.ACK.toString())) {
+							ackNum++;
 						}
 						lineNum++;
 					}
@@ -70,8 +85,13 @@ public class StateRestore {
 				//need to resend ack
 				else if (lastType.equals(LogType.ALL_APPROVE_COMMIT.toString())|| 
 						lastType.equals(LogType.DISAPPROVE_ABORT.toString()) 
-						|| lastType.equals(LogType.ACK.toString())) {
-					
+						|| lastType.equals(LogType.ACK.toString())
+						|| lastType.equals(LogType.APPROVE.toString())) {
+					if (approveNum == userNum &&
+							disapproveNum == 0 &&
+							allApprove) { //logic check
+						System.err.println( "****All approve. should resend ack****");
+					}
 				}
 				//abort
 				else {
@@ -91,8 +111,14 @@ public class StateRestore {
 			f.read(img);
 			f.close();
 			String[] sourcesArr = sources.split(",");
-			Commit m = new Commit(commitCounter,collageName,img,sourcesArr,false);
-			Server.commitMap.put(commitCounter, m);
+			userNum = sourcesArr.length;
+			ackNum = 0;
+			approveNum = 0;
+			disapproveNum = 0;
+			allApprove = false;
+			System.err.println( "Num of Users : " + userNum);
+			commit = new Commit(commitCounter,collageName,img,sourcesArr,false);
+			Server.commitMap.put(commitCounter, commit);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
