@@ -1,0 +1,4 @@
+
+public enum MsgType {
+	ASKAPPROVAL, RSPAPPROVAL, COMMIT, ACK
+}
