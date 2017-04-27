@@ -139,6 +139,7 @@ public class Commit {
 						System.err.println("*****Timeout vote response:"+userID);
 						this.approvalMap.put(userID, userIDState.TIMEOUT);
 						distributeResponse(false,msg);
+						break;
 					}
 				}
 			} catch (Exception e) {
