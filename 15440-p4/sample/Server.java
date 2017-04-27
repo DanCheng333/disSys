@@ -15,8 +15,7 @@ public class Server implements ProjectLib.CommitServing  {
     
 	public void startCommit( String filename, byte[] img, String[] sources ) {
 		System.err.println( ">>>>>>>> startCommit, commitfileName => "+filename);
-		commitCounter.incrementAndGet();
-		Commit m = new Commit(commitCounter.get(),filename,img,sources);
+		Commit m = new Commit(commitCounter.incrementAndGet(),filename,img,sources);
 		System.err.println( ">>>Commit ID"+commitCounter.get());
 		m.askForApproval(PL);
 		commitMap.put(commitCounter.get(), m);
