@@ -12,6 +12,7 @@ public class StateRestore {
 	static int collageLen;
 	
 	public static void recover() {
+		System.err.println( ">>>>>>>>>	RECOVER >>>>>>>> ");
 		for(int commitCounter = 1; commitCounter < Integer.MAX_VALUE; commitCounter++) {
 			String logFileName = Integer.toString(commitCounter)+".LOG";
 			File logFile = new File(logFileName);
