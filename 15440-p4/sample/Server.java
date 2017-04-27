@@ -15,10 +15,11 @@ public class Server implements ProjectLib.CommitServing  {
     
 	public void startCommit( String filename, byte[] img, String[] sources ) {
 		System.err.println( ">>>>>>>> startCommit, commitfileName => "+filename);
-		Commit m = new Commit(commitCounter.incrementAndGet(),filename,img,sources);
-		System.err.println( ">>>Commit ID"+commitCounter.get());
+		int newCC = commitCounter.incrementAndGet();
+		Commit m = new Commit(newCC,filename,img,sources);
+		System.err.println( ">>>Commit ID"+newCC);
 		m.askForApproval(PL);
-		commitMap.put(commitCounter.get(), m);
+		commitMap.put(newCC, m);
 	}
 	
 	public static void main ( String args[] ) throws Exception {
