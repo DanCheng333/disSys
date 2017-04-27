@@ -1,10 +1,12 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StateRestore {
@@ -58,7 +60,10 @@ public class StateRestore {
 						if (lastType.equals(LogType.ID_SOURCES.toString())) {
 							sourcesStr = content[1];
 							System.err.println( "sources " + sources+" ,line num: " + lineNum);
-							restoreCommit(commitCounter);			
+							restoreCommit(commitCounter);
+							FileOutputStream fos = new FileOutputStream(new File(logFileName));
+							commit.logWriter = new BufferedWriter(new OutputStreamWriter(fos));
+							
 						}
 						if (lastType.equals(LogType.APPROVE.toString())) {
 							approveNum++;

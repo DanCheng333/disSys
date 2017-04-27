@@ -20,13 +20,13 @@ public class Commit {
 	byte[] img;
 	String commitFilename;
 	String[] sources;
-	//For logging
+	// For logging
 	String logFileName;
 	BufferedWriter logWriter;
 	String sourcesStr;
 
 	public Commit(int id, String filename, byte[] img, String[] sources, Boolean notRestore) {
-		System.err.println( "=========init commit id:"+id + "=========");
+		System.err.println("=========init commit id:" + id + "=========");
 		this.commitID = id;
 		this.img = img;
 		this.commitFilename = filename;
@@ -36,34 +36,31 @@ public class Commit {
 			initLog();
 		}
 	}
-	
+
 	private void initLog() {
-		try
-		{
-			//save byte[] img to a backup file
-			FileOutputStream f = new FileOutputStream("collageCommit"+commitID);
+		try {
+			// save byte[] img to a backup file
+			FileOutputStream f = new FileOutputStream("collageCommit" + commitID);
 			f.write(img);
 			f.close();
-			//Init writing log files
-			logFileName = commitID+".LOG";
+			// Init writing log files
+			logFileName = commitID + ".LOG";
 			FileOutputStream fos = new FileOutputStream(new File(logFileName));
 			logWriter = new BufferedWriter(new OutputStreamWriter(fos));
-			logWriter.write(LogType.COLLAGE_NAME.toString()+"=>"+this.commitFilename);
+			logWriter.write(LogType.COLLAGE_NAME.toString() + "=>" + this.commitFilename);
 			logWriter.newLine();
-			logWriter.write(LogType.COLLAGE_LEN.toString()+"=>"+this.img.length);
+			logWriter.write(LogType.COLLAGE_LEN.toString() + "=>" + this.img.length);
 			logWriter.newLine();
-			logWriter.write(LogType.ID_SOURCES.toString()+"=>"+this.sourcesStr);
+			logWriter.write(LogType.ID_SOURCES.toString() + "=>" + this.sourcesStr);
 			logWriter.newLine();
 			logWriter.flush();
 			Server.PL.fsync();
-		}
-		catch(Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	private void write2Log(String s) {
 		try {
 			logWriter.write(s);
@@ -74,24 +71,25 @@ public class Commit {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	/**
 	 * Initialize sourceMap, approvalMap and ackMap
+	 * 
 	 * @param src
 	 */
 	private void add2SourceMap(String[] src) {
 		StringBuilder sb = new StringBuilder();
 		for (String s : src) {
-			sb.append(s+",");
+			sb.append(s + ",");
 			try {
 				String[] comb = s.split(":");
 				String userID = comb[0];
-				
+
 				approvalMap.put(userID, userIDState.NONE);
 				ackMap.put(userID, false);
-				
+
 				String fileName = comb[1];
 				System.err.println("UserID:" + userID + ", fileName:" + fileName);
 				if (!sourcesMap.containsKey(userID)) {
@@ -110,13 +108,14 @@ public class Commit {
 			}
 
 		}
-		//delete the last ","
-		sb.deleteCharAt(sb.length()-1);
+		// delete the last ","
+		sb.deleteCharAt(sb.length() - 1);
 		this.sourcesStr = sb.toString();
 	}
 
 	/**
 	 * Ask userNode to vote
+	 * 
 	 * @param pL
 	 */
 	public void askForApproval(ProjectLib pL) {
@@ -126,53 +125,54 @@ public class Commit {
 			try {
 				ProjectLib.Message sendMsg = new ProjectLib.Message(userID, MsgSerializer.serialize(msg));
 				pL.sendMessage(sendMsg);
-				
+
 				System.err.println("Asking for approval...");
 				System.err.println("Msg sent to userID:" + userID);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		//write2Log("ASK_FOR_APPROVAL");
+		// write2Log("ASK_FOR_APPROVAL");
 	}
-	
+
 	/**
-	 * Handle Vote
-	 * all YES => Commit
-	 * one No, or timeout => Abort
-	 * Distribute decisions to users
+	 * Handle Vote all YES => Commit one No, or timeout => Abort Distribute
+	 * decisions to users
+	 * 
 	 * @param myMsg
 	 * @param pL
 	 */
 	public void handleUserVote(MyMessage myMsg) {
 		if (myMsg.getIsApprove()) {
 			this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
-			write2Log(LogType.APPROVE.toString()+"=>"+myMsg.userID);
+			write2Log(LogType.APPROVE.toString() + "=>" + myMsg.userID);
 		} else {
 			this.approvalMap.put(myMsg.userID, userIDState.NOTAPPROVE);
-			write2Log(LogType.DISAPPROVE.toString()+"=>"+myMsg.userID);
+			write2Log(LogType.DISAPPROVE.toString() + "=>" + myMsg.userID);
 		}
 
-		
-		
 		if (notAllUsersApprove()) {
-			distributeResponse(false,myMsg);
+			distributeResponse(false, myMsg);
 		}
 		if (allUsersApprove()) { // if all users approve the commit
-			distributeResponse(true,myMsg);
+			distributeResponse(true, myMsg);
 		}
 
 	}
 
 	public void distributeResponse(boolean b, MyMessage myMsg) {
 		myMsg.setMsgType(MsgType.COMMIT);
-		if (b){
+		if (b) {
 			try {
-				System.err.println("Commit collage, Write to files.....commitFilename:" + this.commitFilename);
-				FileOutputStream fos = new FileOutputStream(this.commitFilename);
-				fos.write(this.img);
-				fos.close();
-
+				File f = new File(this.commitFilename);
+				if (f.exists()) {
+					System.err.println("collage file exists");
+				} else {
+					System.err.println("Commit collage, Write to files.....commitFilename:" + this.commitFilename);
+					FileOutputStream fos = new FileOutputStream(this.commitFilename);
+					fos.write(this.img);
+					fos.close();
+				}
 				// Send commit response back to user
 				myMsg.setIsCommit(true);
 				try {
@@ -190,10 +190,9 @@ public class Commit {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			write2Log(LogType.ALL_APPROVE_COMMIT.toString()+"=>");
-			
-		}
-		else {
+			write2Log(LogType.ALL_APPROVE_COMMIT.toString() + "=>");
+
+		} else {
 			myMsg.setIsCommit(false);
 			try {
 				for (String id : sourcesMap.keySet()) {
@@ -206,19 +205,19 @@ public class Commit {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			write2Log(LogType.DISAPPROVE_ABORT.toString()+"=>");
+			write2Log(LogType.DISAPPROVE_ABORT.toString() + "=>");
 		}
 	}
 
 	public void handleACK(MyMessage myMsg) {
 		ackMap.put(myMsg.userID, true);
-		write2Log(LogType.ACK.toString()+"=>"+myMsg.userID);
+		write2Log(LogType.ACK.toString() + "=>" + myMsg.userID);
 		if (allUserACK()) {
-			write2Log(LogType.ALL_ACK.toString()+"=>");
+			write2Log(LogType.ALL_ACK.toString() + "=>");
 			System.err.println(" ====== END All userNode ack ====");
 		}
 	}
-	
+
 	private boolean allUserACK() {
 		for (Entry<String, Boolean> s : this.ackMap.entrySet()) {
 			if (!s.getValue()) {
@@ -250,6 +249,5 @@ public class Commit {
 		System.err.println(" All approved! ");
 		return true;
 	}
-
 
 }
