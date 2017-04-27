@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.PatternSyntaxException;
 
 enum userIDState {
-	APPROVE, NOTAPPROVE, NONE
+	APPROVE, NOTAPPROVE, NONE, TIMEOUT
 }
 
 public class Commit {
@@ -125,9 +125,22 @@ public class Commit {
 			try {
 				ProjectLib.Message sendMsg = new ProjectLib.Message(userID, MsgSerializer.serialize(msg));
 				pL.sendMessage(sendMsg);
-
 				System.err.println("Asking for approval...");
 				System.err.println("Msg sent to userID:" + userID);
+				long t1 = System.currentTimeMillis();
+				while (true) {
+					long t2 = System.currentTimeMillis();
+					if (approvalMap.get(userID).equals(userIDState.APPROVE) || 
+							approvalMap.get(userID).equals(userIDState.NOTAPPROVE)) {
+						System.err.println("*****Time out fn=> Get vote from:"+userID);
+						break;
+					}
+					if (t2 > t1+6000) {
+						System.err.println("*****Timeout vote response:"+userID);
+						this.approvalMap.put(userID, userIDState.TIMEOUT);
+						distributeResponse(false,msg);
+					}
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -143,25 +156,32 @@ public class Commit {
 	 * @param pL
 	 */
 	public void handleUserVote(MyMessage myMsg) {
-		if (myMsg.getIsApprove()) {
-			this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
-			write2Log(LogType.APPROVE.toString() + "=>" + myMsg.userID);
-		} else {
-			this.approvalMap.put(myMsg.userID, userIDState.NOTAPPROVE);
-			write2Log(LogType.DISAPPROVE.toString() + "=>" + myMsg.userID);
-		}
+		if (!this.approvalMap.get(myMsg.userID).equals(userIDState.TIMEOUT)) {
+			if (myMsg.getIsApprove()) {
+				this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
+				write2Log(LogType.APPROVE.toString() + "=>" + myMsg.userID);
+			} else {
+				this.approvalMap.put(myMsg.userID, userIDState.NOTAPPROVE);
+				write2Log(LogType.DISAPPROVE.toString() + "=>" + myMsg.userID);
+			}
 
-		if (notAllUsersApprove()) {
-			distributeResponse(false, myMsg);
+			if (notAllUsersApprove()) {
+				distributeResponse(false, myMsg);
+			}
+			if (allUsersApprove()) { // if all users approve the commit
+				distributeResponse(true, myMsg);
+			}
 		}
-		if (allUsersApprove()) { // if all users approve the commit
-			distributeResponse(true, myMsg);
+		else {
+			System.err.println("this vote is already timeout....user id"+myMsg.userID);
 		}
+		
 
 	}
 
 	public void distributeResponse(boolean b, MyMessage myMsg) {
 		myMsg.setMsgType(MsgType.COMMIT);
+		myMsg.setIsCommit(b);
 		if (b) {
 			try {
 				File f = new File(this.commitFilename);
@@ -174,13 +194,25 @@ public class Commit {
 					fos.close();
 				}
 				// Send commit response back to user
-				myMsg.setIsCommit(true);
 				try {
 					for (String id : sourcesMap.keySet()) {
 						myMsg.setUserFilenames(sourcesMap.get(id));
 						myMsg.setUserID(id);
 						ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 						Server.PL.sendMessage(sendMsg);
+						long t1 = System.currentTimeMillis();
+						while (true) {
+							long t2 = System.currentTimeMillis();
+							if (ackMap.get(id)) {
+								System.err.println("Time out fn=> Get ack form user:"+id);
+								break;
+							}
+							if (t2 > t1+6000) {
+								System.err.println("Timeout resend ack to user:"+id);
+								t1 = t2;
+								Server.PL.sendMessage(sendMsg);
+							}
+						}
 						System.err.println("Tell user is committed, id:" + myMsg.userID);
 					}
 				} catch (Exception e) {
@@ -193,7 +225,7 @@ public class Commit {
 			write2Log(LogType.ALL_APPROVE_COMMIT.toString() + "=>");
 
 		} else {
-			myMsg.setIsCommit(false);
+			
 			try {
 				for (String id : sourcesMap.keySet()) {
 					myMsg.setUserFilenames(sourcesMap.get(id));
