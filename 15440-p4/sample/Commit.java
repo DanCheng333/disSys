@@ -25,7 +25,7 @@ public class Commit {
 	BufferedWriter logWriter;
 	String sourcesStr;
 	// For timeout
-	public final static int TIMEOUT = 6000;
+	public final static int TIMEOUT = 6500;
 
 	public Commit(int id, String filename, byte[] img, String[] sources, Boolean notRestore) {
 		System.err.println("=========init commit id:" + id + "=========");
