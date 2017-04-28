@@ -8,10 +8,22 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * 4 userID states for vote
+ * 
+ * @author danc
+ *
+ */
 enum userIDState {
 	APPROVE, NOTAPPROVE, NONE, TIMEOUT
 }
 
+/**
+ * Commit 1. Handle server commit operations 2. Write log files 3. timeout
+ * 
+ * @author danc
+ *
+ */
 public class Commit {
 	public ConcurrentHashMap<String, ArrayList<String>> sourcesMap = new ConcurrentHashMap<String, ArrayList<String>>();
 	public ConcurrentHashMap<String, userIDState> approvalMap = new ConcurrentHashMap<String, userIDState>();
@@ -28,17 +40,21 @@ public class Commit {
 	public final static int TIMEOUT = 6500;
 
 	public Commit(int id, String filename, byte[] img, String[] sources, Boolean notRestore) {
-		System.err.println("=========init commit id:" + id + "=========");
 		this.commitID = id;
 		this.img = img;
 		this.commitFilename = filename;
 		this.sources = sources;
 		add2SourceMap(sources);
 		if (notRestore) {
+			// only start a new log file if it is NOT in restore state
 			initLog();
 		}
 	}
 
+	/**
+	 * Start a new log file, and backup collage image initial log file has
+	 * collageName,collage image length, sources
+	 */
 	private void initLog() {
 		try {
 			// save byte[] img to a backup file
@@ -63,6 +79,11 @@ public class Commit {
 
 	}
 
+	/**
+	 * Write string s to log file
+	 * 
+	 * @param s
+	 */
 	private void write2Log(String s) {
 		try {
 			logWriter.write(s);
@@ -70,7 +91,6 @@ public class Commit {
 			logWriter.flush();
 			Server.PL.fsync();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -93,20 +113,17 @@ public class Commit {
 				ackMap.put(userID, false);
 
 				String fileName = comb[1];
-				System.err.println("UserID:" + userID + ", fileName:" + fileName);
 				if (!sourcesMap.containsKey(userID)) {
 					ArrayList<String> l = new ArrayList<String>();
 					l.add(fileName);
 					sourcesMap.put(userID, l);
 				} else {
 					ArrayList<String> l = sourcesMap.get(userID);
-					if (!l.add(fileName)) {
-						System.err.println("file already in UserID,file:" + fileName);
-					}
+					l.add(fileName);
 					sourcesMap.put(userID, l);
 				}
 			} catch (PatternSyntaxException e) {
-				System.err.println("Source format is wrong.." + s);
+				e.printStackTrace();
 			}
 
 		}
@@ -116,7 +133,7 @@ public class Commit {
 	}
 
 	/**
-	 * Ask userNode to vote
+	 * Ask userNodes to vote
 	 * 
 	 * @param pL
 	 */
@@ -127,9 +144,7 @@ public class Commit {
 			try {
 				ProjectLib.Message sendMsg = new ProjectLib.Message(userID, MsgSerializer.serialize(msg));
 				pL.sendMessage(sendMsg);
-
-				System.err.println("Asking for approval...");
-				System.err.println("Msg sent to userID:" + userID);
+				// Keep track of vote, if timeout, abort
 				Thread t = new Thread(new VoteTimeOutCheck(userID, msg));
 				t.start();
 
@@ -137,17 +152,17 @@ public class Commit {
 				e.printStackTrace();
 			}
 		}
-		// write2Log("ASK_FOR_APPROVAL");
 	}
 
 	/**
-	 * Handle Vote all YES => Commit one No, or timeout => Abort Distribute
+	 * Handle Vote all YES => Commit; one No, or timeout => Abort Distribute
 	 * decisions to users
 	 * 
 	 * @param myMsg
 	 * @param pL
 	 */
 	public void handleUserVote(MyMessage myMsg) {
+		// Only check approval if this vote is not timeout yet
 		if (!approvalMap.get(myMsg.userID).equals(userIDState.TIMEOUT)) {
 			if (myMsg.getIsApprove()) {
 				this.approvalMap.put(myMsg.userID, userIDState.APPROVE);
@@ -163,36 +178,35 @@ public class Commit {
 			if (allUsersApprove()) { // if all users approve the commit
 				distributeResponse(true, myMsg);
 			}
-		} else {
-			System.err.println("Redundant response, already Timeout vote, id" + myMsg.userID);
 		}
 
 	}
 
+	/**
+	 * Distribute responses to all the usernode, commit if b is true, else abort
+	 * 
+	 * @param b
+	 * @param myMsg
+	 */
 	public void distributeResponse(boolean b, MyMessage myMsg) {
 		myMsg.setMsgType(MsgType.COMMIT);
 		myMsg.setIsCommit(b);
 		if (b) {
 			try {
 				File f = new File(this.commitFilename);
-				if (f.exists()) {
-					System.err.println("collage file exists");
-				} else {
-					System.err.println("Commit collage, Write to files.....commitFilename:" + this.commitFilename);
+				if (!f.exists()) {
 					FileOutputStream fos = new FileOutputStream(this.commitFilename);
 					fos.write(this.img);
 					fos.close();
 				}
 				// Send commit response back to user
-				
 				try {
 					for (String id : sourcesMap.keySet()) {
 						myMsg.setUserFilenames(sourcesMap.get(id));
 						myMsg.setUserID(id);
 						ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 						Server.PL.sendMessage(sendMsg);
-						System.err.println("Tell user is committed, id:" + myMsg.userID);
-						//Set time out for ack
+						// If ack timeout, resend commit ack
 						Thread t = new Thread(new AckTimeOutCheck(id, sendMsg));
 						t.start();
 
@@ -213,11 +227,10 @@ public class Commit {
 					myMsg.setUserID(id);
 					ProjectLib.Message sendMsg = new ProjectLib.Message(id, MsgSerializer.serialize(myMsg));
 					Server.PL.sendMessage(sendMsg);
-					System.err.println("Tell user is NOT committed, id:" + myMsg.userID);
-					//Set time out for ack
+					// If ack timeout, resend abort ack
 					Thread t = new Thread(new AckTimeOutCheck(id, sendMsg));
 					t.start();
-					
+
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -226,44 +239,59 @@ public class Commit {
 		}
 	}
 
+	/**
+	 * Handle ack response, keep track of all ack in ackMap and log file if all
+	 * ack, write to log file
+	 * 
+	 * @param myMsg
+	 */
 	public void handleACK(MyMessage myMsg) {
 		ackMap.put(myMsg.userID, true);
 		write2Log(LogType.ACK.toString() + "=>" + myMsg.userID);
 		if (allUserACK()) {
 			write2Log(LogType.ALL_ACK.toString() + "=>");
-			System.err.println(" ====== END All userNode ack ====");
 		}
 	}
 
+	/**
+	 * If all users ack, return true else false
+	 * 
+	 * @return
+	 */
 	private boolean allUserACK() {
 		for (Entry<String, Boolean> s : this.ackMap.entrySet()) {
 			if (!s.getValue()) {
-				System.err.println("Not all ack yet...");
 				return false;
 			}
 		}
-		System.err.println(" All ack! ");
 		return true;
 	}
 
+	/**
+	 * If one user disapprove, return true, else return false
+	 * 
+	 * @return
+	 */
 	private boolean notAllUsersApprove() {
 		for (Entry<String, userIDState> s : this.approvalMap.entrySet()) {
 			if (s.getValue().equals(userIDState.NOTAPPROVE)) {
-				System.err.println("One user disapprove ID:" + s.getKey());
 				return true;
 			}
 		}
 		return false;
 	}
 
+	/**
+	 * if all users approve, return true, else false
+	 * 
+	 * @return
+	 */
 	private boolean allUsersApprove() {
 		for (Entry<String, userIDState> s : this.approvalMap.entrySet()) {
 			if (!s.getValue().equals(userIDState.APPROVE)) {
-				System.err.println("Not all approve yet...");
 				return false;
 			}
 		}
-		System.err.println(" All approved! ");
 		return true;
 	}
 
@@ -290,7 +318,6 @@ public class Commit {
 
 			if (approvalMap.get(userID).equals(userIDState.NONE)) {
 				// No vote response from user, timeout, abort commit
-				System.err.println("-----Thread-----No vote response from user:" + userID);
 				approvalMap.put(userID, userIDState.TIMEOUT);
 				distributeResponse(false, msg);
 
@@ -324,11 +351,9 @@ public class Commit {
 
 				if (!ackMap.get(userID)) {
 					// No ack response from user, timeout, resend ack
-					System.err.println("-----Thread-----No ack response from user:" + userID);
 					Server.PL.sendMessage(msg);
 
 				} else {
-					System.err.println("receive ack userid:"+userID);
 					break;
 				}
 			}

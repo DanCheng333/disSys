@@ -2,12 +2,17 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
+/**
+ * State Restore based on log files Go through all log files, update commitMap
+ * in Server Only commit and resend ack if users all approve, else abort
+ * 
+ * @author danc
+ *
+ */
 public class StateRestore {
 	static String collageName;
 	static String sourcesStr;
@@ -20,48 +25,43 @@ public class StateRestore {
 	static int ackNum;
 	static boolean allApprove;
 	static Commit commit;
-	
+
+	/**
+	 * Recover states based on log files
+	 */
 	public static void recover() {
-		System.err.println( ">>>>>>>>>	RECOVER >>>>>>>> ");
-		for(int commitCounter = 1; commitCounter < Integer.MAX_VALUE; commitCounter++) {
-			String logFileName = Integer.toString(commitCounter)+".LOG";
+		for (int commitCounter = 1; commitCounter < Integer.MAX_VALUE; commitCounter++) {
+			String logFileName = Integer.toString(commitCounter) + ".LOG";
 			File logFile = new File(logFileName);
-			if (!logFile.exists()) { //Recover all states
-				System.err.println( ">>>>>>>>> END OF RECOVER >>>>>>");
-				System.err.println( "");
-				System.err.println( "");
+			if (!logFile.exists()) { // Recover all states, no more log file
 				return;
-			}
-			else {
+			} else { // Recover state based on log file
 				Server.commitCounter.set(commitCounter);
 				String lastType = "";
 				try {
+					// Read log files line by line
 					FileInputStream fis = new FileInputStream(new File(logFileName));
-					BufferedReader logReader = new BufferedReader(new InputStreamReader(fis));			
+					BufferedReader logReader = new BufferedReader(new InputStreamReader(fis));
 					String line = null;
-					int lineNum = 1;
-					
 					while ((line = logReader.readLine()) != null) {
 						String[] content = line.split("=>");
 						if (content == null) {
-							System.err.println( "no =>"+",this line is:"+line);
+							// empty or not fully written line
 							continue;
 						}
 						lastType = content[0];
+
 						if (lastType.equals(LogType.COLLAGE_NAME.toString())) {
 							collageName = content[1];
-							System.err.println( "Collage name"+ collageName + " ,line num: " + lineNum);
 						}
 						if (lastType.equals(LogType.COLLAGE_LEN.toString())) {
 							collageLen = Integer.parseInt(content[1]);
-							System.err.println( "Collage len"+ collageLen + " ,line num: " + lineNum);
 						}
 						if (lastType.equals(LogType.ID_SOURCES.toString())) {
 							sourcesStr = content[1];
-							System.err.println( "sources " + sourcesStr+" ,line num: " + lineNum);
 							restoreCommit(commitCounter);
 							commit.logWriter = new BufferedWriter(new FileWriter(logFileName, true));
-							
+
 						}
 						if (lastType.equals(LogType.APPROVE.toString())) {
 							approveNum++;
@@ -75,76 +75,67 @@ public class StateRestore {
 						if (lastType.equals(LogType.ACK.toString())) {
 							ackNum++;
 						}
-						lineNum++;
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
-				
-				System.err.println( "last type in this commit file" + lastType);
-				MyMessage msg = new MyMessage(MsgType.COMMIT, commitCounter, "userID",
-						collageName,img, sources);
-				
-				
-				if (lastType.equals(LogType.ALL_ACK.toString())) { //finish
-					System.err.println( "nothing crash in this commitID:"+commitCounter);
+
+				// Abort or send ack based on last log
+				MyMessage msg = new MyMessage(MsgType.COMMIT, commitCounter, "userID", collageName, img, sources);
+
+				if (lastType.equals(LogType.ALL_ACK.toString())) { // finish do
+																	// nothing
 					continue;
 				}
-				//need to resend ack
-				else if (lastType.equals(LogType.ALL_APPROVE_COMMIT.toString())|| 
-						lastType.equals(LogType.DISAPPROVE_ABORT.toString()) 
-						|| lastType.equals(LogType.ACK.toString())
-						|| lastType.equals(LogType.APPROVE.toString())) {
-					System.err.println( "approveNum:"+approveNum);
-					System.err.println( "disapproveNum:"+disapproveNum);
-					System.err.println( "allApprove:"+allApprove);
-					if ((approveNum == userNum &&
-							disapproveNum == 0) ||
-							allApprove) { //logic check
-						System.err.println( "****All approve. should resend ack****");
+				// Send ack
+				else if (lastType.equals(LogType.ALL_APPROVE_COMMIT.toString())
+						|| lastType.equals(LogType.DISAPPROVE_ABORT.toString())
+						|| lastType.equals(LogType.ACK.toString()) || lastType.equals(LogType.APPROVE.toString())) {
+					// All approve, send commit ack
+					if ((approveNum == userNum && disapproveNum == 0) || allApprove) {
 						commit.distributeResponse(true, msg);
-					}
-					else {
-						System.err.println( "****abort****");
+					} else {
+						// send abort
 						commit.distributeResponse(false, msg);
 					}
 				}
-				//abort
+				// abort
 				else {
-					System.err.println( "****abort****");
 					commit.distributeResponse(false, msg);
 				}
 			}
 		}
-		
+
 	}
 
+	/**
+	 * Restore commit variables in Server
+	 * 
+	 * @param commitCounter
+	 */
 	private static void restoreCommit(int commitCounter) {
-		//save byte[] img to a backup file
 		FileInputStream f;
 		try {
-			f = new FileInputStream("collageCommit"+commitCounter);
+			// Get collage backup
+			f = new FileInputStream("collageCommit" + commitCounter);
 			img = new byte[collageLen];
 			f.read(img);
 			f.close();
+			// Restore commitMap
 			String[] sources = sourcesStr.split(",");
-			commit = new Commit(commitCounter,collageName,img,sources,false);
+			commit = new Commit(commitCounter, collageName, img, sources, false);
 			Server.commitMap.put(commitCounter, commit);
+			// InitCounter for deciding restore state
 			userNum = commit.sourcesMap.size();
 			ackNum = 0;
 			approveNum = 0;
 			disapproveNum = 0;
 			allApprove = false;
-			System.err.println( "Num of Users : " + userNum);
-			
+
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
+
 	}
 
 }

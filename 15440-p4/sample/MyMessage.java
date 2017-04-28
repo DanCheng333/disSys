@@ -1,6 +1,12 @@
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * My Message protocol, contain all info needed 
+ * Message type, commitID, userID, collageName, collageImg, sources
+ * @author danc
+ *
+ */
 public class MyMessage implements Serializable{
     int commitID;
     String userID;
